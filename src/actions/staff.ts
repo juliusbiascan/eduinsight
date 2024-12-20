@@ -49,19 +49,7 @@ export const getTeacherCount = async (labId: string, dateRange?: DateRange) => {
   return teacherCount;
 }
 
-export const getGuestCount = async (labId: string, dateRange?: DateRange) => {
-  const guestCount = await db.deviceUser.count({
-    where: {
-      labId,
-      role: DeviceUserRole.GUEST,
-      createdAt: {
-        gte: dateRange?.from,
-        lte: dateRange?.to,
-      },
-    }
-  });
-  return guestCount;
-}
+
 export const getUserState = async (userId: string) => {
   const activeDeviceUser = await db.activeDeviceUser.count({
     where: {

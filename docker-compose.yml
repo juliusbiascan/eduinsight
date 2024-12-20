@@ -14,7 +14,7 @@ services:
     depends_on:
       - mysql
     volumes:
-      - ./admin:/app
+      - .:/app
       - /app/node_modules
       - /app/.next
 

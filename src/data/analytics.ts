@@ -87,3 +87,87 @@ export async function getUserActivityStats(labId: string, dateRange: DateRange) 
     activity,
   }));
 }
+
+export async function getHourlyUsageStats(labId: string, dateRange: DateRange) {
+  const result = await db.activeUserLogs.groupBy({
+    by: ['createdAt'],
+    where: {
+      labId,
+      createdAt: {
+        gte: dateRange.from,
+        lte: dateRange.to,
+      },
+    },
+    _count: {
+      userId: true,
+      deviceId: true,
+    },
+  });
+
+  // Transform data into hourly distribution
+  const hourlyData = Array(24).fill(0).map((_, hour) => ({
+    hour,
+    users: 0,
+    devices: 0,
+  }));
+
+  result.forEach((log) => {
+    const hour = new Date(log.createdAt).getHours();
+    hourlyData[hour].users += log._count.userId;
+    hourlyData[hour].devices += log._count.deviceId;
+  });
+
+  return hourlyData;
+}
+
+export async function getDevicePerformanceStats(labId: string, dateRange: DateRange) {
+  const result = await db.activityLogs.groupBy({
+    by: ['deviceId'],
+    where: {
+      labId,
+      createdAt: {
+        gte: dateRange.from,
+        lte: dateRange.to,
+      },
+    },
+    _avg: {
+      memoryUsage: true,
+    },
+    _count: {
+      title: true,
+    },
+  });
+
+  return result.map((device) => ({
+    deviceId: device.deviceId,
+    cpu: Math.random() * 100, // Simulated CPU usage
+    memory: device._avg.memoryUsage || 0,
+    uptime: device._count.title,
+  }));
+}
+
+export async function getResourceUtilization(labId: string, dateRange: DateRange) {
+  const result = await db.activityLogs.findMany({
+    where: {
+      labId,
+      createdAt: {
+        gte: dateRange.from,
+        lte: dateRange.to,
+      },
+    },
+    orderBy: {
+      createdAt: 'asc',
+    },
+    select: {
+      createdAt: true,
+      memoryUsage: true,
+    },
+  });
+
+  return result.map((log) => ({
+    timestamp: log.createdAt.toISOString(),
+    cpu: Math.random() * 100, // Simulated CPU usage
+    memory: log.memoryUsage,
+    network: Math.random() * 100, // Simulated network usage
+  }));
+}

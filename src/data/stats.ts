@@ -12,12 +12,11 @@ export async function getPreviousStats(labId: string, dateRange: DateRange): Pro
   activeNow: number;
   studentCount: number;
   teacherCount: number;
-  guestCount: number;
 }> {
   const previousFrom = subDays(dateRange.from!, 1);
   const previousTo = subDays(dateRange.to!, 1);
 
-  const [totalLogins, totalUsers, totalDevices, activeNow, studentCount, teacherCount, guestCount] = await Promise.all([
+  const [totalLogins, totalUsers, totalDevices, activeNow, studentCount, teacherCount] = await Promise.all([
     db.activeUserLogs.count({
       where: {
         labId: labId,
@@ -69,16 +68,7 @@ export async function getPreviousStats(labId: string, dateRange: DateRange): Pro
         },
         role: 'TEACHER',
       },
-    }),
-    db.deviceUser.count({
-      where: {
-        labId: labId,
-        createdAt: {
-          lte: previousTo,
-        },
-        role: 'GUEST',
-      },
-    }),
+    })
   ]);
 
   return {
@@ -88,6 +78,6 @@ export async function getPreviousStats(labId: string, dateRange: DateRange): Pro
     activeNow,
     studentCount,
     teacherCount,
-    guestCount,
+   
   };
 }

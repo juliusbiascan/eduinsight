@@ -8,7 +8,6 @@ generator client {
 }
 
 enum DeviceUserRole {
-  GUEST
   STUDENT
   TEACHER
 }
@@ -112,41 +111,49 @@ model Labaratory {
 }
 
 model Device {
-  id            String     @id @default(uuid())
-  labId         String // Foreign Key to Store
-  lab           Labaratory @relation("LabToDevice", fields: [labId], references: [id])
+  id            String             @id @default(uuid())
+  labId         String
+  lab           Labaratory        @relation("LabToDevice", fields: [labId], references: [id])
   name          String
   devId         String
   devHostname   String
   devMACaddress String
   isArchived    Boolean
-  isUsed        Boolean    @default(false)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  isUsed        Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  activeUsers   ActiveDeviceUser[]
+  activeUserLogs ActiveUserLogs[]
 
   @@index([labId])
 }
 
 model DeviceUser {
-  id        String         @id @default(uuid())
-  labId     String
-  schoolId  String         @unique
-  firstName String
-  lastName  String
-  email     String         @unique
-  course    Course
-  yearLevel YearLevel
-  contactNo String
-  address   String
-  password  String
-  role      DeviceUserRole @default(GUEST)
-  subjects  Subject[]
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id                String             @id @default(uuid())
+  labId             String
+  schoolId          String             @unique
+  firstName         String
+  lastName          String
+  email             String             @unique
+  course            Course
+  yearLevel         YearLevel
+  contactNo         String
+  address           String
+  password          String
+  role              DeviceUserRole     @default(STUDENT)
+  subjects          Subject[]
+  activeDevices     ActiveDeviceUser[]  // Changed from activeDeviceUsers to activeDevices
+  activities        DeviceUserActivity[]
+  powerLogs         PowerMonitoringLogs[]
+  activityLogs      ActivityLogs[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  ActiveUserLogs ActiveUserLogs[]
 }
 
 model DeviceUserActivity {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   labId       String
   userId      String
   deviceId    String
@@ -154,41 +161,57 @@ model DeviceUserActivity {
   time        DateTime
   owner       String
   memoryUsage Int?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  user        DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model ActiveDeviceUser {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   labId     String
   userId    String
   deviceId  String
-  state     State    @default(INACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user      DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  state     State      @default(INACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([deviceId])
 }
 
 model ActiveUserLogs {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   labId     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   userId    String
   deviceId  String
+  device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  user      DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([userId])
 }
 
 model PowerMonitoringLogs {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   pm_status String
   pm_log_ts String
   userId    String
   deviceId  String
   labId     String
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
+  user      DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model ActivityLogs {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
   ownerName   String
   ownerPath   String
@@ -196,7 +219,10 @@ model ActivityLogs {
   userId      String
   deviceId    String
   labId       String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime   @default(now())
+  user        DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Subject {
@@ -221,7 +247,7 @@ model SubjectRecord {
   userId    String
   labId     String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 }
 
 model QuizQuestion {
@@ -251,7 +277,7 @@ model Quiz {
   questions  QuizQuestion[]
   quizRecord QuizRecord[]
   createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  updatedAt  DateTime       @default(now())
 }
 
 model QuizRecord {
@@ -265,7 +291,7 @@ model QuizRecord {
   totalQuestions Int
   completedAt    DateTime
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  updatedAt      DateTime @default(now())
 }
 
 model Activity {

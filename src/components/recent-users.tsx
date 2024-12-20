@@ -47,12 +47,7 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data }) => 
           color: 'text-[#C9121F]',
           bgColor: 'from-red-400 to-red-600'
         };
-      case 'guest':
-        return {
-          icon: User,
-          color: 'text-[#C9121F]',
-          bgColor: 'from-red-400 to-red-600'
-        };
+      
       default:
         return {
           icon: Users,

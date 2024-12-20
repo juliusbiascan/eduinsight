@@ -45,4 +45,4 @@ export const apiClientPrefix = "/api/clients";
  * The default redirect path after logging in
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = "/redirect";
+export const DEFAULT_LOGIN_REDIRECT = "/";
