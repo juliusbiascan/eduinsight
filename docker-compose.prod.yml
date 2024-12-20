@@ -44,7 +44,7 @@ services:
     # the path of directory for build
     build:
       context: ./server
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     image: socket:latest
     #env_file: /server/.env
     # the changes in my local will be reflected into container (development only)

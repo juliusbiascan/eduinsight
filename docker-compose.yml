@@ -52,7 +52,7 @@ services:
       context: ./server
       dockerfile: Dockerfile
     image: socket:latest
-    env_file: ./server/.env
+    # env_file: ./server/.env
     # the changes in my local will be reflected into container (development only)
     volumes:
       - ./server:/usr/src/app

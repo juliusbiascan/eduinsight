@@ -40,14 +40,7 @@ export const RegistrationClient: React.FC<RegistrationClientProps> = ({
                 className="text-black dark:text-white"
               />
             </div>
-            <Button
-              onClick={() => router.push(`/admin/${params.labId}/registration/new`)}
-              size="sm"
-              className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8"
-            >
-              <UserPlus2 className="w-4 h-4 mr-1" />
-              Register New User
-            </Button>
+            
           </div>
         </CardContent>
       </Card>

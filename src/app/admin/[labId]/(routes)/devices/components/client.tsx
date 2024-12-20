@@ -39,13 +39,6 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                 className="text-black dark:text-white"
               />
             </div>
-            <Button
-              onClick={() => router.push(`/admin/${params.labId}/devices/register`)}
-              className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8"
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              Register Device
-            </Button>
           </div>
         </CardContent>
       </Card>
