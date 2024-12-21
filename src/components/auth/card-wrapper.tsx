@@ -14,8 +14,6 @@ interface CardWrapperProps {
   children: React.ReactNode;
   headerLabel: string;
   headerComponent?: React.ReactNode;
-  backButtonLabel: string;
-  backButtonHref: string;
   showSocial?: boolean;
 };
 
@@ -23,8 +21,6 @@ export const CardWrapper = ({
   children,
   headerLabel,
   headerComponent,
-  backButtonLabel,
-  backButtonHref,
   showSocial
 }: CardWrapperProps) => {
   return (
@@ -40,18 +36,7 @@ export const CardWrapper = ({
           <Social />
         </CardFooter>
       )}
-      <CardFooter className="flex justify-between bg-gray-50 dark:bg-gray-700 p-4">
-        <BackButton
-          href={"/"}
-          label={"Home"}
-          className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
-        />
-        <BackButton
-          label={backButtonLabel}
-          href={backButtonHref}
-          className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
-        />
-      </CardFooter>
+     
     </Card>
   );
 };

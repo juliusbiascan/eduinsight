@@ -74,7 +74,7 @@ export const LoginForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Welcome back!"
+      headerLabel="Server Access"
       headerComponent={
         <div className="flex items-center justify-center space-x-2">
           <Image
@@ -82,15 +82,13 @@ export const LoginForm = () => {
             alt="PASS Logo"
             width={48}
             height={48}
-            className="rounded-full border-2 border-yellow-500 dark:border-yellow-400"
+            className="rounded-full border-2 border-[#C9121F]"
           />
-          <span className="text-2xl font-bold bg-gradient-to-r from-red-600 to-yellow-500 dark:from-red-500 dark:to-yellow-400 text-transparent bg-clip-text">
-            Welcome back!
+          <span className="text-2xl font-bold bg-gradient-to-r from-[#C9121F] to-[#1A1617] text-transparent bg-clip-text">
+            Server Login
           </span>
         </div>
       }
-      backButtonLabel="Don't have an account?"
-      backButtonHref="/auth/register"
     >
       <Form {...form}>
         <form
@@ -104,16 +102,16 @@ export const LoginForm = () => {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-red-700">Two Factor Code</FormLabel>
+                    <FormLabel className="text-[#C9121F]">Two Factor Code</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         disabled={isPending}
                         placeholder="123456"
-                        className="border-2 border-yellow-500 dark:border-yellow-400 focus:border-red-600 dark:focus:border-red-500 rounded-lg"
+                        className="border-2 border-[#C9121F] focus:border-[#1A1617] rounded-lg"
                       />
                     </FormControl>
-                    <FormMessage className="text-pink-500" />
+                    <FormMessage  />
                   </FormItem>
                 )}
               />
@@ -125,17 +123,17 @@ export const LoginForm = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-purple-600">Email</FormLabel>
+                      <FormLabel className="text-[#C9121F]">Email</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           disabled={isPending}
                           placeholder="Email"
                           type="email"
-                          className="border-2 border-yellow-500 dark:border-yellow-400 focus:border-red-600 dark:focus:border-red-500 rounded-lg"
+                          className="border-2 border-[#C9121F] focus:border-[#1A1617] rounded-lg"
                         />
                       </FormControl>
-                      <FormMessage className="text-pink-500" />
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -144,20 +142,20 @@ export const LoginForm = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-purple-600">Password</FormLabel>
+                      <FormLabel className="text-[#C9121F]">Password</FormLabel>
                       <FormControl>
                         <PasswordInput
                           {...field}
                           disabled={isPending}
                           placeholder="******"
-                          className="border-2 border-yellow-500 dark:border-yellow-400 focus:border-red-600 dark:focus:border-red-500 rounded-lg"
+                          className="border-2 border-[#C9121F] focus:border-[#1A1617] rounded-lg"
                         />
                       </FormControl>
                       <Button
                         size="sm"
                         variant="link"
                         asChild
-                        className="px-0 font-normal text-indigo-400 hover:text-indigo-600"
+                        className="px-0 font-normal text-[#C9121F] hover:text-[#1A1617]"
                       >
                         <Link href="/auth/reset">
                           Forgot password?
@@ -175,7 +173,7 @@ export const LoginForm = () => {
           <Button
             disabled={isPending}
             type="submit"
-            className="w-full bg-gradient-to-r from-red-600 to-yellow-500 dark:from-red-500 dark:to-yellow-400 hover:from-red-700 hover:to-yellow-600 dark:hover:from-red-600 dark:hover:to-yellow-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+            className="w-full bg-[#C9121F] hover:bg-[#1A1617] text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105"
           >
             {isPending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             {showTwoFactor ? "Confirm" : "Login"}
