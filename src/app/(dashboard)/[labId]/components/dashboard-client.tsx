@@ -59,8 +59,7 @@ interface DashboardData {
 }
 
 export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
-  const { theme, setTheme } = useTheme(); // Use theme and setTheme from next-themes
-
+  
   const { socket, isConnected } = useSocket();
 
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -81,7 +80,6 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
       activeNow: 0,
       studentCount: 0,
       teacherCount: 0,
-     
     },
     studentCount: 0,
     teacherCount: 0,

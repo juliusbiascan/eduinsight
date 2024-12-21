@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react'
 import { Heading } from "@/components/ui/heading"
-import { Plus, Laptop, Zap, Users } from "lucide-react"
-import { useParams, useRouter } from "next/navigation"
+import { Laptop, Zap, Users } from "lucide-react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { ApiList } from '@/components/ui/api-list'
@@ -86,7 +85,22 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                   <p>Hostname: {device.devHostname}</p>
                   <p>Status: {device.isArchived ? 'Archived' : 'Active'}</p>
                   <div className="flex justify-between items-center mt-2">
-                    <p>Active Users: {device.activeUsers.length}</p>
+                    <div className="flex items-center gap-2">
+                      {device.activeUsers.length > 0 ? (
+                        <>
+                          <Badge variant="success" className="text-xs">
+                            In Use
+                          </Badge>
+                          <span className="text-xs">
+                            {device.activeUsers[0].user.firstName.charAt(0)}. {device.activeUsers[0].user.lastName}
+                          </span>
+                        </>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">
+                          Idle
+                        </Badge>
+                      )}
+                    </div>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button 
@@ -172,14 +186,17 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
       </div>
 
       <Card className="bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardContent className="p-4">
-          <div className="flex items-center space-x-3 mb-3">
-            <Zap className="w-6 h-6 text-[#C9121F] animate-pulse" />
-            <Heading
-              title="API"
-              description="API calls for Devices"
-              className="text-black dark:text-white"
-            />
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-3 mb-5">
+            <div className="p-2 rounded-md bg-muted">
+              <Zap className="w-5 h-5 text-[#C9121F]" />
+            </div>
+            <div>
+              <h3 className="font-semibold">API Reference</h3>
+              <p className="text-sm text-muted-foreground">
+                Available endpoints for device management
+              </p>
+            </div>
           </div>
           <ApiList entityName="devices" entityIdName="deviceId" />
         </CardContent>
