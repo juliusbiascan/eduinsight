@@ -63,16 +63,16 @@ export const RegisterForm = () => {
     <CardWrapper
       headerLabel="Create an account"
       headerComponent={
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center space-x-3">
           <Image
             src="/passlogo-small.png"
             alt="PASS Logo"
             width={48}
             height={48}
-            className="rounded-full border-2 border-red-500 dark:border-red-400"
+            className="rounded-full border-2 border-[#C9121F] shadow-lg"
           />
-          <span className="text-2xl font-bold bg-gradient-to-r from-red-600 to-yellow-500 dark:from-red-500 dark:to-yellow-400 text-transparent bg-clip-text">
-            Join us today!
+          <span className="text-2xl font-bold text-[#C9121F] dark:text-white">
+            Create Account
           </span>
         </div>
       }
@@ -90,13 +90,13 @@ export const RegisterForm = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-red-600">Name</FormLabel>
+                  <FormLabel className="text-[#C9121F] font-medium">{field.name}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
                       placeholder="Name"
-                      className="border-2 border-red-200 dark:border-red-800 focus:border-yellow-500 dark:focus:border-yellow-400 rounded-lg"
+                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500" />
@@ -108,14 +108,14 @@ export const RegisterForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-[#C9121F] font-medium">{field.name}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
                       placeholder="Email"
                       type="email"
-                      className="border-2 border-red-200 dark:border-red-800 focus:border-yellow-500 dark:focus:border-yellow-400 rounded-lg"
+                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500" />
@@ -127,13 +127,13 @@ export const RegisterForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="text-[#C9121F] font-medium">{field.name}</FormLabel>
                   <FormControl>
                     <PasswordInput
                       {...field}
                       disabled={isPending}
                       placeholder="******"
-                      className="border-2 border-red-200 dark:border-red-800 focus:border-yellow-500 dark:focus:border-yellow-400 rounded-lg"
+                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500" />
@@ -145,13 +145,13 @@ export const RegisterForm = () => {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel className="text-[#C9121F] font-medium">{field.name}</FormLabel>
                   <FormControl>
                     <PasswordInput
                       {...field}
                       disabled={isPending}
                       placeholder="******"
-                      className="border-2 border-red-200 dark:border-red-800 focus:border-yellow-500 dark:focus:border-yellow-400 rounded-lg"
+                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                     />
                   </FormControl>
                   <FormMessage className="text-red-500" />
@@ -164,7 +164,7 @@ export const RegisterForm = () => {
           <Button
             disabled={isPending}
             type="submit"
-            className="w-full bg-gradient-to-r from-red-600 to-yellow-500 dark:from-red-500 dark:to-yellow-400 hover:from-red-700 hover:to-yellow-600 dark:hover:from-red-600 dark:hover:to-yellow-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+            className="w-full bg-[#C9121F] hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 ease-out shadow-md hover:shadow-lg"
           >
             {isPending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Create an account

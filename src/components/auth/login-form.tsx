@@ -85,10 +85,12 @@ export const LoginForm = () => {
             className="rounded-full border-2 border-[#C9121F]"
           />
           <span className="text-2xl font-bold bg-gradient-to-r from-[#C9121F] to-[#1A1617] text-transparent bg-clip-text">
-            Server Login
+            Server Access
           </span>
         </div>
       }
+      backButtonHref="/auth/login"
+      backButtonLabel="Back"
     >
       <Form {...form}>
         <form
@@ -102,13 +104,13 @@ export const LoginForm = () => {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[#C9121F]">Two Factor Code</FormLabel>
+                    <FormLabel className="text-[#C9121F] font-medium">Two Factor Code</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         disabled={isPending}
                         placeholder="123456"
-                        className="border-2 border-[#C9121F] focus:border-[#1A1617] rounded-lg"
+                       className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                       />
                     </FormControl>
                     <FormMessage  />
@@ -123,14 +125,14 @@ export const LoginForm = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[#C9121F]">Email</FormLabel>
+                      <FormLabel className="text-[#C9121F] font-medium">Email</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           disabled={isPending}
                           placeholder="Email"
                           type="email"
-                          className="border-2 border-[#C9121F] focus:border-[#1A1617] rounded-lg"
+                          className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                         />
                       </FormControl>
                       <FormMessage />
@@ -142,13 +144,13 @@ export const LoginForm = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[#C9121F]">Password</FormLabel>
+                      <FormLabel className="text-[#C9121F] font-medium">Password</FormLabel>
                       <FormControl>
                         <PasswordInput
                           {...field}
                           disabled={isPending}
                           placeholder="******"
-                          className="border-2 border-[#C9121F] focus:border-[#1A1617] rounded-lg"
+                         className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                         />
                       </FormControl>
                       <Button
@@ -173,7 +175,7 @@ export const LoginForm = () => {
           <Button
             disabled={isPending}
             type="submit"
-            className="w-full bg-[#C9121F] hover:bg-[#1A1617] text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+              className="w-full bg-[#C9121F] hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 ease-out shadow-md hover:shadow-lg"
           >
             {isPending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             {showTwoFactor ? "Confirm" : "Login"}

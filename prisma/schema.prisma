@@ -143,7 +143,6 @@ model DeviceUser {
   role              DeviceUserRole     @default(STUDENT)
   subjects          Subject[]
   activeDevices     ActiveDeviceUser[]  // Changed from activeDeviceUsers to activeDevices
-  activities        DeviceUserActivity[]
   powerLogs         PowerMonitoringLogs[]
   activityLogs      ActivityLogs[]
   createdAt         DateTime           @default(now())
@@ -152,8 +151,9 @@ model DeviceUser {
   ActiveUserLogs ActiveUserLogs[]
 }
 
-model DeviceUserActivity {
-  id          String     @id @default(uuid())
+
+model ActivityLogs {
+ id          String     @id @default(uuid())
   labId       String
   userId      String
   deviceId    String
@@ -164,8 +164,6 @@ model DeviceUserActivity {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   user        DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 model ActiveDeviceUser {
@@ -210,20 +208,6 @@ model PowerMonitoringLogs {
   @@index([userId])
 }
 
-model ActivityLogs {
-  id          String     @id @default(uuid())
-  title       String
-  ownerName   String
-  ownerPath   String
-  memoryUsage Int
-  userId      String
-  deviceId    String
-  labId       String
-  createdAt   DateTime   @default(now())
-  user        DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
 
 model Subject {
   id             String           @id @default(uuid())

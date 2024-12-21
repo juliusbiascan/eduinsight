@@ -53,8 +53,8 @@ export const UserButton = () => {
 
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-9 px-0">
-          <Avatar className="h-8 w-8">
+        <Button variant="ghost" className="w-10 h-10 rounded-full p-0 hover:bg-[#C9121F]/10">
+          <Avatar className="h-9 w-9 border-2 border-[#C9121F]/20 transition-all hover:border-[#C9121F]">
             <AvatarImage
               className="object-cover"
               alt="@profile"
@@ -66,7 +66,7 @@ export const UserButton = () => {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56 rounded-xl border-2 border-[#C9121F]/10" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user?.name}</p>

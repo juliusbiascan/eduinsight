@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 interface BackButtonProps {
-  href: string;
-  label: string;
+  href?: string;
+  label?: string;
   className?: string;
 }
 
@@ -15,6 +15,7 @@ export const BackButton = ({
   label,
   className,
 }: BackButtonProps) => {
+  if (!href || !label) return null;
   return (
     <Button
       variant="link"

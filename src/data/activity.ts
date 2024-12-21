@@ -2,8 +2,8 @@
 
 import { db } from "@/lib/db"
 import _ from 'underscore';
-import { DeviceUserActivity } from "@prisma/client";
 import { diffMinutes } from "@/lib/utils";
+import { ActivityLogs } from "@prisma/client";
 
 interface Event {
   title: string;
@@ -27,7 +27,7 @@ interface SubActivity {
 
 export async function getAllActivities(labId: string, userId: string, deviceId: string) {
   try {
-    const activities = await db.deviceUserActivity.findMany({
+    const activities = await db.activityLogs.findMany({
       where: {
         labId,
         userId,
@@ -93,7 +93,7 @@ export async function getEvents(labId: string, userId: string, deviceId: string)
 }
 
 
-export async function formatActivities(activities: DeviceUserActivity[]): Promise<Breakdown[]> {
+export async function formatActivities(activities: ActivityLogs[]): Promise<Breakdown[]> {
   const breakdown: Breakdown[] = [];
 
   for (let i = 0; i < activities.length; i++) {

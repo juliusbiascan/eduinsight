@@ -44,15 +44,15 @@ export const NewVerificationForm = () => {
     <CardWrapper
       headerLabel="Confirming your verification"
       headerComponent={
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center space-x-3">
           <Image
             src="/passlogo-small.png"
             alt="SMNHS Logo"
             width={48}
             height={48}
-            className="rounded-full border-2 border-pink-300"
+            className="rounded-full border-2 border-[#C9121F] shadow-lg"
           />
-          <span className="text-2xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 text-transparent bg-clip-text">
+          <span className="text-2xl font-bold text-[#C9121F] dark:text-white">
             Verify Account
           </span>
         </div>
@@ -62,7 +62,7 @@ export const NewVerificationForm = () => {
     >
       <div className="flex items-center w-full justify-center">
         {!success && !error && (
-          <BeatLoader color="#8B5CF6" /> // Purple color to match the theme
+          <BeatLoader color="#C9121F" />
         )}
         <FormSuccess message={success} />
         {!success && (

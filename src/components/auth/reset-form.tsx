@@ -53,15 +53,15 @@ export const ResetForm = () => {
     <CardWrapper
       headerLabel="Forgot your password?"
       headerComponent={
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center space-x-3">
           <Image
             src="/passlogo-small.png"
             alt="SMNHS Logo"
             width={48}
             height={48}
-            className="rounded-full border-2 border-pink-300"
+            className="rounded-full border-2 border-[#C9121F] shadow-lg"
           />
-          <span className="text-2xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 text-transparent bg-clip-text">
+          <span className="text-2xl font-bold text-[#C9121F] dark:text-white">
             Password Reset
           </span>
         </div>
@@ -80,14 +80,14 @@ export const ResetForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-purple-600">Email</FormLabel>
+                  <FormLabel className="text-[#C9121F] font-medium">Email</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       disabled={isPending}
                       placeholder="john.doe@example.com"
                       type="email"
-                      className="border-2 border-pink-200 focus:border-purple-400 rounded-lg"
+                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                     />
                   </FormControl>
                   <FormMessage className="text-pink-500" />
@@ -100,7 +100,7 @@ export const ResetForm = () => {
           <Button
             disabled={isPending}
             type="submit"
-            className="w-full bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 hover:from-pink-500 hover:via-purple-500 hover:to-indigo-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105"
+            className="w-full bg-[#C9121F] hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 ease-out shadow-md hover:shadow-lg"
           >
             {isPending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Send reset email
