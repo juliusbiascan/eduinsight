@@ -1,19 +1,18 @@
-import './globals.css'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import { SessionProvider } from 'next-auth/react'
-import { auth } from '@/auth'
-import { ThemeProvider } from '@/providers/theme-provider'
-import { ModalProvider } from '@/providers/modal-provider'
-import { ToasterProvider } from '@/providers/toast-provider'
-import { SocketProvider } from '@/providers/socket-provider'
+import "./globals.css";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/auth";
+import { ThemeProvider } from "@/providers/theme-provider";
+import { ModalProvider } from "@/providers/modal-provider";
+import { ToasterProvider } from "@/providers/toast-provider";
+import { SocketProvider } from "@/providers/socket-provider";
 
-const inter = Inter({ subsets: ['latin'] })
-
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'EduInsight',
-  description: 'Developed by Julius Biascan',
+  title: "EduInsight",
+  description: "Developed by Julius Biascan",
   authors: [
     {
       name: "Julius Biascan",
@@ -21,16 +20,16 @@ export const metadata: Metadata = {
     },
   ],
   creator: "juliusbiascan",
-}
+};
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   const session = await auth();
 
+  
   return (
     <SessionProvider session={session}>
       <html lang="en">
@@ -43,7 +42,7 @@ export default async function RootLayout({
             </ThemeProvider>
           </SocketProvider>
         </body>
-      </html >
-    </SessionProvider >
-  )
+      </html>
+    </SessionProvider>
+  );
 }

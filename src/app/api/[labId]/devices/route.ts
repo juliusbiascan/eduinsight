@@ -83,8 +83,6 @@ export async function GET(
   { params }: { params: { labId: string } }
 ) {
   try {
-    //const { searchParams } = new URL(req.url);
-
     if (!params.labId) {
       return new NextResponse("Lab Id is required", { status: 400 });
     }
@@ -94,11 +92,35 @@ export async function GET(
         labId: params.labId,
         isArchived: false
       },
-
+      include: {
+        powerMonitoringLogs: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1
+        },
+        activeUsers: {
+          include: {
+            user: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        },
+        activeUserLogs: {
+          include: {
+            user: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 10 // Limit to last 10 entries
+        }
+      },
       orderBy: {
         createdAt: 'desc'
       }
-    })
+    });
 
     return NextResponse.json(devices);
 

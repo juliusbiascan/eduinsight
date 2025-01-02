@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import _ from 'underscore';
-import { diffMinutes } from "@/lib/utils";
+import { diffMinutes, formatDuration } from "@/lib/utils";
 import { ActivityLogs } from "@prisma/client";
 
 interface Event {
@@ -17,12 +17,28 @@ interface Event {
 interface Breakdown {
   title: string;
   time: number;
+  timestamp: string; // Add timestamp
   subActivity: SubActivity[];
 }
 
 interface SubActivity {
   title: string;
   time: number;
+  timestamp: string; // Add timestamp
+}
+
+const MAX_IDLE_MINUTES = 30; // Consider session broken if gap is more than 30 minutes
+
+function calculateActivityDuration(currentTime: Date, nextTime: Date | null): number {
+  if (!nextTime) {
+    const now = new Date();
+    const duration = Math.abs(diffMinutes(currentTime, now));
+    return Math.min(duration, MAX_IDLE_MINUTES);
+  }
+
+  // Ensure we're calculating the absolute difference
+  const duration = Math.abs(diffMinutes(currentTime, nextTime));
+  return duration > MAX_IDLE_MINUTES ? MAX_IDLE_MINUTES : duration;
 }
 
 export async function getAllActivities(labId: string, userId: string, deviceId: string) {
@@ -48,8 +64,9 @@ export async function getActivitiesByDay(labId: string, userId: string, deviceId
     const filteredActivities = activities.filter(activity =>
       new Date(activity.time).toISOString().slice(0, 10) === day
     )
-    console.log("Activities by day:", filteredActivities)
-    return filteredActivities
+    const breakdown = await formatActivities(filteredActivities) // Added line
+    console.log("Activities by day:", breakdown) // Modified line
+    return breakdown // Modified line
   } catch (error) {
     console.error("Error fetching activities by day:", error)
     return []
@@ -59,76 +76,119 @@ export async function getActivitiesByDay(labId: string, userId: string, deviceId
 export async function getEvents(labId: string, userId: string, deviceId: string) {
   const activities = await getAllActivities(labId, userId, deviceId);
   const events: Event[] = [];
+  const dailyActivities = new Map<string, number>();
 
-  for (let i = 0; i < activities.length; i++) {
-    if (activities[i + 1]) {
-      const thisDate = new Date(activities[i].time).toISOString().slice(0, 10);
-      const nextDate = new Date(activities[i + 1].time).toISOString().slice(0, 10);
-      const found = events.find(({ start }) => start === thisDate);
+  // Sort activities by time
+  const sortedActivities = _.sortBy(activities, (a) => new Date(a.time).getTime());
 
-      const nextTime = thisDate === nextDate
-        ? new Date(activities[i + 1].time)
-        : new Date(`${thisDate}T23:59:59`);
+  sortedActivities.forEach((activity, index) => {
+    const currentDate = new Date(activity.time);
+    const dateKey = currentDate.toISOString().slice(0, 10);
+    const nextActivity = sortedActivities[index + 1];
+    
+    const duration = calculateActivityDuration(
+      currentDate,
+      nextActivity ? new Date(nextActivity.time) : null
+    );
 
-      const time = diffMinutes(new Date(activities[i].time), nextTime);
-      const hours = Math.floor(time / 60);
-      const minutes = time % 60;
+    // Accumulate time for each date
+    dailyActivities.set(
+      dateKey, 
+      (dailyActivities.get(dateKey) || 0) + duration
+    );
+  });
 
-      if (found) {
-        found.time += time;
-        found.title = `${Math.floor(found.time / 60)} Hrs ${found.time % 60} Min recorded`;
-      } else {
-        events.push({
-          title: `${hours} Hrs ${minutes} Min recorded`,
-          start: thisDate,
-          end: thisDate,
-          allDay: true,
-          url: `day.html?date=${thisDate}`,
-          time: time
-        });
-      }
-    }
-  }
-  return events;
+  // Create events from daily totals
+  dailyActivities.forEach((totalMinutes, date) => {
+    events.push({
+      title: `${formatDuration(totalMinutes)} recorded`,
+      start: date,
+      end: date,
+      allDay: true,
+      url: `day.html?date=${date}`,
+      time: Math.round(totalMinutes)
+    });
+  });
+
+  return Array.from(events).sort((a, b) => b.start.localeCompare(a.start));
 }
-
 
 export async function formatActivities(activities: ActivityLogs[]): Promise<Breakdown[]> {
   const breakdown: Breakdown[] = [];
+  const activityMap = new Map<string, Breakdown>();
 
-  for (let i = 0; i < activities.length; i++) {
-    const currentActivity = activities[i];
-    const nextActivity = activities[i + 1];
-    const time = nextActivity
-      ? diffMinutes(new Date(currentActivity.time), new Date(nextActivity.time))
-      : diffMinutes(new Date(currentActivity.time), new Date());
+  // Sort activities by time to ensure correct sequence
+  const sortedActivities = _.sortBy(activities, (a) => new Date(a.time).getTime());
 
-    const found = breakdown.find(({ title }) => title === currentActivity.owner);
+  // Group activities by owner and calculate durations
+  sortedActivities.forEach((activity, index) => {
+    const currentTime = new Date(activity.time);
+    // Use ISO string for timestamp
+    const timestamp = currentTime.toISOString();
+    
+    const nextActivity = sortedActivities[index + 1];
+    
+    const duration = calculateActivityDuration(
+      currentTime,
+      nextActivity ? new Date(nextActivity.time) : null
+    );
 
-    if (found) {
-      found.time += time;
-      const subActivityFound = found.subActivity.find(({ title }) => title === currentActivity.title);
-
-      if (subActivityFound) {
-        subActivityFound.time += time;
-      } else {
-        found.subActivity.push({ title: currentActivity.title, time: time });
-      }
-    } else {
-      breakdown.push({
-        title: currentActivity.owner,
-        time: time,
-        subActivity: [{ title: currentActivity.title, time: time }]
+    const ownerKey = activity.owner;
+    if (!activityMap.has(ownerKey)) {
+      activityMap.set(ownerKey, {
+        title: ownerKey,
+        time: 0,
+        timestamp: timestamp,
+        subActivity: []
       });
     }
-  }
 
-  breakdown.forEach(item => {
-    item.subActivity = _.sortBy(item.subActivity, 'time').reverse();
+    const ownerActivity = activityMap.get(ownerKey)!;
+
+    // Find or create sub-activity
+    const existingSubActivity = ownerActivity.subActivity.find(
+      sub => sub.title === activity.title
+    );
+
+    if (existingSubActivity) {
+      existingSubActivity.time += duration;
+      // Compare using numeric timestamps
+      if (currentTime.getTime() < new Date(existingSubActivity.timestamp).getTime()) {
+        existingSubActivity.timestamp = timestamp;
+      }
+    } else {
+      ownerActivity.subActivity.push({
+        title: activity.title,
+        time: duration,
+        timestamp: timestamp
+      });
+    }
+
+    // Update total time for this owner
+    ownerActivity.time = ownerActivity.subActivity.reduce(
+      (total, sub) => total + sub.time, 
+      0
+    );
   });
 
-  return _.sortBy(breakdown, 'time').reverse();
-}
+  // Convert map to array and sort
+  const result = Array.from(activityMap.values()).map(item => ({
+    ...item,
+    // Ensure time is the sum of sub-activities
+    time: item.subActivity.reduce((total, sub) => total + sub.time, 0),
+    // Sort sub-activities by time
+    subActivity: _.sortBy(item.subActivity, 'time').reverse()
+  }));
 
+  // Round all times to nearest minute
+  result.forEach(item => {
+    item.time = Math.round(item.time);
+    item.subActivity.forEach(sub => {
+      sub.time = Math.round(sub.time);
+    });
+  });
+
+  return _.sortBy(result, 'time').reverse();
+}
 
 export type { Event, Breakdown, SubActivity }

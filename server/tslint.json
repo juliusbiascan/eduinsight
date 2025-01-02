@@ -1,11 +1,18 @@
 {
-    "extends": "tslint:recommended",
-    "defaultSeverity": "error",
-    "rules": {
-        "no-console": {
-        "severity": "warning",
-        "options": ["debug", "info", "log", "time", "timeEnd", "trace"]
-        }
-    },
-    "jsRules": { }
+  "extends": "tslint:recommended",
+  "defaultSeverity": "error",
+  "rules": {
+    "object-literal-sort-keys": false,
+    "no-console": false,
+    "no-shadowed-variable": false,
+    "variable-name": [true, "allow-leading-underscore"],
+    "max-line-length": [
+      true,
+      {
+        "limit": 120,
+        "ignore-pattern": "^import [^,]+ from |^export | implements"
+      }
+    ]
+  },
+  "jsRules": {}
 }

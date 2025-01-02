@@ -41,6 +41,12 @@ const DevicePage = async ({
         include: {
           user: true
         }
+      },
+      powerMonitoringLogs: {
+        orderBy: {
+          createdAt: 'desc'
+        },
+        take: 1
       }
     },
     orderBy: {

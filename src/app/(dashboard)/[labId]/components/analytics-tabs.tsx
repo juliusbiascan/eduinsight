@@ -6,7 +6,7 @@ import { Activity, Users, Clock, Cpu, BarChart2, PieChart } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
   ResponsiveContainer, Cell, LineChart, Line, PieChart as RePieChart, 
-  Pie, Sector, AreaChart, Area 
+  Pie, AreaChart, Area 
 } from 'recharts';
 import { DateRange } from "react-day-picker";
 import { 
@@ -42,6 +42,7 @@ interface HourlyUsage {
 
 interface DevicePerformance {
   deviceId: string;
+  name: string;  // Add this line
   cpu: number;
   memory: number;
   uptime: number;
@@ -50,9 +51,15 @@ interface DevicePerformance {
 interface ResourceUtilization {
   timestamp: string;
   cpu: number;
-  memory: number;
+  memory: number | null;
   network: number;
 }
+
+const resourceColors = {
+  cpu: { stroke: '#8884d8', fill: '#8884d833' },
+  memory: { stroke: '#82ca9d', fill: '#82ca9d33' },
+  network: { stroke: '#ffc658', fill: '#ffc65833' }
+};
 
 export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }) => {
   const { theme } = useTheme();
@@ -114,6 +121,26 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
     fontSize: 12,
   };
 
+  const formatTooltipValue = (value: number, label: string) => {
+    return `${value} ${label}`;
+  };
+
+  const getStatusColor = (value: number) => {
+    if (value >= 80) return '#ef4444'; // Critical - Red
+    if (value >= 60) return '#f97316'; // Warning - Orange
+    return '#22c55e'; // Good - Green
+  };
+
+  const calculateAverageUsage = (data: DeviceUsageStats[]) => {
+    const total = data.reduce((sum, item) => sum + item.usage, 0);
+    return (total / data.length).toFixed(1);
+  };
+
+  const formatResourceValue = (value: number) => `${value.toFixed(1)}%`;
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString();
+  };
+
   return (
     <Tabs defaultValue="usage" className="space-y-4">
       <TabsList>
@@ -130,6 +157,9 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
                 <Activity className="h-4 w-4 mr-2" style={{ color: '#C9121F' }} />
                 Device Usage Analytics
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Average usage: {calculateAverageUsage(deviceUsageStats)} sessions per device
+              </p>
             </CardHeader>
             <CardContent className="p-4 h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -146,6 +176,7 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
                     label={{ ...yAxisLabelStyle, value: 'Number of Sessions' }}
                   />
                   <Tooltip
+                    formatter={(value: number) => formatTooltipValue(value, 'sessions')}
                     contentStyle={{
                       backgroundColor: chartConfig.style.background,
                       border: `1px solid ${chartConfig.grid.stroke}`,
@@ -180,6 +211,9 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
                 <Users className="h-4 w-4 mr-2" style={{ color: '#C9121F' }} />
                 User Activity Analytics
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Overview of user interactions and engagement metrics.
+              </p>
             </CardHeader>
             <CardContent className="p-4 h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -234,20 +268,71 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
                 <Cpu className="h-4 w-4 mr-2" style={{ color: '#C9121F' }} />
                 Resource Utilization
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Real-time monitoring of CPU, Memory, and Network usage.
+              </p>
             </CardHeader>
             <CardContent className="p-4 h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={resourceUtilization}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="timestamp" />
-                  <YAxis
-                    label={{ ...yAxisLabelStyle, value: 'Resource Usage (%)' }}
+                <AreaChart
+                  data={resourceUtilization}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.grid.stroke} />
+                  <XAxis
+                    dataKey="timestamp"
+                    tickFormatter={formatTimestamp}
+                    stroke={chartConfig.style.color}
+                    tick={{ fill: chartConfig.style.color, fontSize: 12 }}
                   />
-                  <Tooltip />
+                  <YAxis
+                    stroke={chartConfig.style.color}
+                    tick={{ fill: chartConfig.style.color, fontSize: 12 }}
+                    domain={[0, 100]}
+                    tickFormatter={(value) => `${value}%`}
+                    label={{ ...yAxisLabelStyle, value: 'Usage %' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: chartConfig.style.background,
+                      border: `1px solid ${chartConfig.grid.stroke}`,
+                      borderRadius: '4px',
+                      color: chartConfig.style.color
+                    }}
+                    formatter={(value: number) => formatResourceValue(value)}
+                    labelFormatter={formatTimestamp}
+                  />
                   <Legend />
-                  <Area type="monotone" dataKey="cpu" stackId="1" stroke="#8884d8" fill="#8884d8" />
-                  <Area type="monotone" dataKey="memory" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
-                  <Area type="monotone" dataKey="network" stackId="1" stroke="#ffc658" fill="#ffc658" />
+                  <Area
+                    type="monotone"
+                    dataKey="cpu"
+                    name="CPU"
+                    stroke={resourceColors.cpu.stroke}
+                    fill={resourceColors.cpu.fill}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="memory"
+                    name="Memory"
+                    stroke={resourceColors.memory.stroke}
+                    fill={resourceColors.memory.fill}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="network"
+                    name="Network"
+                    stroke={resourceColors.network.stroke}
+                    fill={resourceColors.network.fill}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4 }}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -259,20 +344,37 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
                 <BarChart2 className="h-4 w-4 mr-2" style={{ color: '#C9121F' }} />
                 Device Performance Metrics
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Detailed performance metrics for each device, including CPU and memory usage.
+              </p>
             </CardHeader>
             <CardContent className="p-4 h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={devicePerformance}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="deviceId" />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke={chartConfig.style.color}
+                    tick={{ fill: chartConfig.style.color, fontSize: 12 }}
+                  />
                   <YAxis
                     label={{ ...yAxisLabelStyle, value: 'Performance Metrics (%)' }}
+                    stroke={chartConfig.style.color}
+                    tick={{ fill: chartConfig.style.color, fontSize: 12 }}
                   />
-                  <Tooltip />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: chartConfig.style.background,
+                      border: `1px solid ${chartConfig.grid.stroke}`,
+                      color: chartConfig.style.color,
+                      borderRadius: '4px',
+                      padding: '8px'
+                    }}
+                  />
                   <Legend />
-                  <Bar dataKey="cpu" fill="#8884d8" />
-                  <Bar dataKey="memory" fill="#82ca9d" />
-                  <Bar dataKey="uptime" fill="#ffc658" />
+                  <Bar dataKey="cpu" name="CPU Usage" fill="#8884d8" />
+                  <Bar dataKey="memory" name="Memory Usage" fill="#82ca9d" />
+                  <Bar dataKey="uptime" name="Uptime" fill="#ffc658" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -288,6 +390,9 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
                 <Clock className="h-4 w-4 mr-2" style={{ color: '#C9121F' }} />
                 Hourly Usage Distribution
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Distribution of active users and devices throughout each hour.
+              </p>
             </CardHeader>
             <CardContent className="p-4 h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -312,6 +417,9 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
                 <PieChart className="h-4 w-4 mr-2" style={{ color: '#C9121F' }} />
                 User Session Distribution
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Breakdown of user session activities across different categories.
+              </p>
             </CardHeader>
             <CardContent className="p-4 h-80">
               <ResponsiveContainer width="100%" height="100%">

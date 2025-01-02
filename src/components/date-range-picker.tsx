@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { CalendarIcon, Sun, Clock} from "lucide-react"; // Updated imports
+import { format, addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -21,6 +21,28 @@ export function CalendarDateRangePicker({
   value,
   onChange,
 }: CalendarDateRangePickerProps) {
+  const handlePreset = (preset: 'today' | 'last7Days' | 'last30Days') => {
+    const today = new Date();
+    let from: Date | undefined;
+    let to: Date = today;
+    
+    switch(preset) {
+      case 'today':
+        from = today;
+        break;
+      case 'last7Days':
+        from = addDays(today, -6);
+        break;
+      case 'last30Days':
+        from = addDays(today, -29);
+        break;
+      default:
+        from = undefined;
+    }
+    
+    onChange(from && to ? { from, to } : undefined);
+  };
+
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -50,7 +72,37 @@ export function CalendarDateRangePicker({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
+        <PopoverContent className="w-auto p-4" align="end">
+          <div className="flex flex-col space-y-2 mb-4">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="flex items-center justify-center space-x-2"
+              onClick={() => handlePreset('today')}
+            >
+              <Sun className="h-4 w-4" /> {/* Replaced TodayIcon */}
+              <span>Today</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="flex items-center justify-center space-x-2"
+              onClick={() => handlePreset('last7Days')}
+            >
+              <Clock className="h-4 w-4" /> {/* Replaced WeekIcon */}
+              <span>Last 7 Days</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="flex items-center justify-center space-x-2"
+              onClick={() => handlePreset('last30Days')}
+            >
+              <CalendarIcon className="h-4 w-4" /> {/* Replaced MonthIcon */}
+              <span>Last 30 Days</span>
+            </Button>
+          </div>
+          <hr className="border-gray-300 dark:border-gray-700 mb-4" />
           <Calendar
             mode="range"
             defaultMonth={value?.from}

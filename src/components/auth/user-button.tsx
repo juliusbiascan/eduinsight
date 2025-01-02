@@ -18,7 +18,6 @@ import {
   Plus,
   PlusCircle,
   Settings,
-  User,
   UserPlus,
   Users,
 } from "lucide-react"
@@ -39,13 +38,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import { Button } from "@/components/ui/button"
-import { useCurrentUser } from "@/hooks/use-current-user"
-import { LogoutButton } from "./logout-button"
 import { useParams, useRouter } from "next/navigation"
+import { LogoutButton } from "./logout-button"
+import { User } from "@prisma/client"
 
-export const UserButton = () => {
+interface UserButtonProps {
+  user: User;
+}
 
-  const user = useCurrentUser();
+export const UserButton = ({ user }: UserButtonProps) => {
   const params = useParams();
   const router = useRouter()
 
@@ -81,51 +82,12 @@ export const UserButton = () => {
         <DropdownMenuGroup>
           
 
-          <DropdownMenuItem onClick={() => router.push(`/${params}/account`)}>
+          <DropdownMenuItem onClick={() => router.push(`/${params.labId}/account`)}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Keyboard className="mr-2 h-4 w-4" />
-            <span>Keyboard shortcuts</span>
-            <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Users className="mr-2 h-4 w-4" />
-            <span>Team</span>
-          </DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <UserPlus className="mr-2 h-4 w-4" />
-              <span>Invite users</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem>
-                  <Mail className="mr-2 h-4 w-4" />
-                  <span>Email</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  <span>Message</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  <span>More...</span>
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-          <DropdownMenuItem>
-            <Plus className="mr-2 h-4 w-4" />
-            <span>New Team</span>
-            <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-          </DropdownMenuItem>
+         
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>

@@ -124,8 +124,10 @@ model Device {
   updatedAt     DateTime          @updatedAt
   activeUsers   ActiveDeviceUser[]
   activeUserLogs ActiveUserLogs[]
+  powerMonitoringLogs PowerMonitoringLogs[]
 
   @@index([labId])
+  ActivityLogs ActivityLogs[]
 }
 
 model DeviceUser {
@@ -138,7 +140,6 @@ model DeviceUser {
   course            Course
   yearLevel         YearLevel
   contactNo         String
-  address           String
   password          String
   role              DeviceUserRole     @default(STUDENT)
   subjects          Subject[]
@@ -149,6 +150,9 @@ model DeviceUser {
   updatedAt         DateTime           @updatedAt
 
   ActiveUserLogs ActiveUserLogs[]
+
+  @@index([email])
+  @@index([role])
 }
 
 
@@ -164,6 +168,11 @@ model ActivityLogs {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   user        DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device      Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([labId])
+  @@index([userId])
+  @@index([deviceId])
 }
 
 model ActiveDeviceUser {
@@ -185,7 +194,7 @@ model ActiveUserLogs {
   id        String     @id @default(uuid())
   labId     String
   createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  updatedAt DateTime   @default(now())
   userId    String
   deviceId  String
   device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
@@ -204,7 +213,7 @@ model PowerMonitoringLogs {
   labId     String
   createdAt DateTime   @default(now())
   user      DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   @@index([userId])
 }
 
@@ -273,6 +282,7 @@ model QuizRecord {
   userId         String
   score          Int
   totalQuestions Int
+  totalPoints    Int
   completedAt    DateTime
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now())

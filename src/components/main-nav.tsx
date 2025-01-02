@@ -17,7 +17,6 @@ export function MainNav({
             label: 'Overview',
             active: pathname === `/${params.labId}`,
         },
-       
         {
             href: `/${params.labId}/monitoring`,
             label: 'Monitoring',
@@ -31,7 +30,7 @@ export function MainNav({
         {
             href: `/${params.labId}/users`,
             label: 'Users',
-            active: pathname === `/${params.labId}/registration`,
+            active: pathname === `/${params.labId}/users`,
         },
         {
             href: `/${params.labId}/settings`,

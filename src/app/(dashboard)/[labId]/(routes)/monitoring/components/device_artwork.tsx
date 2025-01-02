@@ -19,6 +19,14 @@ import { getDeviceUserById } from "@/data/user"
 import { getDeviceById } from "@/data/device"
 import { logoutUser } from "@/actions/logout"
 import { useSocket } from "@/providers/socket-provider"
+import { 
+  Search, 
+  RefreshCcw, 
+  Power, 
+  ClipboardList, 
+  Battery, 
+  LogOut 
+} from "lucide-react"
 
 interface DeviceArtworkProps extends React.HTMLAttributes<HTMLDivElement> {
   labId: String;
@@ -89,7 +97,7 @@ export function DeviceArtwork({
                 className={cn(
                   "h-auto w-auto object-cover transition-all hover:scale-105",
                   aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-square"
-                )}
+                )} 
               />
             )}
           </div>
@@ -97,20 +105,38 @@ export function DeviceArtwork({
         {!inactiveDevice && (
           <ContextMenuContent className="w-40">
             <ContextMenuItem onClick={() => router.push(`/${labId}/monitoring/${device?.id}`)}>
-              Monitor
+              <Search className="mr-2 h-4 w-4" />
+              Inspect
             </ContextMenuItem>
-            <ContextMenuItem>Shutdown (beta)</ContextMenuItem>
-            <ContextMenuItem>Bootup (beta)</ContextMenuItem>
+            <ContextMenuItem
+              onClick={() => {
+                if (socket) {
+                  socket.emit("reboot", { deviceId: device?.id });
+                }
+              }}>
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Restart
+            </ContextMenuItem>
+            <ContextMenuItem onClick={() => {
+              if (socket) {
+                socket.emit("shutdown", { deviceId: device?.id });
+              }
+            }}>
+              <Power className="mr-2 h-4 w-4" />
+              Shutdown
+            </ContextMenuItem>
             <ContextMenuSeparator />
-            <ContextMenuItem>Screenshot</ContextMenuItem>
-            <ContextMenuItem onClick={() => router.push(`/${labId}/monitoring/${device?.id}/activitylogs`)}>
+            <ContextMenuItem 
+            onClick={() => router.push(`/${labId}/monitoring/${device?.id}/activitylogs`)}>
+              <ClipboardList className="mr-2 h-4 w-4" />
               View Activity Logs
             </ContextMenuItem>
-            <ContextMenuItem>View Power Log</ContextMenuItem>
+          
             <ContextMenuSeparator />
-            <ContextMenuItem>Restrict</ContextMenuItem>
-            <ContextMenuItem>Block</ContextMenuItem>
-            <ContextMenuItem onClick={handleLogout}>Logout</ContextMenuItem>
+            <ContextMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </ContextMenuItem>
           </ContextMenuContent>
         )}
       </ContextMenu>

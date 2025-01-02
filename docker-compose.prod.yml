@@ -53,6 +53,7 @@ services:
       # - /usr/src/app/node_modules
     ports:
       - "4000:4000"
+      - "9001:9001"
     expose:
       # internal ports
       - "4000"

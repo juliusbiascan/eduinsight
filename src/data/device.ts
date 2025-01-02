@@ -77,3 +77,21 @@ export const getDeviceUserFullnameById = async (userId: string) => {
     return null
   }
 }
+
+export const getDevicesList = async (labId: string, dateRange: DateRange) => {
+  try {
+    const devices = await db.device.findMany({
+      where: {
+        labId,
+        createdAt: {
+          gte: dateRange?.from,
+          lte: dateRange?.to,
+        },
+      },
+      
+    });
+    return devices;
+  } catch {
+    return [];
+  }
+};

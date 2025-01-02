@@ -121,6 +121,7 @@ export async function getHourlyUsageStats(labId: string, dateRange: DateRange) {
 }
 
 export async function getDevicePerformanceStats(labId: string, dateRange: DateRange) {
+  // First get activity logs grouped by deviceId
   const result = await db.activityLogs.groupBy({
     by: ['deviceId'],
     where: {
@@ -138,9 +139,26 @@ export async function getDevicePerformanceStats(labId: string, dateRange: DateRa
     },
   });
 
+  // Then get all devices to map names
+  const devices = await db.device.findMany({
+    where: {
+      labId,
+      id: {
+        in: result.map(r => r.deviceId)
+      }
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  const deviceMap = new Map(devices.map(device => [device.id, device.name]));
+
   return result.map((device) => ({
     deviceId: device.deviceId,
-    cpu: Math.random() * 100, // Simulated CPU usage
+    name: deviceMap.get(device.deviceId) || `Device ${device.deviceId}`,
+    cpu: Math.random() * 100,
     memory: device._avg.memoryUsage || 0,
     uptime: device._count.title,
   }));

@@ -1,8 +1,8 @@
 import React from "react";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
 import { db } from "@/lib/db";
-import Navbar from "./components/navbar";
+import Navbar from "../../../components/navbar";
 import { SiteFooter } from "@/components/ui/site-footer";
 
 interface DashboardLayoutProps {
@@ -11,10 +11,19 @@ interface DashboardLayoutProps {
 }
 
 export default async function DashboardLayout({ children, params }: DashboardLayoutProps) {
-  // Check if user is authenticated
   const session = await auth();
   if (!session) {
     redirect("/auth/login");
+  }
+
+  const user = await db.user.findUnique({
+    where: {
+      id: session.user.id
+    }
+  });
+
+  if(!user) {
+    await signOut({ redirectTo: "/" });
   }
 
   // Fetch the laboratory for the current user
@@ -25,14 +34,13 @@ export default async function DashboardLayout({ children, params }: DashboardLay
     },
   });
 
-  // Redirect if laboratory not found
   if (!lab) {
     redirect("/");
   }
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <Navbar />
+      <Navbar user={user} />
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </div>

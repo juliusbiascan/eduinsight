@@ -15,10 +15,12 @@ const ActivityLogsPage = async ({
     redirect("/auth/login")
   }
 
-
   const activeDeviceUser = await db.activeDeviceUser.findFirst({
     where: {
       deviceId: params.devId,
+    },
+    include: {
+      user: true, // Include user details
     }
   })
 
@@ -38,7 +40,8 @@ const ActivityLogsPage = async ({
         <ActivityLogsClient
           userId={activeDeviceUser.userId}
           deviceId={activeDeviceUser.deviceId}
-          labId={activeDeviceUser.labId} />
+          labId={activeDeviceUser.labId}
+          user={activeDeviceUser.user} />
       </div>
     </div>
   );

@@ -3,13 +3,26 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Heading } from "@/components/ui/heading"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ActivityLogs, ActiveUserLogs, DeviceUser, Device } from "@prisma/client"
-import { format } from "date-fns"
+import { ActiveUserLogs, DeviceUser, Device } from "@prisma/client"
+import { format } from "date-fns" // Removed formatDuration
+import { formatDuration } from "@/lib/utils" // Added import from utils
 import { Activity, Clock, Monitor } from "lucide-react"
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible" // Added Collapsible imports
+
+interface Breakdown {
+  title: string;
+  time: number;
+  timestamp: string; // Added timestamp to match data structure
+  subActivity: {
+    title: string;
+    time: number;
+    timestamp: string; // Added timestamp if subactivities require it
+  }[];
+}
 
 interface ActivityLogsClientProps {
   user: DeviceUser;
-  activityLogs: ActivityLogs[];
+  breakdown: Breakdown[]; // Changed from activityLogs
   activeUserLogs: (ActiveUserLogs & {
     device: Device | null
   })[];
@@ -17,9 +30,10 @@ interface ActivityLogsClientProps {
 
 export const ActivityLogsClient = ({
   user,
-  activityLogs,
-  activeUserLogs
+  breakdown, // Changed from activityLogs
+  activeUserLogs,
 }: ActivityLogsClientProps) => {
+  
   return (
     <div className="space-y-4">
       <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
@@ -43,26 +57,35 @@ export const ActivityLogsClient = ({
             <Clock className="h-4 w-4 mr-2" />
             Session History
           </TabsTrigger>
+          
         </TabsList>
 
         <TabsContent value="activity" className="space-y-4">
           <Card>
             <CardContent className="p-6">
-              {activityLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="flex items-center justify-between p-4 border-b last:border-0"
-                >
-                  <div className="space-y-1">
-                    <p className="font-medium">{log.title}</p>
-                    <p className="text-sm text-gray-500">Memory Usage: {log.memoryUsage}MB</p>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {format(new Date(log.createdAt), 'PPpp')}
-                  </div>
-                </div>
+              {breakdown.map((activity, index) => ( // Added index for unique key
+                <Collapsible key={`${activity.title}-${index}`} className="mb-4">
+                  <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
+                    <p className="font-bold">{activity.title}</p>
+                    <span>{formatDuration(activity.time)} minutes</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    {activity.subActivity.map((sub, subIndex) => (
+                      <div key={`${sub.title}-${subIndex}`} className="ml-4">
+                        <p>{sub.title} - {formatDuration(sub.time)} minutes</p>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(sub.timestamp).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                          })}
+                        </span>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
               ))}
-              {activityLogs.length === 0 && (
+              {breakdown.length === 0 && (
                 <p className="text-center text-muted-foreground">No activity logs found</p>
               )}
             </CardContent>

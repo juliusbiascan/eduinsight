@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { redirect } from "next/navigation"
 import { ActivityLogsClient } from "./components/client"
+import { formatActivities } from "@/data/activity"
 
 interface ActivityLogsPageProps {
   params: {
@@ -20,7 +21,7 @@ const ActivityLogsPage = async ({ params }: ActivityLogsPageProps) => {
   const user = await db.deviceUser.findUnique({
     where: {
       id: params.userId,
-    }
+    },
   })
 
   if (!user) {
@@ -28,8 +29,8 @@ const ActivityLogsPage = async ({ params }: ActivityLogsPageProps) => {
   }
 
   // Fetch both activity logs and active user logs
-  const [activityLogs, activeUserLogs] = await Promise.all([
-    db.activityLogs.findMany({
+  const [breakdown, activeUserLogs] = await Promise.all([
+    formatActivities(await db.activityLogs.findMany({
       where: {
         userId: params.userId,
         labId: params.labId,
@@ -37,7 +38,7 @@ const ActivityLogsPage = async ({ params }: ActivityLogsPageProps) => {
       orderBy: {
         createdAt: 'desc'
       }
-    }),
+    })), // Fetch and format activities into breakdown
     db.activeUserLogs.findMany({
       where: {
         userId: params.userId,
@@ -57,7 +58,7 @@ const ActivityLogsPage = async ({ params }: ActivityLogsPageProps) => {
       <div className="flex-1 p-8 pt-6 space-y-4">
         <ActivityLogsClient 
           user={user}
-          activityLogs={activityLogs}
+          breakdown={breakdown} // Passed breakdown instead of activityLogs
           activeUserLogs={activeUserLogs}
         />
       </div>

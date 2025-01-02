@@ -10,7 +10,11 @@ import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { BeakerIcon, SparklesIcon } from '@heroicons/react/24/solid';
 
-const Navbar = async () => {
+interface NavbarProps {
+  user: any;
+}
+
+const Navbar = async ({ user }: NavbarProps) => {
   const session = await auth();
   if (!session) redirect("/auth/login");
 
@@ -22,7 +26,7 @@ const Navbar = async () => {
         <div className="flex h-20 items-center justify-between">
           <NavbarLeft labs={labs} />
           <MainNav className="hidden lg:flex mx-6" />
-          <NavbarRight labs={labs} />
+          <NavbarRight labs={labs} user={user} />
         </div>
       </div>
     </nav>
@@ -49,10 +53,10 @@ const LogoWithSparkle = () => (
   </div>
 );
 
-const NavbarRight = ({ labs }: { labs: any }) => (
+const NavbarRight = ({ labs, user }: { labs: any, user: any }) => (
   <div className="flex items-center space-x-4">
     <ThemeToggle />
-    < UserButton/>
+    <UserButton user={user} />
     <BeakerIcon className="h-6 w-6 text-[#C9121F] animate-bounce" />
     <MobileNav>
       <LabSwitcher items={labs} className="mt-4" />

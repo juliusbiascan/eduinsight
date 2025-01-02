@@ -87,3 +87,26 @@ export const getAllDeviceUser = async (labId: string) => {
   }
 }
 
+export const getUsersList = async (labId: string, dateRange: DateRange) => {
+  try {
+    const users = await db.deviceUser.findMany({
+      where: {
+        labId,
+        createdAt: {
+          gte: dateRange?.from,
+          lte: dateRange?.to,
+        },
+      },
+      select: {
+        id: true,
+        firstName: true, // Ensure firstName is selected
+        lastName: true,  // Ensure lastName is selected
+        role: true,
+      },
+    });
+    return users;
+  } catch {
+    return [];
+  }
+};
+

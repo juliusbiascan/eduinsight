@@ -67,29 +67,33 @@ const SettingsPage = () => {
 
   return (
     <div className="flex-col">
-      <div className="w-3/4 flex-1 p-8 pt-6 space-y-4">
-        <Card className="">
-          <CardHeader>
-            <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <Card className="w-full max-w-3xl mx-auto">
+          <CardHeader className="space-y-1">
+            <h2 className="text-2xl font-semibold tracking-tight">Account Settings</h2>
+            <p className="text-sm text-muted-foreground">
+              Manage your account settings and preferences
+            </p>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form
-                className="space-y-6 h-5/6"
+                className="space-y-8"
                 onSubmit={form.handleSubmit(onSubmit)}
               >
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Name</FormLabel>
+                        <FormLabel className="text-sm font-medium">Name</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             placeholder="John Doe"
                             disabled={isPending}
+                            className="w-full max-w-md"
                           />
                         </FormControl>
                         <FormMessage />
@@ -97,62 +101,68 @@ const SettingsPage = () => {
                     )}
                   />
                   {user?.isOAuth === false && (
-                    <>
+                    <div className="space-y-6">
                       <FormField
                         control={form.control}
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel className="text-sm font-medium">Email</FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 placeholder="john.doe@example.com"
                                 type="email"
                                 disabled={isPending}
+                                className="w-full max-w-md"
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="******"
-                                type="password"
-                                disabled={isPending}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="newPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>New Password</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                placeholder="******"
-                                type="password"
-                                disabled={isPending}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </>
+                      <div className="space-y-6 border-t pt-6">
+                        <h3 className="text-lg font-medium">Change Password</h3>
+                        <FormField
+                          control={form.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Current Password</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="******"
+                                  type="password"
+                                  disabled={isPending}
+                                  className="w-full max-w-md"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="newPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">New Password</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="******"
+                                  type="password"
+                                  disabled={isPending}
+                                  className="w-full max-w-md"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   )}
 
                   {user?.isOAuth === false && (
@@ -160,10 +170,10 @@ const SettingsPage = () => {
                       control={form.control}
                       name="isTwoFactorEnabled"
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                          <div className="space-y-0.5">
-                            <FormLabel>Two Factor Authentication</FormLabel>
-                            <FormDescription>
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                          <div className="space-y-1">
+                            <FormLabel className="text-sm font-medium">Two Factor Authentication</FormLabel>
+                            <FormDescription className="text-sm text-muted-foreground">
                               Enable two factor authentication for your account
                             </FormDescription>
                           </div>
@@ -184,8 +194,9 @@ const SettingsPage = () => {
                 <Button
                   disabled={isPending}
                   type="submit"
+                  className="w-full max-w-md"
                 >
-                  Save
+                  Save changes
                 </Button>
               </form>
             </Form>
@@ -193,7 +204,6 @@ const SettingsPage = () => {
         </Card>
       </div>
     </div>
-
   );
 }
 

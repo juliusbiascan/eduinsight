@@ -1,31 +1,50 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { getTotalDevices } from "@/data/device";
-import { getActiveCount, getStudentCount, getTeacherCount } from "@/actions/staff";
-import { getAllDeviceUserCount } from "@/data/user";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { getDevicesList, getTotalDevices } from "@/data/device";
+import {
+  getActiveCount,
+  getStudentCount,
+  getTeacherCount,
+} from "@/actions/staff";
+import { getAllDeviceUserCount, getUsersList } from "@/data/user";
 import { getGraphLogins, getRecentLogins } from "@/data/get-graph-count";
 import { DateRange } from "react-day-picker";
-import { addDays, format } from 'date-fns';
+import { addDays, format } from "date-fns";
 import { getPreviousStats } from "@/data/stats";
 import { CalendarDateRangePicker } from "@/components/date-range-picker";
 import { Button } from "@/components/ui/button";
-import { Rainbow, Download, Activity, Laptop, TrendingUp, Users, Heart, Sparkles, Frown } from "lucide-react";
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import {
+  Rainbow,
+  Download,
+  Activity,
+  Laptop,
+  TrendingUp,
+  Users,
+  Heart,
+  Sparkles,
+  Frown,
+} from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RecentUsers, RecentUsersType } from "../../../../components/recent-users";
+import {
+  RecentUsers,
+  RecentUsersType,
+} from "../../../../components/recent-users";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnalyticsTabs } from "./analytics-tabs";
 import { Overview } from "../../../../components/overview";
-import { StatsCard } from '../../../../components/stats-card';
-import { DashboardReport } from './dashboard-report';
-import { RadialChart } from '@/components/radial-chart';
-import { useSocket } from '@/providers/socket-provider';
-import { LatencyGraph } from '@/components/latency-graph';
-import { useTheme } from 'next-themes'; // Import useTheme from next-themes
-import { Heading } from '@/components/ui/heading';
+import { StatsCard } from "../../../../components/stats-card";
+import { DashboardReport } from "./dashboard-report";
+import { RadialChart } from "@/components/radial-chart";
+import { useSocket } from "@/providers/socket-provider";
+import { LatencyGraph } from "@/components/latency-graph";
+import { Heading } from "@/components/ui/heading";
+import { Device, DeviceUser } from "@prisma/client";
 
-interface DashboardPageProps { params: { labId: string; }; }
+interface DashboardPageProps {
+  params: { labId: string };
+}
 
 interface GraphData {
   name: string;
@@ -56,10 +75,11 @@ interface DashboardData {
   };
   studentCount: number;
   teacherCount: number;
+  devices: Device[];
+  users: Array<{ id: string; firstName: string; lastName: string; role: string }>;
 }
 
 export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
-  
   const { socket, isConnected } = useSocket();
 
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -83,54 +103,67 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
     },
     studentCount: 0,
     teacherCount: 0,
-   
+    devices: [],
+    users: [],
   });
 
-  const [latencyHistory, setLatencyHistory] = useState<Array<{ time: Date; value: number }>>([]);
+  const [latencyHistory, setLatencyHistory] = useState<
+    Array<{ time: Date; value: number }>
+  >([]);
   const [latency, setLatency] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
-  const fetchData = useCallback(async (newDateRange: DateRange) => {
-    const [
-      allDevices,
-      activeCount,
-      allUser,
-      graphLogin,
-      recentLogin,
-      previousStats,
-      studentCount,
-      teacherCount,
-    ] = await Promise.all([
-      getTotalDevices(params.labId, newDateRange),
-      getActiveCount(params.labId, newDateRange),
-      getAllDeviceUserCount(params.labId, newDateRange),
-      getGraphLogins(params.labId, newDateRange),
-      getRecentLogins(params.labId, newDateRange),
-      getPreviousStats(params.labId, newDateRange),
-      getStudentCount(params.labId, newDateRange),
-      getTeacherCount(params.labId, newDateRange),
-     
-    ]);
+  const fetchData = useCallback(
+    async (newDateRange: DateRange) => {
+      setLoading(true);
+      const [
+        allDevices,
+        activeCount,
+        allUser,
+        graphLogin,
+        recentLogin,
+        previousStats,
+        studentCount,
+        teacherCount,
+        devicesList, // Fetch devices list
+        usersList, // Fetch users list
+      ] = await Promise.all([
+        getTotalDevices(params.labId, newDateRange),
+        getActiveCount(params.labId, newDateRange),
+        getAllDeviceUserCount(params.labId, newDateRange),
+        getGraphLogins(params.labId, newDateRange),
+        getRecentLogins(params.labId, newDateRange),
+        getPreviousStats(params.labId, newDateRange),
+        getStudentCount(params.labId, newDateRange),
+        getTeacherCount(params.labId, newDateRange),
+        getDevicesList(params.labId, newDateRange), // Ensure this function exists
+        getUsersList(params.labId, newDateRange), // Ensure this function exists
+      ]);
 
-    setData({
-      allDevices: allDevices || 0,
-      activeCount: activeCount || 0,
-      allUser: allUser || 0,
-      graphLogin: graphLogin || [],
-      recentLogin: recentLogin || [],
-      previousStats: previousStats || {
-        totalLogins: 0,
-        totalUsers: 0,
-        totalDevices: 0,
-        activeNow: 0,
-        studentCount: 0,
-        teacherCount: 0,
-    
-      },
-      studentCount: studentCount || 0,
-      teacherCount: teacherCount || 0,
-    });
-  }, [params.labId]);
+      setData({
+        allDevices: allDevices || 0,
+        activeCount: activeCount || 0,
+        allUser: allUser || 0,
+        graphLogin: graphLogin || [],
+        recentLogin: recentLogin || [],
+        previousStats: previousStats || {
+          totalLogins: 0,
+          totalUsers: 0,
+          totalDevices: 0,
+          activeNow: 0,
+          studentCount: 0,
+          teacherCount: 0,
+        },
+        studentCount: studentCount || 0,
+        teacherCount: teacherCount || 0,
+        devices: devicesList || [],
+        users: usersList || [],
+      });
+      setLoading(false);
+    },
+    [params.labId]
+  );
 
   useEffect(() => {
     fetchData(dateRange);
@@ -140,13 +173,16 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
     if (socket && isConnected) {
       const interval = setInterval(() => {
         const start = Date.now();
-        socket.emit('ping');
-        socket.on('pong', () => {
+        socket.emit("ping");
+        socket.on("pong", () => {
           const currentLatency = Date.now() - start;
           setLatency(currentLatency);
           setLastUpdated(new Date());
-          setLatencyHistory(prev => {
-            const newHistory = [...prev, { time: new Date(), value: currentLatency }];
+          setLatencyHistory((prev) => {
+            const newHistory = [
+              ...prev,
+              { time: new Date(), value: currentLatency },
+            ];
             return newHistory.slice(-20); // Keep last 20 measurements
           });
         });
@@ -154,18 +190,34 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
 
       return () => {
         clearInterval(interval);
-        socket.off('pong');
+        socket.off("pong");
       };
     }
   }, [socket, isConnected]);
 
-  const formattedRecentLogin: RecentUsersType[] = useMemo(() =>
-    data.recentLogin.map((item) => ({
-      id: item.id,
-      labId: item.labId,
-      userId: item.userId,
-      createdAt: new Date(item.createdAt), // Ensure proper Date object
-    })), [data.recentLogin]);
+  useEffect(() => {
+    if (socket && isConnected) {
+      socket.on("updateData", (newData: DashboardData) => {
+        setData(newData);
+        setLastUpdated(new Date());
+      });
+
+      return () => {
+        socket.off("updateData");
+      };
+    }
+  }, [socket, isConnected]);
+
+  const formattedRecentLogin: RecentUsersType[] = useMemo(
+    () =>
+      data.recentLogin.map((item) => ({
+        id: item.id,
+        labId: item.labId,
+        userId: item.userId,
+        createdAt: new Date(item.createdAt), // Ensure proper Date object
+      })),
+    [data.recentLogin]
+  );
 
   const handleDateRangeChange = (newRange: DateRange | undefined) => {
     if (newRange && newRange.from && newRange.to) {
@@ -180,9 +232,23 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
       totalUsers: data.allUser,
       totalDevices: data.allDevices,
       activeNow: data.activeCount,
+      studentCount: data.studentCount,
+      teacherCount: data.teacherCount,
+      devices: data.devices,
+      users: data.users,
       dateRange,
     };
-  }, [data.recentLogin.length, data.allUser, data.allDevices, data.activeCount, dateRange]);
+  }, [
+    data.recentLogin.length,
+    data.allUser,
+    data.allDevices,
+    data.activeCount,
+    data.studentCount,
+    data.teacherCount,
+    data.devices,
+    data.users,
+    dateRange,
+  ]);
 
   const calculateTrend = (current: number, previous: number) => {
     if (previous === 0) return current > 0 ? 100 : 0;
@@ -211,11 +277,15 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
                 />
                 <PDFDownloadLink
                   document={<DashboardReport data={generateReportData()} />}
-                  fileName={`dashboard-report-${format(new Date(), 'yyyy-MM-dd')}.pdf`}
+                  fileName={`dashboard-report-${format(
+                    new Date(),
+                    "yyyy-MM-dd"
+                  )}.pdf`}
                 >
                   <Button
                     size="sm"
                     className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8"
+                    disabled={loading}
                   >
                     <Download className="h-4 w-4 mr-1" />
                     Download Report
@@ -230,60 +300,83 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
           <StatsCard
             title="Total Logins"
             value={data.recentLogin.length}
-            icon={<TrendingUp className="h-4 w-4" style={{ color: '#C9121F' }} />}
-            trend={calculateTrend(data.recentLogin.length, data.previousStats.totalLogins)}
-
+            icon={
+              <TrendingUp className="h-4 w-4" style={{ color: "#C9121F" }} />
+            }
+            trend={calculateTrend(
+              data.recentLogin.length,
+              data.previousStats.totalLogins
+            )}
           />
           <StatsCard
             title="Total Users"
             value={data.allUser}
-            icon={<Users className="h-4 w-4" style={{ color: '#1A1617' }} />}
+            icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
             trend={calculateTrend(data.allUser, data.previousStats.totalUsers)}
-
           />
           <StatsCard
             title="Total Devices"
             value={data.allDevices}
-            icon={<Laptop className="h-4 w-4" style={{ color: '#1A1617' }} />}
-            trend={calculateTrend(data.allDevices, data.previousStats.totalDevices)}
-
+            icon={<Laptop className="h-4 w-4" style={{ color: "#1A1617" }} />}
+            trend={calculateTrend(
+              data.allDevices,
+              data.previousStats.totalDevices
+            )}
           />
-         
 
           <div className="col-span-full grid gap-4 grid-cols-1 sm:grid-cols-3">
             <StatsCard
               title="Students"
               value={data.studentCount}
-              icon={<Users className="h-4 w-4" style={{ color: '#1A1617' }} />}
-              trend={calculateTrend(data.studentCount, data.previousStats.studentCount)}
+              icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
+              trend={calculateTrend(
+                data.studentCount,
+                data.previousStats.studentCount
+              )}
             />
             <StatsCard
               title="Teachers"
               value={data.teacherCount}
-              icon={<Users className="h-4 w-4" style={{ color: '#1A1617' }} />}
-              trend={calculateTrend(data.teacherCount, data.previousStats.teacherCount)}
+              icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
+              trend={calculateTrend(
+                data.teacherCount,
+                data.previousStats.teacherCount
+              )}
             />
             <StatsCard
-            title="Active Now"
-            value={data.activeCount}
-            icon={<Activity className="h-4 w-4" style={{ color: '#1A1617' }} />}
-            trend={calculateTrend(data.activeCount, data.previousStats.activeNow)}
-
-          />
+              title="Active Now"
+              value={data.activeCount}
+              icon={
+                <Activity className="h-4 w-4" style={{ color: "#1A1617" }} />
+              }
+              trend={calculateTrend(
+                data.activeCount,
+                data.previousStats.activeNow
+              )}
+            />
           </div>
 
           <div className="col-span-full grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <Card className='overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-xl transition-all duration-300'>
+            <Card className="overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-xl transition-all duration-300">
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <Activity className="h-4 w-4 mr-2" style={{ color: '#C9121F' }} />
+                      <Activity
+                        className="h-4 w-4 mr-2"
+                        style={{ color: "#C9121F" }}
+                      />
                       Server Status
                     </div>
                     <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span className="text-sm">{isConnected ? 'Online' : 'Offline'}</span>
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          isConnected ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      />
+                      <span className="text-sm">
+                        {isConnected ? "Online" : "Offline"}
+                      </span>
                     </div>
                   </div>
                 </CardTitle>
@@ -292,8 +385,12 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
                 <div className="space-y-4">
                   <div className="flex flex-col space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Current Latency</span>
-                      <span className="font-medium">{latency ? `${latency}ms` : 'N/A'}</span>
+                      <span className="text-muted-foreground">
+                        Current Latency
+                      </span>
+                      <span className="font-medium">
+                        {latency ? `${latency}ms` : "N/A"}
+                      </span>
                     </div>
                     <div className="h-[120px]">
                       <LatencyGraph data={latencyHistory} />
@@ -303,16 +400,20 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
               </CardContent>
             </Card>
 
-            <Card className='overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-xl transition-all duration-300'>
-
+            <Card className="overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-xl transition-all duration-300">
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <Laptop className="h-4 w-4 mr-2" style={{ color: '#C9121F' }} />
+                      <Laptop
+                        className="h-4 w-4 mr-2"
+                        style={{ color: "#C9121F" }}
+                      />
                       Device Status
                     </div>
-                    <span className="text-sm">{data.activeCount} / {data.allDevices} active</span>
+                    <span className="text-sm">
+                      {data.activeCount} / {data.allDevices} active
+                    </span>
                   </div>
                 </CardTitle>
               </CardHeader>
@@ -320,8 +421,16 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
                 <div className="h-[120px]">
                   <RadialChart
                     data={[
-                      { name: 'Active', value: data.activeCount, color: '#10B981' },
-                      { name: 'Inactive', value: data.allDevices - data.activeCount, color: '#6B7280' },
+                      {
+                        name: "Active",
+                        value: data.activeCount,
+                        color: "#10B981",
+                      },
+                      {
+                        name: "Inactive",
+                        value: data.allDevices - data.activeCount,
+                        color: "#6B7280",
+                      },
                     ]}
                   />
                 </div>
@@ -344,7 +453,6 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
             >
               Analytics
             </TabsTrigger>
-
           </TabsList>
 
           <TabsContent value="overview">
@@ -362,7 +470,7 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <Card className="bg</TabsContent>-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
+            <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
               <CardContent className="p-4">
                 <AnalyticsTabs labId={params.labId} dateRange={dateRange} />
               </CardContent>
@@ -386,4 +494,4 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
       </div>
     </div>
   );
-}
+};

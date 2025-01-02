@@ -1,12 +1,13 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useSocket } from '@/providers/socket-provider'
 import { Heading } from "@/components/ui/heading"
 import { Laptop, Zap, Users } from "lucide-react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { ApiList } from '@/components/ui/api-list'
-import { Device, ActiveDeviceUser, DeviceUser, ActiveUserLogs } from '@prisma/client'
+import { Device, ActiveDeviceUser, DeviceUser, ActiveUserLogs, PowerMonitoringLogs } from '@prisma/client'
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ interface DeviceWithActiveUsers extends Device {
   activeUserLogs: (ActiveUserLogs & {
     user: DeviceUser
   })[];
+  powerMonitoringLogs: PowerMonitoringLogs[];
 }
 
 interface DeviceClientProps {
@@ -32,12 +34,57 @@ interface DeviceClientProps {
 }
 
 export const DeviceClient: React.FC<DeviceClientProps> = ({
-  devices
+  devices: initialDevices
 }) => {
+  const [devices, setDevices] = useState<DeviceWithActiveUsers[]>(initialDevices);
   const [selectedDevice, setSelectedDevice] = useState<DeviceWithActiveUsers | null>(null);
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('refresh-power-status', () => {
+      // Fetch updated device data from your API
+      fetch(`/api/${devices[0]?.labId}/devices`)
+        .then(res => res.json())
+        .then(data => {
+          setDevices(data);
+        });
+    });
+
+    return () => {
+      socket.off('refresh-power-status');
+    };
+  }, [socket, devices]);
 
   const getDeviceStatus = (device: DeviceWithActiveUsers) => {
     return device.activeUsers.length > 0 ? 'online' : 'offline';
+  };
+
+  const getPowerState = (pm_status: string) => {
+    switch (pm_status) {
+      case "0": return "System Sleep";
+      case "1": return "System Resuming";
+      case "2": return "AC Power (Charging)";
+      case "3": return "Battery Power";
+      case "4": return "Shutting Down";
+      case "5": return "System Locked";
+      case "6": return "System Unlocked";
+      default: return "Unknown State";
+    }
+  };
+
+  const getPowerBadgeVariant = (pm_status: string): "default" | "secondary" | "success" | null | undefined => {
+    switch (pm_status) {
+      case "0": return "secondary";  // Sleep
+      case "1": return "secondary";  // Resuming
+      case "2": return "success";    // AC Power
+      case "3": return "secondary";  // Battery
+      case "4": return "default";    // Shutting Down
+      case "5": return "secondary";  // Locked
+      case "6": return "success";    // Unlocked
+      default: return "secondary";
+    }
   };
 
   return (
@@ -84,6 +131,18 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                 <div className="text-sm space-y-1 text-muted-foreground">
                   <p>Hostname: {device.devHostname}</p>
                   <p>Status: {device.isArchived ? 'Archived' : 'Active'}</p>
+                  {device.powerMonitoringLogs?.[0] && (
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant={getPowerBadgeVariant(device.powerMonitoringLogs[0].pm_status)}
+                      >
+                        {getPowerState(device.powerMonitoringLogs[0].pm_status)}
+                      </Badge>
+                      <span className="text-xs">
+                        Last updated: {new Date(device.powerMonitoringLogs[0].createdAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center mt-2">
                     <div className="flex items-center gap-2">
                       {device.activeUsers.length > 0 ? (
@@ -120,6 +179,7 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                           <TabsList>
                             <TabsTrigger value="active">Active Sessions</TabsTrigger>
                             <TabsTrigger value="history">Session History</TabsTrigger>
+                            
                           </TabsList>
                           <TabsContent value="active">
                             <div className="space-y-4">
@@ -185,6 +245,7 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
         ))}
       </div>
 
+      {/* Fix the incorrect Card closing tag and structure */}
       <Card className="bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
         <CardContent className="p-6">
           <div className="flex items-center space-x-3 mb-5">
