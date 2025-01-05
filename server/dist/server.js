@@ -134,6 +134,13 @@ io.on("connection", (socket) => {
     const startLiveQuiz = ({ deviceId, quizId, }) => {
         socket.to(deviceId).emit("start-live-quiz", { quizId });
     };
+    const handleScreenShareOffer = ({ senderId, receiverId, signalData, }) => {
+        socket.to(receiverId).emit("screen-share-offer", { senderId, signalData });
+    };
+    // Add this new handler
+    const handleScreenShareStopped = ({ senderId, receiverId, }) => {
+        socket.to(receiverId).emit("screen-share-stopped", { senderId });
+    };
     socket.on("start-live-quiz", startLiveQuiz);
     socket.on("screen-data", screenData);
     socket.on("join-server", joinServer);
@@ -151,6 +158,8 @@ io.on("connection", (socket) => {
     socket.on("upload-file-chunk", uploadFileChunk);
     socket.on("show-screen", showScreen);
     socket.on("hide-screen", hideScreen);
+    socket.on("screen-share-offer", handleScreenShareOffer);
+    socket.on("screen-share-stopped", handleScreenShareStopped);
     socket.on("ping", () => {
         socket.emit("pong");
     });

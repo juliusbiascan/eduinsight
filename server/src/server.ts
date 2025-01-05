@@ -247,6 +247,29 @@ io.on("connection", (socket) => {
     socket.to(deviceId).emit("start-live-quiz", { quizId });
   };
 
+  const handleScreenShareOffer = ({
+    senderId,
+    receiverId,
+    signalData,
+  }: {
+    senderId: string;
+    receiverId: string;
+    signalData: any;
+  }) => {
+    socket.to(receiverId).emit("screen-share-offer", { senderId, signalData });
+  };
+
+  // Add this new handler
+  const handleScreenShareStopped = ({
+    senderId,
+    receiverId,
+  }: {
+    senderId: string;
+    receiverId: string;
+  }) => {
+    socket.to(receiverId).emit("screen-share-stopped", { senderId });
+  };
+
   socket.on("start-live-quiz", startLiveQuiz);
   socket.on("screen-data", screenData);
   socket.on("join-server", joinServer);
@@ -264,6 +287,9 @@ io.on("connection", (socket) => {
   socket.on("upload-file-chunk", uploadFileChunk);
   socket.on("show-screen", showScreen);
   socket.on("hide-screen", hideScreen);
+  socket.on("screen-share-offer", handleScreenShareOffer);
+  socket.on("screen-share-stopped", handleScreenShareStopped);
+
   socket.on("ping", () => {
     socket.emit("pong");
   });

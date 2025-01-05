@@ -1,4 +1,16 @@
 services:
+  coturn:
+    image: coturn/coturn
+    container_name: coturn
+    ports:
+      - "3478:3478"
+      - "3478:3478/udp"
+      - "5349:5349"
+      - "49160-49200:49160-49200/udp"
+    volumes:
+      - ./docker/turnserver.conf:/etc/coturn/turnserver.conf
+    restart: always
+    
   eduinsight:
     container_name: nextjs
     build:
