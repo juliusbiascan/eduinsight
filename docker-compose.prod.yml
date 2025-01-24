@@ -64,5 +64,19 @@ services:
       NODE_ENV: development
       SERVER_PORT: 4000 
 
+  portainer: 
+    container_name: portainer
+    image: portainer/portainer
+    restart: always
+    stdin_open: true
+    tty: true
+    ports:
+      - "9000:9000/tcp"
+    environment:
+      - TZ=Asia/Manila
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/portainer:/data
+      
 volumes:
   mysql_data:

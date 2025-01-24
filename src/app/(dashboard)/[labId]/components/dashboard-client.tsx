@@ -155,25 +155,7 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
     return `${minutes}m`;
   };
 
-  if (!stats) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold mb-4">Server Information</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="p-4">
-              <CardHeader>
-                <Skeleton className="h-4 w-[150px]" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-[100px] w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
+
 
   const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
@@ -573,7 +555,9 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
       </div>
 
       <div className="w-full lg:w-1/4 pb-4">
-        <div className="space-y-4">
+
+        { stats ? (
+          <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Server Information</h2>
             <span className="text-sm text-muted-foreground">
@@ -726,7 +710,23 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
+        </div>) : (
+           <div className="space-y-4">
+           <h2 className="text-2xl font-bold mb-4">Server Information</h2>
+           <div className="grid gap-4 md:grid-cols-2">
+             {[1, 2, 3, 4].map((i) => (
+               <Card key={i} className="p-4">
+                 <CardHeader>
+                   <Skeleton className="h-4 w-[150px]" />
+                 </CardHeader>
+                 <CardContent>
+                   <Skeleton className="h-[100px] w-full" />
+                 </CardContent>
+               </Card>
+             ))}
+           </div>
+         </div>
+        ) }
         <Card className="h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
           <CardHeader className="pb-2 border-b">
             <CardTitle className="text-base flex items-center">
