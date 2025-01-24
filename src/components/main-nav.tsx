@@ -18,6 +18,11 @@ export function MainNav({
             active: pathname === `/${params.labId}`,
         },
         {
+            href: `/${params.labId}/server`,
+            label: 'Server',
+            active: pathname === `/${params.labId}/server`,
+        },
+        {
             href: `/${params.labId}/monitoring`,
             label: 'Monitoring',
             active: pathname === `/${params.labId}/monitoring`,

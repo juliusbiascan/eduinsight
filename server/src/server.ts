@@ -91,7 +91,31 @@ const io = new Server(httpServer, {
 
 let userCount = 0;
 
-const fileChunks: Record<string, { chunks: string[]; totalChunks: number }> = {};
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB limit
+const ALLOWED_FILE_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain",
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+];
+
+const fileChunks: Record<string, {
+  chunks: string[];
+  totalChunks: number;
+  targets: string[];
+  subjectName: string;
+  filename: string;
+  fileType: string;
+  fileSize: number;
+  receivedSize: number;
+}> = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -180,32 +204,102 @@ io.on("connection", (socket) => {
   };
 
   const uploadFileChunk = ({
-    deviceId,
+    targets,
     chunk,
     filename,
     subjectName,
     chunkIndex,
     totalChunks,
+    fileType,
+    fileSize,
   }: {
-    deviceId: string;
+    targets: string[];  // Array of device IDs to receive the file
     chunk: string;
     filename: string;
     subjectName: string;
     chunkIndex: number;
     totalChunks: number;
+    fileType: string;
+    fileSize: number;
   }) => {
-    if (!fileChunks[deviceId]) {
-      fileChunks[deviceId] = { chunks: [], totalChunks };
+    // Validate file type and size
+    if (!ALLOWED_FILE_TYPES.includes(fileType)) {
+      socket.emit("file-error", {
+        error: "File type not allowed",
+        filename,
+      });
+      return;
     }
-    fileChunks[deviceId].chunks[chunkIndex] = chunk;
 
-    if (fileChunks[deviceId].chunks.filter(Boolean).length === totalChunks) {
-      const fileContent = fileChunks[deviceId].chunks.join("");
-      const buffer = Buffer.from(fileContent, "base64");
-      socket
-        .to(deviceId)
-        .emit("upload-file-chunk", { file: buffer, filename, subjectName });
-      delete fileChunks[deviceId];
+    if (fileSize > MAX_FILE_SIZE) {
+      socket.emit("file-error", {
+        error: "File size exceeds limit",
+        filename,
+      });
+      return;
+    }
+
+    const fileId = `${filename}-${Date.now()}`; // Unique ID for this file transfer
+
+    if (!fileChunks[fileId]) {
+      fileChunks[fileId] = {
+        chunks: new Array(totalChunks),
+        totalChunks,
+        targets,
+        subjectName,
+        filename,
+        fileType,
+        fileSize,
+        receivedSize: 0,
+      };
+    }
+
+    fileChunks[fileId].chunks[chunkIndex] = chunk;
+    fileChunks[fileId].receivedSize += chunk.length;
+
+    // Send progress update
+    const progress = (fileChunks[fileId].receivedSize / fileSize) * 100;
+    targets.forEach((deviceId) => {
+      socket.to(deviceId).emit("file-progress", {
+        fileId,
+        filename,
+        progress: Math.round(progress),
+      });
+    });
+
+    // Check if all chunks are received
+    const allChunksReceived = fileChunks[fileId].chunks.every((chunk) => chunk !== undefined);
+
+    if (allChunksReceived) {
+      try {
+        const fileContent = fileChunks[fileId].chunks.join("");
+        const buffer = Buffer.from(fileContent, "base64");
+
+        // Send to each target device
+        targets.forEach((deviceId) => {
+          socket.to(deviceId).emit("upload-file-chunk", {
+            fileId,
+            file: buffer,
+            filename,
+            subjectName: fileChunks[fileId].subjectName,
+            fileType: fileChunks[fileId].fileType,
+          });
+        });
+
+        // Notify successful transfer
+        socket.emit("file-complete", {
+          filename,
+          targetCount: targets.length,
+        });
+      } catch (error) {
+        socket.emit("file-error", {
+          error: "Failed to process file",
+          filename,
+        });
+      } finally {
+        // Cleanup
+        delete fileChunks[fileId];
+      }
     }
   };
 

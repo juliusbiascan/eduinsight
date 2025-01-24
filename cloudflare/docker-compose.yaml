@@ -1,0 +1,17 @@
+networks:
+  frontend:
+    external: true
+  backend:
+    external: true
+
+services:
+  cloudflaretunnel:
+    container_name: cloudflaretunnel
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=$TUNNEL_TOKEN
+    command: tunnel --no-autoupdate run
+    networks:
+      - frontend
+      - backend

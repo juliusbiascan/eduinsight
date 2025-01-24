@@ -8,11 +8,17 @@ COPY package*.json ./
 COPY tsconfig*.json ./
 COPY tslint.json ./
 
-## build node_modules/
-RUN npm ci
+# Install dependencies
+RUN npm install
 
-## copy src files 
-COPY . . 
+# Copy source code
+COPY . .
+
+# Build TypeScript
+RUN npm run build
+
+# Install production dependencies only
+RUN npm ci
 
 ## bind the app to port 4000 mapped by the docker daemon 
 EXPOSE 4000
