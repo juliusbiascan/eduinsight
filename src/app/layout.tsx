@@ -35,7 +35,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={inter.className} suppressHydrationWarning={true}>
           <SocketProvider>
-            <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
               <ToasterProvider />
               <ModalProvider />
               {children}

@@ -91,7 +91,9 @@ const io = new Server(httpServer, {
 
 let userCount = 0;
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB limit
+const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB limit
+const CHUNK_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
 const ALLOWED_FILE_TYPES = [
   "application/pdf",
   "application/msword",
@@ -107,14 +109,15 @@ const ALLOWED_FILE_TYPES = [
 ];
 
 const fileChunks: Record<string, {
-  chunks: string[];
+  chunks: Array<string | undefined>;
   totalChunks: number;
+  receivedChunks: number;
   targets: string[];
   subjectName: string;
   filename: string;
   fileType: string;
   fileSize: number;
-  receivedSize: number;
+  lastUpdate: number;
 }> = {};
 
 io.on("connection", (socket) => {
@@ -222,60 +225,60 @@ io.on("connection", (socket) => {
     fileType: string;
     fileSize: number;
   }) => {
-    // Validate file type and size
-    if (!ALLOWED_FILE_TYPES.includes(fileType)) {
-      socket.emit("file-error", {
-        error: "File type not allowed",
-        filename,
+    try {
+      // Validate file type and size
+      if (!ALLOWED_FILE_TYPES.includes(fileType)) {
+        socket.emit("file-error", {
+          error: "File type not allowed",
+          filename,
+        });
+        return;
+      }
+
+      if (fileSize > MAX_FILE_SIZE) {
+        socket.emit("file-error", {
+          error: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`,
+          filename,
+        });
+        return;
+      }
+
+      const fileId = `${filename}-${Date.now()}`;
+
+      if (!fileChunks[fileId]) {
+        fileChunks[fileId] = {
+          chunks: new Array(totalChunks),
+          totalChunks,
+          receivedChunks: 0,
+          targets,
+          subjectName,
+          filename,
+          fileType,
+          fileSize,
+          lastUpdate: Date.now(),
+        };
+      }
+
+      if (!fileChunks[fileId].chunks[chunkIndex]) {
+        fileChunks[fileId].chunks[chunkIndex] = chunk;
+        fileChunks[fileId].receivedChunks++;
+        fileChunks[fileId].lastUpdate = Date.now();
+      }
+
+      // Send progress update
+      const progress = (fileChunks[fileId].receivedChunks / totalChunks) * 100;
+      targets.forEach((deviceId) => {
+        socket.to(deviceId).emit("file-progress", {
+          fileId,
+          filename,
+          progress: Math.round(progress),
+        });
       });
-      return;
-    }
 
-    if (fileSize > MAX_FILE_SIZE) {
-      socket.emit("file-error", {
-        error: "File size exceeds limit",
-        filename,
-      });
-      return;
-    }
+      // Check if all chunks received
+      if (fileChunks[fileId].receivedChunks === totalChunks) {
+        const buffer = Buffer.from(fileChunks[fileId].chunks.join(""), "base64");
 
-    const fileId = `${filename}-${Date.now()}`; // Unique ID for this file transfer
-
-    if (!fileChunks[fileId]) {
-      fileChunks[fileId] = {
-        chunks: new Array(totalChunks),
-        totalChunks,
-        targets,
-        subjectName,
-        filename,
-        fileType,
-        fileSize,
-        receivedSize: 0,
-      };
-    }
-
-    fileChunks[fileId].chunks[chunkIndex] = chunk;
-    fileChunks[fileId].receivedSize += chunk.length;
-
-    // Send progress update
-    const progress = (fileChunks[fileId].receivedSize / fileSize) * 100;
-    targets.forEach((deviceId) => {
-      socket.to(deviceId).emit("file-progress", {
-        fileId,
-        filename,
-        progress: Math.round(progress),
-      });
-    });
-
-    // Check if all chunks are received
-    const allChunksReceived = fileChunks[fileId].chunks.every((chunk) => chunk !== undefined);
-
-    if (allChunksReceived) {
-      try {
-        const fileContent = fileChunks[fileId].chunks.join("");
-        const buffer = Buffer.from(fileContent, "base64");
-
-        // Send to each target device
         targets.forEach((deviceId) => {
           socket.to(deviceId).emit("upload-file-chunk", {
             fileId,
@@ -286,22 +289,32 @@ io.on("connection", (socket) => {
           });
         });
 
-        // Notify successful transfer
         socket.emit("file-complete", {
           filename,
           targetCount: targets.length,
         });
-      } catch (error) {
-        socket.emit("file-error", {
-          error: "Failed to process file",
-          filename,
-        });
-      } finally {
-        // Cleanup
+
         delete fileChunks[fileId];
       }
+    } catch (error) {
+      console.error("Error in uploadFileChunk:", error);
+      socket.emit("file-error", {
+        error: "Internal server error",
+        filename,
+      });
     }
   };
+
+  // Add cleanup interval for stale transfers
+  setInterval(() => {
+    const now = Date.now();
+    Object.entries(fileChunks).forEach(([fileId, data]) => {
+      if (now - data.lastUpdate > CHUNK_TIMEOUT) { // 5 minutes timeout
+        delete fileChunks[fileId];
+        console.log(`Cleaned up stale transfer: ${fileId}`);
+      }
+    });
+  }, 60 * 1000); // Check every minute
 
   const showScreen = ({
     deviceId,
