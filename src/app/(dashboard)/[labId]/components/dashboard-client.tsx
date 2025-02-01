@@ -52,6 +52,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ServerStats } from "@/components/server-stats";
 
 interface ServerStats {
   hostname: string;
@@ -126,36 +127,30 @@ interface DashboardData {
 export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
   const { socket, isConnected } = useSocket();
 
-
   const [stats, setStats] = useState<ServerStats | null>(null);
+  const [statsError, setStatsError] = useState<string>();
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const response = await fetch('/api/server-info');
-      const data = await response.json();
-      setStats(data);
+      try {
+        setIsStatsLoading(true);
+        const response = await fetch('/api/server-info');
+        if (!response.ok) throw new Error('Failed to fetch server info');
+        const data = await response.json();
+        setStats(data);
+        setStatsError(undefined);
+      } catch (error) {
+        setStatsError(error instanceof Error ? error.message : 'Unknown error occurred');
+      } finally {
+        setIsStatsLoading(false);
+      }
     };
 
     fetchStats();
     const interval = setInterval(fetchStats, 5000);
     return () => clearInterval(interval);
   }, []);
-
-  const formatBytes = (bytes: number) => {
-    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-  };
-
-  const formatUptime = (seconds: number) => {
-    const days = Math.floor(seconds / (24 * 60 * 60));
-    const hours = Math.floor((seconds % (24 * 60 * 60)) / (60 * 60));
-    const minutes = Math.floor((seconds % (60 * 60)) / 60);
-    
-    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
-
-
 
   const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
@@ -332,106 +327,121 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 p-2 sm:p-4">
-      <div className="w-full lg:w-3/4 space-y-4">
-        <Card className="bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Rainbow className="w-8 h-8 text-[#C9121F]" />
-                <Heading
-                  title="Dashboard"
-                  description="Monitor lab activity and statistics"
-                  className="text-black dark:text-white"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <CalendarDateRangePicker
-                  value={dateRange}
-                  onChange={handleDateRangeChange}
-                />
-                <PDFDownloadLink
-                  document={<DashboardReport data={generateReportData()} />}
-                  fileName={`dashboard-report-${format(
-                    new Date(),
-                    "yyyy-MM-dd"
-                  )}.pdf`}
-                >
-                  <Button
-                    size="sm"
-                    className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8"
-                    disabled={loading}
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    Download Report
-                  </Button>
-                </PDFDownloadLink>
-              </div>
+    <div className="flex flex-col gap-4 p-2 sm:p-4">
+      {/* Header Card */}
+      <Card className="bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Rainbow className="w-8 h-8 text-[#C9121F]" />
+              <Heading
+                title="Dashboard"
+                description="Monitor lab activity and statistics"
+                className="text-black dark:text-white"
+              />
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex items-center space-x-2">
+              <CalendarDateRangePicker
+                value={dateRange}
+                onChange={handleDateRangeChange}
+              />
+              <PDFDownloadLink
+                document={<DashboardReport data={generateReportData()} />}
+                fileName={`dashboard-report-${format(
+                  new Date(),
+                  "yyyy-MM-dd"
+                )}.pdf`}
+              >
+                <Button
+                  size="sm"
+                  className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8"
+                  disabled={loading}
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Download Report
+                </Button>
+              </PDFDownloadLink>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <StatsCard
-            title="Total Logins"
-            value={data.recentLogin.length}
-            icon={
-              <TrendingUp className="h-4 w-4" style={{ color: "#C9121F" }} />
-            }
-            trend={calculateTrend(
-              data.recentLogin.length,
-              data.previousStats.totalLogins
-            )}
-          />
-          <StatsCard
-            title="Total Users"
-            value={data.allUser}
-            icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
-            trend={calculateTrend(data.allUser, data.previousStats.totalUsers)}
-          />
-          <StatsCard
-            title="Total Devices"
-            value={data.allDevices}
-            icon={<Laptop className="h-4 w-4" style={{ color: "#1A1617" }} />}
-            trend={calculateTrend(
-              data.allDevices,
-              data.previousStats.totalDevices
-            )}
-          />
-
-          <div className="col-span-full grid gap-4 grid-cols-1 sm:grid-cols-3">
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+        {/* Stats and Charts Section */}
+        <div className="xl:col-span-3 space-y-4">
+          {/* Main Stats Cards */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <StatsCard
-              title="Students"
-              value={data.studentCount}
-              icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
-              trend={calculateTrend(
-                data.studentCount,
-                data.previousStats.studentCount
-              )}
-            />
-            <StatsCard
-              title="Teachers"
-              value={data.teacherCount}
-              icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
-              trend={calculateTrend(
-                data.teacherCount,
-                data.previousStats.teacherCount
-              )}
-            />
-            <StatsCard
-              title="Active Now"
-              value={data.activeCount}
+              title="Total Logins"
+              value={data.recentLogin.length}
               icon={
-                <Activity className="h-4 w-4" style={{ color: "#1A1617" }} />
+                <TrendingUp className="h-4 w-4" style={{ color: "#C9121F" }} />
               }
               trend={calculateTrend(
-                data.activeCount,
-                data.previousStats.activeNow
+                data.recentLogin.length,
+                data.previousStats.totalLogins
               )}
+            />
+            <StatsCard
+              title="Total Users"
+              value={data.allUser}
+              icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
+              trend={calculateTrend(data.allUser, data.previousStats.totalUsers)}
+            />
+            <StatsCard
+              title="Total Devices"
+              value={data.allDevices}
+              icon={<Laptop className="h-4 w-4" style={{ color: "#1A1617" }} />}
+              trend={calculateTrend(
+                data.allDevices,
+                data.previousStats.totalDevices
+              )}
+            />
+
+            <div className="col-span-full grid gap-4 grid-cols-1 sm:grid-cols-3">
+              <StatsCard
+                title="Students"
+                value={data.studentCount}
+                icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
+                trend={calculateTrend(
+                  data.studentCount,
+                  data.previousStats.studentCount
+                )}
+              />
+              <StatsCard
+                title="Teachers"
+                value={data.teacherCount}
+                icon={<Users className="h-4 w-4" style={{ color: "#1A1617" }} />}
+                trend={calculateTrend(
+                  data.teacherCount,
+                  data.previousStats.teacherCount
+                )}
+              />
+              <StatsCard
+                title="Active Now"
+                value={data.activeCount}
+                icon={
+                  <Activity className="h-4 w-4" style={{ color: "#1A1617" }} />
+                }
+                trend={calculateTrend(
+                  data.activeCount,
+                  data.previousStats.activeNow
+                )}
+              />
+            </div>
+          </div>
+
+          {/* System Resources Section */}
+          <div className="grid gap-4 grid-cols-1">
+            <ServerStats 
+              stats={stats}
+              error={statsError}
             />
           </div>
 
-          <div className="col-span-full grid gap-4 grid-cols-1 sm:grid-cols-2">
+          {/* Status Cards */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <Card className="overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-xl transition-all duration-300">
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
@@ -512,232 +522,62 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
               </CardContent>
             </Card>
           </div>
-        </div>
 
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="bg-[#EAEAEB] dark:bg-[#1A1617] p-1">
-            <TabsTrigger
-              value="overview"
-              className="data-[state=active]:bg-[#C9121F] data-[state=active]:text-white"
-            >
-              Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="analytics"
-              className="data-[state=active]:bg-[#C9121F] data-[state=active]:text-white"
-            >
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
-            <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60 w-full">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center">
-                  <Heart className="h-4 w-4 text-[#C9121F] mr-2" />
-                  Login Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-2">
-                <Overview data={data.graphLogin} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-              <CardContent className="p-4">
-                <AnalyticsTabs labId={params.labId} dateRange={dateRange} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      <div className="w-full lg:w-1/4 pb-4">
-
-        { stats ? (
-          <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Server Information</h2>
-            <span className="text-sm text-muted-foreground">
-              Auto-refreshing every 5s
-            </span>
-          </div>
-
+          {/* Tabs Section */}
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="cpu">CPU</TabsTrigger>
-              <TabsTrigger value="memory">Memory</TabsTrigger>
+            <TabsList className="bg-[#EAEAEB] dark:bg-[#1A1617] p-1">
+              <TabsTrigger
+                value="overview"
+                className="data-[state=active]:bg-[#C9121F] data-[state=active]:text-white"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="analytics"
+                className="data-[state=active]:bg-[#C9121F] data-[state=active]:text-white"
+              >
+                Analytics
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      System Info
-                    </CardTitle>
-                    <Icons.server className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <dl className="space-y-2">
-                      <div className="flex justify-between">
-                        <dt className="font-medium">Uptime:</dt>
-                        <dd>{formatUptime(stats.uptime)}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="font-medium">Hostname:</dt>
-                        <dd>{stats.hostname}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="font-medium">Platform:</dt>
-                        <dd>
-                          {stats.platform} ({stats.distro})
-                        </dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="font-medium">Architecture:</dt>
-                        <dd>{stats.arch}</dd>
-                      </div>
-                    </dl>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      CPU Overview
-                    </CardTitle>
-                    <Icons.cpu className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">CPU Load</span>
-                          <span className="text-sm text-muted-foreground">
-                            {stats.cpuLoad.currentLoad.toFixed(1)}%
-                          </span>
-                        </div>
-                        <Progress value={stats.cpuLoad.currentLoad} />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm">{stats.cpuModel}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {stats.cores.physical} Physical /{" "}
-                          {stats.cores.logical} Logical Cores
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="cpu" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>CPU Cores Status</CardTitle>
+            <TabsContent value="overview">
+              <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60 w-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center">
+                    <Heart className="h-4 w-4 text-[#C9121F] mr-2" />
+                    Login Activity
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {stats.cpuLoad.coresLoad.map((load, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">
-                            Core {index + 1}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {load.toFixed(1)}% |{" "}
-                            {stats.temperature.cores[index]
-                              ? `${stats.temperature.cores[index]}°C`
-                              : "N/A"}
-                          </span>
-                        </div>
-                        <Progress value={load} />
-                      </div>
-                    ))}
-                  </div>
+                <CardContent className="p-2">
+                  <Overview data={data.graphLogin} />
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="memory" className="space-y-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle>Memory Usage</CardTitle>
-                  <Icons.memory className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Used Memory</span>
-                        <span className="text-sm text-muted-foreground">
-                          {formatBytes(stats.memory.used)} of{" "}
-                          {formatBytes(stats.memory.total)}
-                        </span>
-                      </div>
-                      <Progress
-                        value={(stats.memory.used / stats.memory.total) * 100}
-                      />
-                    </div>
-
-                    <Table>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">
-                            Free Memory
-                          </TableCell>
-                          <TableCell>
-                            {formatBytes(stats.memory.free)}
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">
-                            Active Memory
-                          </TableCell>
-                          <TableCell>
-                            {formatBytes(stats.memory.active)}
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </div>
+            <TabsContent value="analytics">
+              <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
+                <CardContent className="p-4">
+                  <AnalyticsTabs labId={params.labId} dateRange={dateRange} />
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
-        </div>) : (
-           <div className="space-y-4">
-           <h2 className="text-2xl font-bold mb-4">Server Information</h2>
-           <div className="grid gap-4 md:grid-cols-2">
-             {[1, 2, 3, 4].map((i) => (
-               <Card key={i} className="p-4">
-                 <CardHeader>
-                   <Skeleton className="h-4 w-[150px]" />
-                 </CardHeader>
-                 <CardContent>
-                   <Skeleton className="h-[100px] w-full" />
-                 </CardContent>
-               </Card>
-             ))}
-           </div>
-         </div>
-        ) }
-        <Card className="h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-          <CardHeader className="pb-2 border-b">
-            <CardTitle className="text-base flex items-center">
-              <Sparkles className="h-4 w-4 text-[#C9121F] mr-2" />
-              Recent Logins
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-2 h-[calc(100%-3.5rem)]">
-            <RecentUsers data={formattedRecentLogin} />
-          </CardContent>
-        </Card>
+        </div>
+
+        {/* Recent Logins Sidebar */}
+        <div className="xl:col-span-1">
+          <Card className="h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
+            <CardHeader className="pb-2 border-b">
+              <CardTitle className="text-base flex items-center">
+                <Sparkles className="h-4 w-4 text-[#C9121F] mr-2" />
+                Recent Logins
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-2 h-[calc(100%-3.5rem)]">
+              <RecentUsers data={formattedRecentLogin} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

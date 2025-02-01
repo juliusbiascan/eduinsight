@@ -1,5 +1,14 @@
 services:
- 
+  cloudflaretunnel:
+    container_name: cloudflaretunnel
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=eyJhIjoiOTI0MGY5M2ZkOGEzNzg1NTdhZmFhZjFkZTY3ZDcyNDYiLCJ0IjoiOTRlYmMxNmUtODExZS00M2ZiLTllYWQtZGIzNzE5YTY4YzZlIiwicyI6Ik1XRTNaamN5TW1JdE1qVm1NaTAwTVRnd0xUa3lOekF0TW1Sa1pqRmhOams1TldFeSJ9
+    command: tunnel --no-autoupdate run
+    networks:
+      - eduinsight_network
+
   eduinsight:
     container_name: nextjs
     build:
@@ -14,6 +23,8 @@ services:
       - mysql
     ports:
       - "3000:3000"
+    networks:
+      - eduinsight_network
 
   mysql:
     image: mysql:latest
@@ -29,6 +40,8 @@ services:
       - mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    networks:
+      - eduinsight_network
 
   nginx:
     image: nginx:latest
@@ -40,6 +53,8 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/ssl:/etc/nginx/ssl:ro
     restart: always
+    networks:
+      - eduinsight_network
 
   socket:
     container_name: socket
@@ -63,6 +78,8 @@ services:
     environment:
       NODE_ENV: development
       SERVER_PORT: 4000 
+    networks:
+      - eduinsight_network
 
   portainer: 
     container_name: portainer
@@ -77,6 +94,12 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/portainer:/data
+    networks:
+      - eduinsight_network
       
 volumes:
   mysql_data:
+
+networks:
+  eduinsight_network:
+    driver: bridge

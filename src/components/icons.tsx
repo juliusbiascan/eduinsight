@@ -26,6 +26,9 @@ import {
   X,
   Server,
   Cpu,
+  Activity,
+  Clock,
+  Network,
 } from "lucide-react"
 
 export const Icons = {
@@ -72,6 +75,7 @@ export const Icons = {
   check: Check,
   server: Server,
   cpu: Cpu,
+  activity: Activity,
   memory: ({ ...props }: LucideProps) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -90,4 +94,6 @@ export const Icons = {
       <path d="M14 14h4" />
     </svg>
   ),
+  clock: Clock,
+  network: Network,
 }

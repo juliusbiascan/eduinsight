@@ -25,8 +25,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const origin = useOrigin();
 
   useEffect(() => {
-    console.log('Connecting to server:', `https://${window.location.hostname}:4000`);
-    const socketInstance = initSocket(`https://${window.location.hostname}:4000`);
+    //console.log('Connecting to server:', `https://${window.location.hostname}:4000`);
+    //const socketInstance = initSocket(`https://${window.location.hostname}:4000`);
+    const socketInstance = initSocket(`https://socket.eduinsight.systems`);
 
     function onConnect() {
       console.log('Connected to server');
