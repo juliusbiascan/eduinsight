@@ -327,20 +327,20 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-2 sm:p-4">
+    <div className="flex flex-col gap-2 sm:gap-4 p-2 sm:p-4">
       {/* Header Card */}
       <Card className="bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+        <CardContent className="p-2 sm:p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center space-x-3">
-              <Rainbow className="w-8 h-8 text-[#C9121F]" />
+              <Rainbow className="w-6 h-6 sm:w-8 sm:h-8 text-[#C9121F]" />
               <Heading
                 title="Dashboard"
                 description="Monitor lab activity and statistics"
                 className="text-black dark:text-white"
               />
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full sm:w-auto gap-2">
               <CalendarDateRangePicker
                 value={dateRange}
                 onChange={handleDateRangeChange}
@@ -354,7 +354,7 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
               >
                 <Button
                   size="sm"
-                  className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8"
+                  className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8 w-full sm:w-auto"
                   disabled={loading}
                 >
                   <Download className="h-4 w-4 mr-1" />
@@ -367,11 +367,11 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
       </Card>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-2 sm:gap-4">
         {/* Stats and Charts Section */}
-        <div className="xl:col-span-3 space-y-4">
+        <div className="xl:col-span-3 space-y-2 sm:space-y-4">
           {/* Main Stats Cards */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-2 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <StatsCard
               title="Total Logins"
               value={data.recentLogin.length}
@@ -399,7 +399,7 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
               )}
             />
 
-            <div className="col-span-full grid gap-4 grid-cols-1 sm:grid-cols-3">
+            <div className="col-span-full grid gap-2 sm:gap-4 grid-cols-1 sm:grid-cols-3">
               <StatsCard
                 title="Students"
                 value={data.studentCount}
@@ -433,15 +433,15 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
           </div>
 
           {/* System Resources Section */}
-          <div className="grid gap-4 grid-cols-1">
-            <ServerStats 
+          <div className="grid gap-2 sm:gap-4 grid-cols-1">
+            <ServerStats
               stats={stats}
               error={statsError}
             />
           </div>
 
           {/* Status Cards */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+          <div className="grid gap-2 sm:gap-4 grid-cols-1 sm:grid-cols-2">
             <Card className="overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-xl transition-all duration-300">
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
@@ -455,9 +455,8 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          isConnected ? "bg-green-500" : "bg-red-500"
-                        }`}
+                        className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500"
+                          }`}
                       />
                       <span className="text-sm">
                         {isConnected ? "Online" : "Offline"}
@@ -524,39 +523,41 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
           </div>
 
           {/* Tabs Section */}
-          <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="bg-[#EAEAEB] dark:bg-[#1A1617] p-1">
+          <Tabs defaultValue="overview" className="space-y-2 sm:space-y-4">
+            <TabsList className="bg-[#EAEAEB] dark:bg-[#1A1617] p-1 w-full overflow-x-auto flex-nowrap">
               <TabsTrigger
                 value="overview"
-                className="data-[state=active]:bg-[#C9121F] data-[state=active]:text-white"
+                className="data-[state=active]:bg-[#C9121F] data-[state=active]:text-white flex-1"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger
                 value="analytics"
-                className="data-[state=active]:bg-[#C9121F] data-[state=active]:text-white"
+                className="data-[state=active]:bg-[#C9121F] data-[state=active]:text-white flex-1"
               >
                 Analytics
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
-              <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60 w-full">
+              <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center">
+                  <CardTitle className="text-sm sm:text-base flex items-center">
                     <Heart className="h-4 w-4 text-[#C9121F] mr-2" />
                     Login Activity
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-2">
-                  <Overview data={data.graphLogin} />
+                  <div className="h-[300px] sm:h-[400px]">
+                    <Overview data={data.graphLogin} />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
             <TabsContent value="analytics">
               <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-                <CardContent className="p-4">
+                <CardContent className="p-2 sm:p-4">
                   <AnalyticsTabs labId={params.labId} dateRange={dateRange} />
                 </CardContent>
               </Card>
@@ -566,9 +567,9 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
 
         {/* Recent Logins Sidebar */}
         <div className="xl:col-span-1">
-          <Card className="h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
+          <Card className="h-[500px] xl:h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
             <CardHeader className="pb-2 border-b">
-              <CardTitle className="text-base flex items-center">
+              <CardTitle className="text-sm sm:text-base flex items-center">
                 <Sparkles className="h-4 w-4 text-[#C9121F] mr-2" />
                 Recent Logins
               </CardTitle>

@@ -2,10 +2,12 @@
 
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 
 import { LoginSchema } from "@/schemas";
 import { Input } from "@/components/ui/input";
@@ -24,8 +26,14 @@ import { FormSuccess } from "@/components/form-success";
 import { login } from "@/actions/login";
 import { Icons } from "../icons";
 import { PasswordInput } from "../ui/password-input";
+import { Turnstile } from "next-turnstile";
 import React from "react";
 import Image from "next/image";
+
+const TurnstileWidget = dynamic(
+  () => import('../turnstile-widget'),
+  { ssr: false }
+);
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
@@ -33,6 +41,10 @@ export const LoginForm = () => {
   const urlError = searchParams.get("error") === "OAuthAccountNotLinked"
     ? "Email already in use with different provider!"
     : "";
+  const [turnstileStatus, setTurnstileStatus] = useState<
+    "success" | "error" | "expired" | "required"
+  >("required");
+  const turnstileRef = useRef<string>();
 
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [error, setError] = useState<string | undefined>("");
@@ -50,6 +62,11 @@ export const LoginForm = () => {
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     setError("");
     setSuccess("");
+
+    if (turnstileStatus !== "success") {
+      setError("Please verify you are not a robot");
+      return;
+    }
 
     startTransition(() => {
       login(values, callbackUrl)
@@ -76,15 +93,15 @@ export const LoginForm = () => {
     <CardWrapper
       headerLabel="Server Access"
       headerComponent={
-        <div className="flex items-center justify-center space-x-2">
+        <div className="flex items-center justify-center space-x-2 flex-wrap">
           <Image
             src="/passlogo-small.png"
             alt="PASS Logo"
-            width={48}
-            height={48}
-            className="rounded-full border-2 border-[#C9121F]"
+            width={40}
+            height={40}
+            className="rounded-full border-2 border-[#C9121F] sm:w-12 sm:h-12"
           />
-          <span className="text-2xl font-bold bg-gradient-to-r from-[#C9121F] to-[#1A1617] text-transparent bg-clip-text">
+          <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#C9121F] to-[#1A1617] text-transparent bg-clip-text">
             Server Access
           </span>
         </div>
@@ -110,10 +127,10 @@ export const LoginForm = () => {
                         {...field}
                         disabled={isPending}
                         placeholder="123456"
-                       className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
+                        className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                       />
                     </FormControl>
-                    <FormMessage  />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -150,7 +167,7 @@ export const LoginForm = () => {
                           {...field}
                           disabled={isPending}
                           placeholder="******"
-                         className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
+                          className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
                         />
                       </FormControl>
                       <Button
@@ -172,10 +189,16 @@ export const LoginForm = () => {
           </div>
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
+          <Suspense fallback={<div className="h-[65px] w-full bg-gray-100 animate-pulse rounded-md" />}>
+            <TurnstileWidget
+              onStatusChange={setTurnstileStatus}
+              onError={setError}
+            />
+          </Suspense>
           <Button
             disabled={isPending}
             type="submit"
-              className="w-full bg-[#C9121F] hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 ease-out shadow-md hover:shadow-lg"
+            className="w-full bg-[#C9121F] hover:bg-red-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 ease-out shadow-md hover:shadow-lg"
           >
             {isPending && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             {showTwoFactor ? "Confirm" : "Login"}

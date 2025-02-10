@@ -36,7 +36,7 @@ const Navbar = async ({ user }: NavbarProps) => {
 const NavbarLeft = ({ labs }: { labs: any }) => (
   <div className="flex items-center space-x-4">
     <LogoWithSparkle />
-    <LabSwitcher items={labs} className="hidden md:flex" />
+    <LabSwitcher items={labs} className="hidden lg:flex" />
   </div>
 );
 
@@ -54,14 +54,11 @@ const LogoWithSparkle = () => (
 );
 
 const NavbarRight = ({ labs, user }: { labs: any, user: any }) => (
-  <div className="flex items-center space-x-4">
-    <ThemeToggle />
-    <UserButton user={user} />
-    <BeakerIcon className="h-6 w-6 text-[#C9121F] animate-bounce" />
-    <MobileNav>
-      <LabSwitcher items={labs} className="mt-4" />
-      <MainNav className="mt-4" />
-    </MobileNav>
+  <div className="flex items-center gap-2">
+    <UserButton user={user} className="block" showThemeToggle />
+    <ThemeToggle className="hidden md:flex" />
+    <BeakerIcon className="h-6 w-6 text-[#C9121F] animate-bounce hidden sm:block" />
+    <MobileNav labs={labs} className="md:hidden" />
   </div>
 );
 

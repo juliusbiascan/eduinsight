@@ -21,7 +21,7 @@ RUN npm run build
 RUN npm ci
 
 ## bind the app to port 4000 mapped by the docker daemon 
-EXPOSE 4000
+EXPOSE 9001
 
 ## define the runtime 
 CMD ["npm", "run", "dev"]

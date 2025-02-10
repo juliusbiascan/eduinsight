@@ -41,12 +41,16 @@ import { Button } from "@/components/ui/button"
 import { useParams, useRouter } from "next/navigation"
 import { LogoutButton } from "./logout-button"
 import { User } from "@prisma/client"
+import { cn } from "@/lib/utils"
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface UserButtonProps {
   user: User;
+  className?: string;
+  showThemeToggle?: boolean;
 }
 
-export const UserButton = ({ user }: UserButtonProps) => {
+export const UserButton = ({ user, className, showThemeToggle }: UserButtonProps) => {
   const params = useParams();
   const router = useRouter()
 
@@ -54,8 +58,14 @@ export const UserButton = ({ user }: UserButtonProps) => {
 
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-10 h-10 rounded-full p-0 hover:bg-[#C9121F]/10">
-          <Avatar className="h-9 w-9 border-2 border-[#C9121F]/20 transition-all hover:border-[#C9121F]">
+        <Button 
+          variant="ghost" 
+          className={cn(
+            "w-8 h-8 sm:w-10 sm:h-10 rounded-full p-0 hover:bg-[#C9121F]/10",
+            className
+          )}
+        >
+          <Avatar className="h-7 w-7 sm:h-9 sm:w-9 border-2 border-[#C9121F]/20 transition-all hover:border-[#C9121F]">
             <AvatarImage
               className="object-cover"
               alt="@profile"
@@ -67,7 +77,11 @@ export const UserButton = ({ user }: UserButtonProps) => {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 rounded-xl border-2 border-[#C9121F]/10" align="end" forceMount>
+      <DropdownMenuContent 
+        className="w-[280px] sm:w-56 rounded-xl border-2 border-[#C9121F]/10" 
+        align="end" 
+        forceMount
+      >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user?.name}</p>
@@ -80,8 +94,14 @@ export const UserButton = ({ user }: UserButtonProps) => {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          
-
+          {showThemeToggle && (
+            <>
+              <DropdownMenuItem className="lg:hidden">
+                <ThemeToggle variant="menu" />
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="lg:hidden" />
+            </>
+          )}
           <DropdownMenuItem onClick={() => router.push(`/${params.labId}/account`)}>
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>

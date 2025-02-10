@@ -5,7 +5,7 @@ import axios from "axios"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from "react-hot-toast"
-import { Trash, Beaker, Save } from "lucide-react"
+import { Trash, Beaker, Save, Copy, Check } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const formSchema = z.object({
   name: z.string().min(2),
+  secretKey: z.string(),
 });
 
 type SettingsFormValues = z.infer<typeof formSchema>
@@ -40,6 +41,7 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(formSchema),
@@ -73,6 +75,12 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
       setOpen(false);
     }
   }
+
+  const onCopy = (value: string) => {
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
 
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-lg">
@@ -120,6 +128,31 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
                 </FormItem>
               )}
             />
+            <FormItem>
+              <FormLabel>Secret Key</FormLabel>
+              <div className="relative">
+                <Input
+                  disabled
+                  value={initialData.secretKey}
+                  className="w-full font-mono bg-muted pr-12"
+                />
+                <Button
+                  onClick={() => onCopy(initialData.secretKey)}
+                  type="button"
+                  variant="ghost"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-muted-foreground/5"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                This is your lab's secret key. Keep it safe!
+              </p>
+            </FormItem>
             <div className="flex justify-end">
               <Button
                 disabled={loading}

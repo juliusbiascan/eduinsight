@@ -29,7 +29,8 @@ export async function POST(
     const lab = await db.labaratory.create({
       data: {
         name,
-        userId: id
+        userId: id,
+        secretKey: crypto.randomUUID()
       }
     })
 

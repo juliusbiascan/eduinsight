@@ -4,7 +4,6 @@ import express from "express";
 import fs from "fs";
 import https from "https";
 import path from "path";
-import { PeerServer } from "peer";
 import { Server } from "socket.io";
 
 const bonjourService = new Bonjour();
@@ -82,15 +81,6 @@ const httpServer = https.createServer(credentials, app);
 httpServer.listen(advertisedPort, "0.0.0.0");
 httpServer.on("error", () => console.log("error"));
 httpServer.on("listening", () => console.log("listening....."));
-
-const peerServer = PeerServer({
-  port: 9001,
-  path: "/peerjs",
-  ssl: { key: privateKey, cert: certificate },
-});
-peerServer.on("connection", (client) => {
-  console.log("peer connection established: ", client.getId());
-});
 
 const io = new Server(httpServer, {
   path: "/socket.io",

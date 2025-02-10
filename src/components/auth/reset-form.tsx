@@ -53,15 +53,15 @@ export const ResetForm = () => {
     <CardWrapper
       headerLabel="Forgot your password?"
       headerComponent={
-        <div className="flex items-center justify-center space-x-3">
+        <div className="flex items-center justify-center space-x-2 flex-wrap">
           <Image
             src="/passlogo-small.png"
             alt="SMNHS Logo"
-            width={48}
-            height={48}
-            className="rounded-full border-2 border-[#C9121F] shadow-lg"
+            width={40}
+            height={40}
+            className="rounded-full border-2 border-[#C9121F] sm:w-12 sm:h-12"
           />
-          <span className="text-2xl font-bold text-[#C9121F] dark:text-white">
+          <span className="text-xl sm:text-2xl font-bold text-[#C9121F] dark:text-white">
             Password Reset
           </span>
         </div>

@@ -92,43 +92,44 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-4"
+      className="space-y-4 px-4 sm:px-0"
     >
       <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardContent className="p-4">
+        <CardContent className="p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Laptop className="w-8 h-8 text-[#C9121F]" />
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <Laptop className="w-6 h-6 sm:w-8 sm:h-8 text-[#C9121F]" />
               <Heading
                 title={`Devices (${devices.length})`}
                 description="Manage devices for your laboratory"
-                className="text-black dark:text-white"
+                className="text-black dark:text-white text-sm sm:text-base"
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {devices.map((device) => (
           <Card 
             key={device.id}
             className="bg-white dark:bg-[#1A1617] hover:shadow-lg transition-shadow"
           >
-            <CardContent className="p-4">
+            <CardContent className="p-3 sm:p-4">
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Laptop className="w-5 h-5 text-[#C9121F]" />
-                    <h3 className="font-semibold">{device.name}</h3>
+                    <Laptop className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9121F]" />
+                    <h3 className="font-semibold text-sm sm:text-base">{device.name}</h3>
                   </div>
                   <Badge 
                     variant={getDeviceStatus(device) === 'online' ? 'success' : 'secondary'}
+                    className="text-xs"
                   >
                     {getDeviceStatus(device)}
                   </Badge>
                 </div>
-                <div className="text-sm space-y-1 text-muted-foreground">
+                <div className="text-xs sm:text-sm space-y-1 text-muted-foreground">
                   <p>Hostname: {device.devHostname}</p>
                   <p>Status: {device.isArchived ? 'Archived' : 'Active'}</p>
                   {device.powerMonitoringLogs?.[0] && (
@@ -143,7 +144,7 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between items-center mt-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mt-2">
                     <div className="flex items-center gap-2">
                       {device.activeUsers.length > 0 ? (
                         <>
@@ -165,9 +166,10 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                         <Button 
                           variant="outline" 
                           size="sm"
+                          className="w-full sm:w-auto text-xs sm:text-sm"
                           onClick={() => setSelectedDevice(device)}
                         >
-                          <Users className="w-4 h-4 mr-2" />
+                          <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                           View Sessions
                         </Button>
                       </DialogTrigger>
@@ -207,13 +209,13 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                               {device.activeUserLogs.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">No session history</p>
                               ) : (
-                                <div className="border rounded-lg divide-y">
+                                <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
                                   {device.activeUserLogs.map((log) => (
                                     <div 
                                       key={log.id} 
                                       className="p-3 hover:bg-muted/50"
                                     >
-                                      <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center justify-between mb-2 sticky top-0">
                                         <div>
                                           <p className="font-medium">{log.user.firstName} {log.user.lastName}</p>
                                           <p className="text-sm text-muted-foreground">{log.user.schoolId}</p>
@@ -245,16 +247,15 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
         ))}
       </div>
 
-      {/* Fix the incorrect Card closing tag and structure */}
       <Card className="bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-3 mb-5">
-            <div className="p-2 rounded-md bg-muted">
-              <Zap className="w-5 h-5 text-[#C9121F]" />
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex items-center space-x-3 mb-4 sm:mb-5">
+            <div className="p-1.5 sm:p-2 rounded-md bg-muted">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9121F]" />
             </div>
             <div>
-              <h3 className="font-semibold">API Reference</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="font-semibold text-sm sm:text-base">API Reference</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Available endpoints for device management
               </p>
             </div>

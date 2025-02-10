@@ -9,7 +9,6 @@ const express_1 = __importDefault(require("express"));
 const fs_1 = __importDefault(require("fs"));
 const https_1 = __importDefault(require("https"));
 const path_1 = __importDefault(require("path"));
-const peer_1 = require("peer");
 const socket_io_1 = require("socket.io");
 const bonjourService = new bonjour_service_1.Bonjour();
 const advertisedPort = 4000;
@@ -60,14 +59,6 @@ const httpServer = https_1.default.createServer(credentials, app);
 httpServer.listen(advertisedPort, "0.0.0.0");
 httpServer.on("error", () => console.log("error"));
 httpServer.on("listening", () => console.log("listening....."));
-const peerServer = (0, peer_1.PeerServer)({
-    port: 9001,
-    path: "/peerjs",
-    ssl: { key: privateKey, cert: certificate },
-});
-peerServer.on("connection", (client) => {
-    console.log("peer connection established: ", client.getId());
-});
 const io = new socket_io_1.Server(httpServer, {
     path: "/socket.io",
     cors: {

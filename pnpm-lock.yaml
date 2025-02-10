@@ -143,6 +143,9 @@ importers:
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      next-turnstile:
+        specifier: ^1.0.1
+        version: 1.0.1(next@14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nodemailer:
         specifier: ^6.9.15
         version: 6.9.16
@@ -212,6 +215,10 @@ importers:
       zustand:
         specifier: 5.0.0-rc.2
         version: 5.0.0-rc.2(@types/react@18.3.18)(react@18.3.1)(use-sync-external-store@1.4.0(react@18.3.1))
+    optionalDependencies:
+      osx-temperature-sensor:
+        specifier: ^1.0.0
+        version: 1.0.8
     devDependencies:
       '@types/bcrypt':
         specifier: ^5.0.2
@@ -2568,6 +2575,13 @@ packages:
       react: ^16.8 || ^17 || ^18
       react-dom: ^16.8 || ^17 || ^18
 
+  next-turnstile@1.0.1:
+    resolution: {integrity: sha512-CzH2OKvGXQgHA4FPOcM0GRGEGFAXVycXxw+/7OVkM9yowvw5n9u7gMhb7Dj0zcnenjTaBCm0RsSJYg99y3CTiw==}
+    peerDependencies:
+      next: '>=12'
+      react: '>=16'
+      react-dom: '>=16'
+
   next@14.2.14:
     resolution: {integrity: sha512-Q1coZG17MW0Ly5x76shJ4dkC23woLAhhnDnw+DfTc7EpZSGuWrlsZ3bZaO8t6u1Yu8FVfhkqJE+U8GC7E0GLPQ==}
     engines: {node: '>=18.17.0'}
@@ -2673,6 +2687,11 @@ packages:
 
   os-utils@0.0.14:
     resolution: {integrity: sha512-ajB8csaHLBvJOYsHJkp8YdO2FvlBbf/ZxaYQwXXRDyQ84UoE+uTuLXxqd0shekXMX6Qr/pt/DDyLMRAMsgfWzg==}
+
+  osx-temperature-sensor@1.0.8:
+    resolution: {integrity: sha512-Gl3b+bn7+oDDnqPa+4v/cg3yg9lnE8ppS7ivL3opBZh4i7h99JNmkm6zWmo0m2a83UUJu+C9D7lGP0OS8IlehA==}
+    engines: {node: '>=4.0.0'}
+    os: [darwin]
 
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
@@ -6033,6 +6052,12 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
+  next-turnstile@1.0.1(next@14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      next: 14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
   next@14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@next/env': 14.2.14
@@ -6146,6 +6171,9 @@ snapshots:
       word-wrap: 1.2.5
 
   os-utils@0.0.14: {}
+
+  osx-temperature-sensor@1.0.8:
+    optional: true
 
   p-limit@2.3.0:
     dependencies:

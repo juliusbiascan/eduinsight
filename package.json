@@ -10,13 +10,7 @@
     "start:migrate:prod": "node server.js",
     "resetdb": "cross-env NODE_ENV=test npx prisma db push --force-reset && npx prisma db seed",
     "postinstall": "prisma generate",
-    "docker:dev": "pnpm dev",
-    "prod": "cd ../ && pnpm docker:compose:prod",
-    "client": "cd client && npm start",
-    "server": "cd server && npm run dev",
-    "docker:compose:dev": "docker-compose down --remove-orphans && docker compose up -d --build",
-    "docker:compose:prod": "docker-compose down --remove-orphans && docker compose -f docker-compose.prod.yml up -d --build",
-    "docker:compose:db": "docker-compose down --remove-orphans && docker compose -f docker-compose.dbonly.yml up -d --build"
+    "prod": "docker-compose down --remove-orphans && docker compose --env-file .env -f docker-compose.yml up -d --build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.6.0",
@@ -64,6 +58,7 @@
     "next-auth": "5.0.0-beta.22",
     "next-qrcode": "^2.5.1",
     "next-themes": "^0.3.0",
+    "next-turnstile": "^1.0.1",
     "nodemailer": "^6.9.15",
     "os-utils": "^0.0.14",
     "react": "^18",
@@ -99,5 +94,8 @@
     "prisma": "^6.1.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "osx-temperature-sensor": "^1.0.0"
   }
 }

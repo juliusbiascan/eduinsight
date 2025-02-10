@@ -58,7 +58,7 @@ export default function LabSwitcher({ className, items = [] }: LabSwitcherProps)
           aria-expanded={open}
           aria-label="Select a lab"
           className={cn(
-            "w-[300px] justify-between transition-all duration-200 ease-in-out",
+            "w-full md:w-[300px] justify-between transition-all duration-200 ease-in-out",
             "bg-[#EAEAEB] dark:bg-[#1A1617] border-none",
             "text-[#1A1617] dark:text-[#EAEAEB]",
             "hover:bg-[#C9121F] hover:text-white dark:hover:bg-[#EBC42E] dark:hover:text-[#1A1617]",
@@ -74,7 +74,7 @@ export default function LabSwitcher({ className, items = [] }: LabSwitcherProps)
           <ChevronsUpDown className="h-5 w-5 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-1 bg-[#EAEAEB] dark:bg-[#1A1617] border-none">
+      <PopoverContent className="w-[calc(100vw-2rem)] md:w-[300px] p-1 bg-[#EAEAEB] dark:bg-[#1A1617] border-none">
         <Command className="bg-transparent">
           <CommandInput placeholder="Search lab..." className="h-11" />
           <CommandList>

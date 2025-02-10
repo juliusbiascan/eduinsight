@@ -90,7 +90,7 @@ export const UserClient: React.FC<UserClientProps> = ({
     >
       <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
             <div className="flex items-center space-x-3">
               <Rainbow className="w-8 h-8 text-[#C9121F]" />
               <Heading
@@ -101,7 +101,7 @@ export const UserClient: React.FC<UserClientProps> = ({
             </div>
             <Button
               onClick={handleExportToExcel}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
               size="sm"
             >
               <FileSpreadsheet className="h-4 w-4 mr-2" />
@@ -113,17 +113,19 @@ export const UserClient: React.FC<UserClientProps> = ({
 
       <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <UserPlus2 className="h-5 w-5 text-[#C9121F]" />
-              <h2 className="text-lg font-semibold">Registered Users</h2>
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <UserPlus2 className="h-5 w-5 text-[#C9121F]" />
+                <h2 className="text-lg font-semibold">Registered Users</h2>
+              </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <Select
                 value={statusFilter}
                 onValueChange={setStatusFilter}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -137,7 +139,7 @@ export const UserClient: React.FC<UserClientProps> = ({
                 value={courseFilter}
                 onValueChange={setCourseFilter}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by Course" />
                 </SelectTrigger>
                 <SelectContent>
@@ -156,7 +158,7 @@ export const UserClient: React.FC<UserClientProps> = ({
                 value={roleFilter}
                 onValueChange={setRoleFilter}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Filter by Role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,11 +168,11 @@ export const UserClient: React.FC<UserClientProps> = ({
                 </SelectContent>
               </Select>
 
-              <div className="relative w-64">
+              <div className="relative w-full sm:w-64">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search users..."
-                  className="pl-8"
+                  className="pl-8 w-full"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -200,32 +202,32 @@ export const UserClient: React.FC<UserClientProps> = ({
                   </Badge>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="h-12 w-12 rounded-full bg-[#C9121F] flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-full bg-[#C9121F] flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-lg font-semibold">
                       {user.firstName[0]}{user.lastName[0]}
                     </span>
                   </div>
-                  <div>
-                    <h3 className="font-semibold">{user.firstName} {user.lastName}</h3>
-                    <p className="text-sm text-gray-500">{user.schoolId}</p>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold truncate">{user.firstName} {user.lastName}</h3>
+                    <p className="text-sm text-gray-500 truncate">{user.schoolId}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2 text-sm">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <span>{user.email}</span>
+                    <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <span className="truncate">{user.email}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <span>{user.contactNo}</span>
+                    <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <span className="truncate">{user.contactNo}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">
-                    <BookOpen className="h-4 w-4 text-gray-500" />
-                    <span>{user.course}</span>
+                    <BookOpen className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <span className="truncate">{user.course}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">
-                    <GraduationCap className="h-4 w-4 text-gray-500" />
-                    <span>{user.yearLevel} Year</span>
+                    <GraduationCap className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <span className="truncate">{user.yearLevel} Year</span>
                   </div>
                 </div>
                 <div className="pt-2 mt-2 border-t">

@@ -43,7 +43,7 @@ model User {
   password              String?
   accounts              Account[]
   isTwoFactorEnabled    Boolean                @default(false)
-  twoFactorConfirmation TwoFactorConfirmation?
+  twoFactorConfirmation TwoFactorConfirmation?            // Add this field
 }
 
 model Account {
@@ -104,6 +104,7 @@ model TwoFactorConfirmation {
 model Labaratory {
   id        String   @id @default(cuid())
   name      String
+  secretKey String   @unique @default(cuid())
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -148,6 +149,7 @@ model DeviceUser {
   activityLogs      ActivityLogs[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  notifications     Notification[]
 
   ActiveUserLogs ActiveUserLogs[]
 
@@ -228,8 +230,6 @@ model Subject {
   user           DeviceUser       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   quizzes        Quiz[]
   quizRecord     QuizRecord[]
-  activities     Activity[]
-  activityRecord ActivityRecord[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
@@ -288,29 +288,32 @@ model QuizRecord {
   updatedAt      DateTime @default(now())
 }
 
-model Activity {
-  id             String           @id @default(uuid())
-  subjectId      String
-  userId         String
-  labId          String
-  name           String
-  description    String
-  published      Boolean          @default(false)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  subject        Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  activityRecord ActivityRecord[]
-}
-
-model ActivityRecord {
+model Notification {
   id          String   @id @default(uuid())
-  activityId  String
-  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId      String
-  completed   Boolean  @default(false)
-  completedAt DateTime
+  type        String
+  title       String
+  message     String
+  time        DateTime @default(now())
+  read        Boolean  @default(false)
+  category    String?
+  priority    String?  @default("low")
+  icon        String?
+  sound       Boolean  @default(true)
+  count       Int      @default(1)
+  status      String?
+  progress    Float?
+  filePath    String?
+  subjectName String?
+  error       String?
+  targetCount Int?
+  quizId      String?
+  score       Int?
+  totalPoints Int?
+  teacherName String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  subject     Subject  @relation(fields: [subjectId], references: [id])
-  subjectId   String
+  user        DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

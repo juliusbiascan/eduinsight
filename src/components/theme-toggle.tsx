@@ -11,9 +11,36 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  className?: string;
+  variant?: "default" | "menu";
+}
+
+export function ThemeToggle({ className, variant = "default" }: ThemeToggleProps) {
   const { setTheme, theme } = useTheme()
+
+  if (variant === "menu") {
+    return (
+      <div 
+        className="flex w-full items-center cursor-pointer md:hidden" 
+        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      >
+        {theme === "light" ? (
+          <>
+            <Moon className="mr-2 h-4 w-4" />
+            <span>Dark Mode</span>
+          </>
+        ) : (
+          <>
+            <Sun className="mr-2 h-4 w-4" />
+            <span>Light Mode</span>
+          </>
+        )}
+      </div>
+    )
+  }
 
   return (
     <DropdownMenu>
@@ -21,7 +48,10 @@ export function ThemeToggle() {
         <Button
           variant="outline"
           size="icon"
-          className="relative overflow-hidden rounded-full bg-white dark:bg-gray-800 transition-colors duration-300"
+          className={cn(
+            "relative overflow-hidden rounded-full bg-white dark:bg-gray-800 transition-colors duration-300",
+            className
+          )}
         >
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100" />
