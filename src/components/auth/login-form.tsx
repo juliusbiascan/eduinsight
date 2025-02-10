@@ -26,14 +26,10 @@ import { FormSuccess } from "@/components/form-success";
 import { login } from "@/actions/login";
 import { Icons } from "../icons";
 import { PasswordInput } from "../ui/password-input";
-import { Turnstile } from "next-turnstile";
 import React from "react";
 import Image from "next/image";
+import TurnstileWidget from "../turnstile-widget";
 
-const TurnstileWidget = dynamic(
-  () => import('../turnstile-widget'),
-  { ssr: false }
-);
 
 export const LoginForm = () => {
   const searchParams = useSearchParams();
@@ -195,6 +191,7 @@ export const LoginForm = () => {
               onError={setError}
             />
           </Suspense>
+
           <Button
             disabled={isPending}
             type="submit"

@@ -1,6 +1,12 @@
 'use client';
 
-import { Turnstile } from 'next-turnstile';
+import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+const Turnstile = dynamic(
+  () => import('next-turnstile').then((mod) => mod.Turnstile),
+  { ssr: false }
+);
 
 interface TurnstileWidgetProps {
   onStatusChange: (status: 'success' | 'error' | 'expired' | 'required') => void;
@@ -8,6 +14,11 @@ interface TurnstileWidgetProps {
 }
 
 const TurnstileWidget = ({ onStatusChange, onError }: TurnstileWidgetProps) => {
+  useEffect(() => {
+    onStatusChange('required');
+    onError('');
+  }, [onStatusChange, onError]);
+
   return (
     <Turnstile
       siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
