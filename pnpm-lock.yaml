@@ -143,9 +143,6 @@ importers:
       next-themes:
         specifier: ^0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      next-turnstile:
-        specifier: ^1.0.1
-        version: 1.0.1(next@14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       nodemailer:
         specifier: ^6.9.15
         version: 6.9.16
@@ -176,6 +173,9 @@ importers:
       react-spinners:
         specifier: ^0.14.1
         version: 0.14.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-turnstile:
+        specifier: ^1.1.4
+        version: 1.1.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-webcam:
         specifier: ^7.2.0
         version: 7.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2575,13 +2575,6 @@ packages:
       react: ^16.8 || ^17 || ^18
       react-dom: ^16.8 || ^17 || ^18
 
-  next-turnstile@1.0.1:
-    resolution: {integrity: sha512-CzH2OKvGXQgHA4FPOcM0GRGEGFAXVycXxw+/7OVkM9yowvw5n9u7gMhb7Dj0zcnenjTaBCm0RsSJYg99y3CTiw==}
-    peerDependencies:
-      next: '>=12'
-      react: '>=16'
-      react-dom: '>=16'
-
   next@14.2.14:
     resolution: {integrity: sha512-Q1coZG17MW0Ly5x76shJ4dkC23woLAhhnDnw+DfTc7EpZSGuWrlsZ3bZaO8t6u1Yu8FVfhkqJE+U8GC7E0GLPQ==}
     engines: {node: '>=18.17.0'}
@@ -2973,6 +2966,12 @@ packages:
     peerDependencies:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
+
+  react-turnstile@1.1.4:
+    resolution: {integrity: sha512-oluyRWADdsufCt5eMqacW4gfw8/csr6Tk+fmuaMx0PWMKP1SX1iCviLvD2D5w92eAzIYDHi/krUWGHhlfzxTpQ==}
+    peerDependencies:
+      react: '>= 16.13.1'
+      react-dom: '>= 16.13.1'
 
   react-webcam@7.2.0:
     resolution: {integrity: sha512-xkrzYPqa1ag2DP+2Q/kLKBmCIfEx49bVdgCCCcZf88oF+0NPEbkwYk3/s/C7Zy0mhM8k+hpdNkBLzxg8H0aWcg==}
@@ -6052,12 +6051,6 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  next-turnstile@1.0.1(next@14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      next: 14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-
   next@14.2.14(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@next/env': 14.2.14
@@ -6412,6 +6405,11 @@ snapshots:
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
       prop-types: 15.8.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  react-turnstile@1.1.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 

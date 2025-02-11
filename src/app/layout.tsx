@@ -39,7 +39,6 @@ export default async function RootLayout({
               <ToasterProvider />
               <ModalProvider />
               {children}
-              
             </ThemeProvider>
           </SocketProvider>
         </body>

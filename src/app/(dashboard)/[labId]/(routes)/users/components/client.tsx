@@ -1,13 +1,13 @@
 "use client"
 
 import { Separator } from "@/components/ui/separator"
-import { UserPlus2, Rainbow, Mail, Phone, BookOpen, GraduationCap, Search, FileSpreadsheet, Activity } from "lucide-react"
+import { UserPlus2, Rainbow, Mail, Phone, BookOpen, GraduationCap, Search, FileSpreadsheet, Activity, PlusIcon } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import React from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { motion } from 'framer-motion'
 import { Heading } from '@/components/ui/heading'
-import { ActiveDeviceUser, DeviceUser } from "@prisma/client"
+import { ActiveDeviceUser, DeviceUser, YearLevel } from "@prisma/client"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
@@ -22,7 +22,7 @@ import * as XLSX from 'xlsx'
 
 interface UserClientProps {
   data: (DeviceUser & {
-    activeDevices: ActiveDeviceUser[]  | null
+    activeDevices: ActiveDeviceUser[] | null
   })[]
 }
 
@@ -35,10 +35,21 @@ export const UserClient: React.FC<UserClientProps> = ({
   const [courseFilter, setCourseFilter] = React.useState<string>("ALL");
   const [roleFilter, setRoleFilter] = React.useState<string>("ALL");
   const [statusFilter, setStatusFilter] = React.useState<string>("ALL");
+  const [yearLevelFilter, setYearLevelFilter] = React.useState<string>("ALL");
+
+  const getYearLevelEnum = (year: string) => {
+    const map: { [key: string]: YearLevel } = {
+      "1": "FIRST",
+      "2": "SECOND",
+      "3": "THIRD",
+      "4": "FOURTH"
+    };
+    return map[year];
+  };
 
   const filteredUsers = data.filter((user) => {
     const searchTerm = searchQuery.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       user.firstName.toLowerCase().includes(searchTerm) ||
       user.lastName.toLowerCase().includes(searchTerm) ||
       user.email.toLowerCase().includes(searchTerm) ||
@@ -46,11 +57,13 @@ export const UserClient: React.FC<UserClientProps> = ({
 
     const matchesCourse = courseFilter === "ALL" || user.course === courseFilter;
     const matchesRole = roleFilter === "ALL" || user.role === roleFilter;
-    const matchesStatus = statusFilter === "ALL" || 
+    const matchesYearLevel = yearLevelFilter === "ALL" || 
+      (user.role === "STUDENT" && user.yearLevel === getYearLevelEnum(yearLevelFilter));
+    const matchesStatus = statusFilter === "ALL" ||
       (statusFilter === "ONLINE" && user.activeDevices && user.activeDevices.length > 0) ||
       (statusFilter === "OFFLINE" && (!user.activeDevices || user.activeDevices.length === 0));
 
-    return matchesSearch && matchesCourse && matchesRole && matchesStatus;
+    return matchesSearch && matchesCourse && matchesRole && matchesStatus && matchesYearLevel;
   });
 
   const handleExportToExcel = () => {
@@ -72,13 +85,27 @@ export const UserClient: React.FC<UserClientProps> = ({
 
     // Generate timestamp for filename
     const timestamp = new Date().toISOString().split('T')[0];
-    
+
     // Trigger download
     XLSX.writeFile(wb, `device-users-${timestamp}.xlsx`);
   };
 
   const handleViewActivityLogs = (userId: string) => {
     router.push(`/${params.labId}/users/${userId}/logs`)
+  };
+
+  const handlePreRegister = () => {
+    router.push(`/${params.labId}/users/register`)
+  }
+
+  const getYearLevelDisplay = (yearLevel: YearLevel) => {
+    const map: { [key in YearLevel]: string } = {
+      FIRST: "1st",
+      SECOND: "2nd",
+      THIRD: "3rd",
+      FOURTH: "4th"
+    };
+    return map[yearLevel];
   };
 
   return (
@@ -99,6 +126,7 @@ export const UserClient: React.FC<UserClientProps> = ({
                 className="text-black dark:text-white"
               />
             </div>
+            
             <Button
               onClick={handleExportToExcel}
               className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
@@ -135,6 +163,8 @@ export const UserClient: React.FC<UserClientProps> = ({
                 </SelectContent>
               </Select>
 
+        
+
               <Select
                 value={courseFilter}
                 onValueChange={setCourseFilter}
@@ -154,6 +184,22 @@ export const UserClient: React.FC<UserClientProps> = ({
                 </SelectContent>
               </Select>
 
+              <Select
+                value={yearLevelFilter}
+                onValueChange={setYearLevelFilter}
+              >
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Filter by Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Years</SelectItem>
+                  <SelectItem value="1">1st Year</SelectItem>
+                  <SelectItem value="2">2nd Year</SelectItem>
+                  <SelectItem value="3">3rd Year</SelectItem>
+                  <SelectItem value="4">4th Year</SelectItem>
+                </SelectContent>
+              </Select>
+              
               <Select
                 value={roleFilter}
                 onValueChange={setRoleFilter}
@@ -177,6 +223,16 @@ export const UserClient: React.FC<UserClientProps> = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
+              <div className="flex-grow sm:flex sm:justify-end">
+                <Button
+                  onClick={handlePreRegister}
+                  className="bg-yellow-600 hover:bg-yellow-700 w-full sm:w-auto"
+                  size="sm"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Pre Register
+                </Button>
+              </div>
             </div>
           </div>
           <Separator className="mt-2" />
@@ -190,16 +246,24 @@ export const UserClient: React.FC<UserClientProps> = ({
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-3 relative"
               >
                 <div className="absolute top-4 right-4">
-                  <Badge 
-                    variant={user.activeDevices && user.activeDevices.length > 0 ? "success" : "secondary"}
-                    className={`${
-                      user.activeDevices && user.activeDevices.length > 0
+                  {!user.email || !user.contactNo ? (
+                    <Badge
+                      variant="destructive"
+                      className="bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                    >
+                      Not Activated
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant={user.activeDevices && user.activeDevices.length > 0 ? "success" : "secondary"}
+                      className={`${user.activeDevices && user.activeDevices.length > 0
                         ? "bg-green-500/10 text-green-500 hover:bg-green-500/20"
                         : "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20"
-                    }`}
-                  >
-                    {user.activeDevices && user.activeDevices.length > 0 ? "Online" : "Offline"}
-                  </Badge>
+                        }`}
+                    >
+                      {user.activeDevices && user.activeDevices.length > 0 ? "Online" : "Offline"}
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="h-12 w-12 rounded-full bg-[#C9121F] flex items-center justify-center flex-shrink-0">
@@ -215,20 +279,22 @@ export const UserClient: React.FC<UserClientProps> = ({
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2 text-sm">
                     <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                    <span className="truncate">{user.email}</span>
+                    <span className="truncate">{user.email || "Not set"}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">
                     <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                    <span className="truncate">{user.contactNo}</span>
+                    <span className="truncate">{user.contactNo || "Not set"}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">
                     <BookOpen className="h-4 w-4 text-gray-500 flex-shrink-0" />
                     <span className="truncate">{user.course}</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <GraduationCap className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                    <span className="truncate">{user.yearLevel} Year</span>
-                  </div>
+                  {user.role === "STUDENT" && (
+                    <div className="flex items-center space-x-2 text-sm">
+                      <GraduationCap className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <span className="truncate">{getYearLevelDisplay(user.yearLevel)} Year</span>
+                    </div>
+                  )}
                 </div>
                 <div className="pt-2 mt-2 border-t">
                   <Button
@@ -236,9 +302,10 @@ export const UserClient: React.FC<UserClientProps> = ({
                     variant="outline"
                     size="sm"
                     className="w-full"
+                    disabled={!user.email || !user.contactNo}
                   >
                     <Activity className="h-4 w-4 mr-2" />
-                    View Activity Logs
+                    {!user.email || !user.contactNo ? "Activation Required" : "View Activity Logs"}
                   </Button>
                 </div>
               </motion.div>

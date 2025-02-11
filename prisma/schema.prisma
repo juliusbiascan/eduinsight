@@ -28,10 +28,10 @@ enum Course {
 }
 
 enum YearLevel {
-  FIRST
-  SECOND
-  THIRD
-  FOURTH
+  FIRST    // 1st year
+  SECOND   // 2nd year
+  THIRD    // 3rd year
+  FOURTH   // 4th year
 }
 
 model User {

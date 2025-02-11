@@ -45,6 +45,25 @@ services:
     networks:
       - eduinsight_network
 
+  dbBackup:
+    image: fradelg/mysql-cron-backup
+    depends_on:
+      - mysql
+    restart: always
+    volumes:
+      - ./db/EduInsightDBSnap:/backup
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASS=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DB=eduinsight
+      - CRON_TIME=0 0 * * *
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - TIMEOUT=10s
+      - INIT_BACKUP=1
+    networks:
+      - eduinsight_network
+      
   nginx:
     image: nginx:latest
     container_name: nginx

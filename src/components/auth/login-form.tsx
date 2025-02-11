@@ -185,13 +185,10 @@ export const LoginForm = () => {
           </div>
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
-          <Suspense fallback={<div className="h-[65px] w-full bg-gray-100 animate-pulse rounded-md" />}>
-            <TurnstileWidget
-              onStatusChange={setTurnstileStatus}
-              onError={setError}
-            />
-          </Suspense>
-
+          <TurnstileWidget
+            onStatusChange={setTurnstileStatus}
+            onError={setError}
+          />
           <Button
             disabled={isPending}
             type="submit"

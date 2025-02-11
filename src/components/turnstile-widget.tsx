@@ -1,49 +1,30 @@
 'use client';
 
-import { useEffect } from 'react';
-import dynamic from 'next/dynamic';
-
-const Turnstile = dynamic(
-  () => import('next-turnstile').then((mod) => mod.Turnstile),
-  { ssr: false }
-);
+import Turnstile, { useTurnstile } from "react-turnstile";
 
 interface TurnstileWidgetProps {
   onStatusChange: (status: 'success' | 'error' | 'expired' | 'required') => void;
   onError: (error: string) => void;
+  className?: string;
 }
 
-const TurnstileWidget = ({ onStatusChange, onError }: TurnstileWidgetProps) => {
-  useEffect(() => {
-    onStatusChange('required');
-    onError('');
-  }, [onStatusChange, onError]);
+const TurnstileWidget = ({ onStatusChange, onError, className }: TurnstileWidgetProps) => {
+
 
   return (
-    <Turnstile
-      siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-      retry="auto"
-      refreshExpired="auto"
-      sandbox={process.env.NODE_ENV === "development"}
-      onError={() => {
-        onStatusChange("error");
-        onError("Security check failed. Please try again.");
-      }}
-      onExpire={() => {
-        onStatusChange("expired");
-        onError("Security check expired. Please verify again.");
-      }}
-      onLoad={() => {
-        onStatusChange("required");
-        onError('');
-      }}
-      onVerify={() => {
-        onStatusChange("success");
-        onError('');
-      }}
-      theme="light"
-      appearance="interaction-only"
-    />
+    <div className={className} style={{ width: '300px', height: '65px' }}>
+
+      <Turnstile
+        sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+        retry="auto"
+        refreshExpired="auto"
+        onVerify={(token) => {
+          onStatusChange("success");
+          onError('');
+        }}
+     
+      />
+    </div>
   );
 };
 

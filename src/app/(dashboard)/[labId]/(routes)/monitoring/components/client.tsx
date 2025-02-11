@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { getAllActiveUserDevice, getAllInactiveUserDevice } from "@/data/device";
 import { logoutUser } from "@/actions/logout";
 import { Button } from "@/components/ui/button";
@@ -16,15 +16,50 @@ import { ActiveDeviceUser, Device } from "@prisma/client";
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSocket } from '@/providers/socket-provider';
 import { Heading } from '@/components/ui/heading';
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface DeviceStatus {
+  deviceId: string;
+  status: 'online' | 'offline' | 'idle';
+  lastActivity?: Date;
+  batteryLevel?: number;
+}
 
 interface MonitoringClientProps {
   labId: string;
+  initialStats?: {
+    deviceStatuses: DeviceStatus[];
+  };
 }
 
-export const MonitoringClient: React.FC<MonitoringClientProps> = ({ labId }) => {
+interface DeviceFilter {
+  status: string;
+  sortBy: string;
+  search: string;
+}
+
+export const MonitoringClient: React.FC<MonitoringClientProps> = ({ labId, initialStats }) => {
   const [allActiveDevice, setAllActiveDevice] = useState<ActiveDeviceUser[]>([]);
   const [allInactiveDevice, setAllInactiveDevice] = useState<Device[]>([]);
   const { socket } = useSocket();
+  const [filters, setFilters] = useState<DeviceFilter>({
+    status: "all",
+    sortBy: "name",
+    search: ""
+  });
+  const [deviceStatuses, setDeviceStatuses] = useState<Record<string, DeviceStatus>>(
+    initialStats?.deviceStatuses.reduce((acc, status) => ({
+      ...acc,
+      [status.deviceId]: status
+    }), {}) || {}
+  );
 
   const refresh = useCallback(async () => {
     if (labId) {
@@ -45,8 +80,16 @@ export const MonitoringClient: React.FC<MonitoringClientProps> = ({ labId }) => 
       refresh();
     });
 
+    socket.on("device-status-update", (status: DeviceStatus) => {
+      setDeviceStatuses(prev => ({
+        ...prev,
+        [status.deviceId]: status
+      }));
+    });
+
     return () => {
       socket.off("refresh");
+      socket.off("device-status-update");
     };
 
   }, [refresh, socket]);
@@ -85,6 +128,27 @@ export const MonitoringClient: React.FC<MonitoringClientProps> = ({ labId }) => 
     }
   };
 
+  const filteredActiveDevices = useMemo(() => {
+    return allActiveDevice
+      
+      .sort((a, b) => {
+        const statusA = deviceStatuses[a.deviceId];
+        const statusB = deviceStatuses[b.deviceId];
+
+        switch (filters.sortBy) {
+          
+          case "status":
+            return (statusA?.status || "offline").localeCompare(statusB?.status || "offline");
+          case "lastActivity":
+            const timeA = statusA?.lastActivity?.getTime() || 0;
+            const timeB = statusB?.lastActivity?.getTime() || 0;
+            return timeB - timeA; // Most recent first
+          default:
+            return 0;
+        }
+      });
+  }, [allActiveDevice, filters, deviceStatuses]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -116,6 +180,42 @@ export const MonitoringClient: React.FC<MonitoringClientProps> = ({ labId }) => 
           </div>
         </CardContent>
       </Card>
+
+      <div className="flex gap-4 flex-wrap">
+        <Input
+          placeholder="Search devices..."
+          value={filters.search}
+          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+          className="max-w-[300px]"
+        />
+        <Select
+          value={filters.status}
+          onValueChange={(value) => setFilters(prev => ({ ...prev, status: value }))}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Devices</SelectItem>
+            <SelectItem value="online">Online</SelectItem>
+            <SelectItem value="offline">Offline</SelectItem>
+            <SelectItem value="idle">Idle</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={filters.sortBy}
+          onValueChange={(value) => setFilters(prev => ({ ...prev, sortBy: value }))}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name">Name</SelectItem>
+            <SelectItem value="status">Status</SelectItem>
+            <SelectItem value="lastActivity">Last Activity</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <motion.div
         className="grid gap-2 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4"
@@ -180,7 +280,7 @@ export const MonitoringClient: React.FC<MonitoringClientProps> = ({ labId }) => 
                   animate="visible"
                 >
                   <AnimatePresence>
-                    {allActiveDevice.length === 0 ? (
+                    {filteredActiveDevices.length === 0 ? (
                       <motion.div
                         className="flex flex-col items-center justify-center w-full py-4 sm:py-8"
                         variants={itemVariants}
@@ -191,11 +291,12 @@ export const MonitoringClient: React.FC<MonitoringClientProps> = ({ labId }) => 
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">It&apos;s quiet here... too quiet.</p>
                       </motion.div>
                     ) : (
-                      allActiveDevice.map((device) => (
+                      filteredActiveDevices.map((device) => (
                         <motion.div key={device.id} variants={itemVariants}>
                           <DeviceArtwork
                             labId={labId}
                             activeDevice={device}
+                            deviceStatus={deviceStatuses[device.deviceId]}
                             className="w-[200px] sm:w-[250px]"
                             aspectRatio="portrait"
                             width={250}
