@@ -36,20 +36,20 @@ export const preRegister = async (
       return { error: "User already exists!" };
     }
 
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-
+   
     await db.deviceUser.create({
       data: {
         ...values,
         labId,
         email: '',
         contactNo: '',
-        password: hashedPassword,
+        password: '',
       },
     });
 
     return { success: "User registered successfully" };
   } catch (error) {
+    console.log(error);
     return { error: "Something went wrong!" };
   }
 };

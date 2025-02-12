@@ -137,7 +137,7 @@ model DeviceUser {
   schoolId          String             @unique
   firstName         String
   lastName          String
-  email             String             @unique
+  email             String
   course            Course
   yearLevel         YearLevel
   contactNo         String
