@@ -8,6 +8,7 @@ import LabSwitcher from './lab-switcher';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { BeakerIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import { ServerStatusButton } from './server-status-button';
 
 interface NavbarProps {
   user: any;
@@ -54,6 +55,7 @@ const LogoWithSparkle = () => (
 
 const NavbarRight = ({ labs, user }: { labs: any, user: any }) => (
   <div className="flex items-center gap-2">
+    <ServerStatusButton className="hidden sm:flex" />
     <UserButton user={user} className="block" showThemeToggle />
     <ThemeToggle className="hidden md:flex" />
     <BeakerIcon className="h-6 w-6 text-[#C9121F] animate-bounce hidden sm:block" />

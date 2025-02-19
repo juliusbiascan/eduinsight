@@ -23,7 +23,6 @@ import {
   Users,
   Heart,
   Sparkles,
-  Frown,
 } from "lucide-react";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,46 +40,7 @@ import { useSocket } from "@/providers/socket-provider";
 import { LatencyGraph } from "@/components/latency-graph";
 import { Heading } from "@/components/ui/heading";
 import { Device, DeviceUser } from "@prisma/client";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Icons } from "@/components/icons";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ServerStats } from "@/components/server-stats";
 
-interface ServerStats {
-  hostname: string;
-  platform: string;
-  distro: string;
-  arch: string;
-  cpuModel: string;
-  cores: {
-    physical: number;
-    logical: number;
-    speeds: number;
-  };
-  temperature: {
-    main: number;
-    cores: number[];
-  };
-  cpuLoad: {
-    currentLoad: number;
-    coresLoad: number[];
-  };
-  memory: {
-    total: number;
-    free: number;
-    used: number;
-    active: number;
-  };
-  uptime: number; // in seconds
-}
 
 interface DashboardPageProps {
   params: { labId: string };
@@ -97,6 +57,8 @@ interface RecentLoginData {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
+  device: Device;
+  user: DeviceUser;
 }
 
 interface DashboardData {
@@ -127,30 +89,6 @@ interface DashboardData {
 export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
   const { socket, isConnected } = useSocket();
 
-  const [stats, setStats] = useState<ServerStats | null>(null);
-  const [statsError, setStatsError] = useState<string>();
-  const [isStatsLoading, setIsStatsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setIsStatsLoading(true);
-        const response = await fetch('/api/server-info');
-        if (!response.ok) throw new Error('Failed to fetch server info');
-        const data = await response.json();
-        setStats(data);
-        setStatsError(undefined);
-      } catch (error) {
-        setStatsError(error instanceof Error ? error.message : 'Unknown error occurred');
-      } finally {
-        setIsStatsLoading(false);
-      }
-    };
-
-    fetchStats();
-    const interval = setInterval(fetchStats, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
@@ -284,7 +222,9 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
         id: item.id,
         labId: item.labId,
         userId: item.userId,
-        createdAt: new Date(item.createdAt), // Ensure proper Date object
+        device: item.device,
+        user: item.user,
+        createdAt: new Date(item.createdAt),
       })),
     [data.recentLogin]
   );
@@ -432,13 +372,6 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
             </div>
           </div>
 
-          {/* System Resources Section */}
-          <div className="grid gap-2 sm:gap-4 grid-cols-1">
-            <ServerStats
-              stats={stats}
-              error={statsError}
-            />
-          </div>
 
           {/* Status Cards */}
           <div className="grid gap-2 sm:gap-4 grid-cols-1 sm:grid-cols-2">
@@ -575,7 +508,7 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-2 h-[calc(100%-3.5rem)]">
-              <RecentUsers data={formattedRecentLogin} />
+              <RecentUsers data={formattedRecentLogin} isLoading={loading} />
             </CardContent>
           </Card>
         </div>

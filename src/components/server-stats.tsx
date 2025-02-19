@@ -1,11 +1,10 @@
-import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Icons } from "@/components/icons";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from './ui/skeleton';
 
 interface ServerStats {
   hostname: string;
@@ -38,9 +37,10 @@ interface ServerStats {
 interface ServerStatsProps {
   stats: ServerStats | null;
   error?: string;
+  className?: string;
 }
 
-export function ServerStats({ stats, error }: ServerStatsProps) {
+export function ServerStats({ stats, error, className }: ServerStatsProps) {
   const formatBytes = (bytes: number) => {
     return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
   };
@@ -63,21 +63,40 @@ export function ServerStats({ stats, error }: ServerStatsProps) {
     );
   };
 
-  const memoryUsagePercentage = useMemo(() => {
-    if (!stats) return 0;
-    return (stats.memory.used / stats.memory.total) * 100;
-  }, [stats]);
+  const getLoadColor = (load: number) => {
+    if (load > 90) return 'text-red-500';
+    if (load > 70) return 'text-yellow-500';
+    return 'text-green-500';
+  };
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" className={className}>
+        <Icons.alertTriangle className="h-4 w-4" />
         <AlertDescription>{error}</AlertDescription>
       </Alert>
     );
   }
 
+  if (!stats) {
+    return (
+      <Card className={cn("animate-pulse", className)}>
+        <CardContent className="p-4">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-1/3" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Array(4).fill(0).map((_, i) => (
+                <Skeleton key={i} className="h-24" />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
+    <Card className={cn("bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60", className)}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
@@ -169,7 +188,7 @@ export function ServerStats({ stats, error }: ServerStatsProps) {
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Core {index + 1}</span>
-                    <span className="font-medium">{load.toFixed(1)}%</span>
+                    <span className={`font-medium ${getLoadColor(load)}`}>{load.toFixed(1)}%</span>
                   </div>
                   <Progress 
                     value={load}

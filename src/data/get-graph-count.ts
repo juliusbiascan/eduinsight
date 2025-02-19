@@ -15,6 +15,11 @@ export const getRecentLogins = async (labId: string, dateRange?: DateRange) => {
         gte: dateRange?.from,
         lte: dateRange?.to,
       },
+    
+    },
+    include: {
+      user: true,
+      device: true,
     },
     orderBy: {
       createdAt: 'desc'

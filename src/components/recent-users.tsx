@@ -1,38 +1,35 @@
 "use client"
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar"
-import { getDeviceUserById } from "@/data/user"
-import { DeviceUser } from "@prisma/client"
+import { Device, DeviceUser } from "@prisma/client"
 import { formatDistance } from "date-fns"
-import { useEffect, useState, useTransition } from "react"
-import { GraduationCap, UserCog, User, Users } from 'lucide-react'
+import { GraduationCap, UserCog, Users, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export type RecentUsersType = {
   id: string
   labId: string
   userId: string
   createdAt: Date
+  device: Device,
+  user: DeviceUser,
 }
-
 
 interface RecentUsersProps {
-  data: RecentUsersType[]
+  data: RecentUsersType[];
+  isLoading: boolean;
 }
 
-export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data }) => {
-  const [users, setUsers] = useState<(DeviceUser & { createdAt: Date })[]>([]);
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 20; // Show 5 users per page
+const ITEMS_PER_PAGE = 17;
 
+export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data, isLoading }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  
   const getRoleIcon = useCallback((role: string) => {
     switch (role.toLowerCase()) {
       case 'student':
@@ -47,7 +44,7 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data }) => 
           color: 'text-[#C9121F]',
           bgColor: 'from-red-400 to-red-600'
         };
-      
+
       default:
         return {
           icon: Users,
@@ -57,70 +54,30 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data }) => 
     }
   }, []);
 
-  // Optimize user data fetching
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!data || data.length === 0) {
-          setUsers([]);
-          return;
-        }
+  // Sort data by date before pagination
+  const sortedData = [...data].sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
-        const userPromises = data.map(async (recent) => {
-          const user = await getDeviceUserById(recent.userId);
-          if (user) {
-            return {
-              ...user,
-              createdAt: recent.createdAt
-            };
-          }
-          return null;
-        });
+  // Calculate pagination using sortedData instead of data
+  const totalPages = Math.ceil(sortedData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentItems = sortedData.slice(startIndex, endIndex);
 
-        const userResults = await Promise.all(userPromises);
-        const validUsers = userResults.filter((user): user is DeviceUser & { createdAt: Date } => user !== null);
-        setUsers(validUsers);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching users:', err);
-        setError('Failed to load user data');
-      }
-    };
-
-    startTransition(() => {
-      fetchData();
-    });
-  }, [data]);
-
-  // Memoize pagination calculations
-  const { currentUsers, totalPages } = useMemo(() => {
-    const indexOfLastUser = currentPage * usersPerPage;
-    const indexOfFirstUser = indexOfLastUser - usersPerPage;
-    return {
-      currentUsers: users.slice(indexOfFirstUser, indexOfLastUser),
-      totalPages: Math.ceil(users.length / usersPerPage)
-    };
-  }, [users, currentPage, usersPerPage]);
-
-
-  if (error) {
-    return (
-      <div className="p-4 text-center text-[#C9121F]">
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  if (isPending) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
-        {[...Array(3)].map((_, index) => (
-          <div key={index} className="bg-[#EAEAEB] dark:bg-[#1A1617] rounded-lg p-4 animate-pulse">
+        {[...Array(ITEMS_PER_PAGE)].map((_, index) => (
+          <div key={index} className="bg-[#EAEAEB] dark:bg-[#1A1617] rounded-lg p-4">
             <div className="flex items-center space-x-4">
-              <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700" />
+              <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse" />
+              </div>
+              <div className="w-20">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
               </div>
             </div>
           </div>
@@ -129,7 +86,7 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data }) => 
     );
   }
 
-  if (users.length === 0) {
+  if (sortedData.length === 0) {
     return (
       <div className="p-4 text-center text-gray-500 dark:text-gray-400">
         <p>No recent logins</p>
@@ -139,8 +96,10 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data }) => 
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 space-y-2 pr-2 h-full">
-        {currentUsers.map((user) => {
+      <div className="flex-1 space-y-2 pr-2">
+        {currentItems.map((data) => {
+          const { user, device } = data;
+
           const { icon: RoleIcon, color: roleColor } = getRoleIcon(user.role);
           return (
             <div
@@ -174,7 +133,7 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data }) => 
                 <div className="text-right">
                   <p className="text-sm font-medium text-muted-foreground">
                     {formatDistance(
-                      new Date(user.createdAt),
+                      new Date(data.createdAt),
                       new Date(),
                       { addSuffix: true }
                     )}
@@ -187,7 +146,7 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data }) => 
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-between items-center py-2 mt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between pt-4 mt-2 border-t border-gray-200 dark:border-gray-700">
           <Button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}

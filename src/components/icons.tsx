@@ -96,4 +96,5 @@ export const Icons = {
   ),
   clock: Clock,
   network: Network,
+  alertTriangle: AlertTriangle,
 }
