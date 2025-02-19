@@ -500,14 +500,14 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
 
         {/* Recent Logins Sidebar */}
         <div className="xl:col-span-1">
-          <Card className="h-[500px] xl:h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
+          <Card className="h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
             <CardHeader className="pb-2 border-b">
               <CardTitle className="text-sm sm:text-base flex items-center">
                 <Sparkles className="h-4 w-4 text-[#C9121F] mr-2" />
                 Recent Logins
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-2 h-[calc(100%-3.5rem)]">
+            <CardContent className="p-2 h-[calc(100%-4rem)]">
               <RecentUsers data={formattedRecentLogin} isLoading={loading} />
             </CardContent>
           </Card>

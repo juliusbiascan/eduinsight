@@ -2,8 +2,8 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import { db } from "@/lib/db";
-import Navbar from "../../../components/navbar";
 import { SiteFooter } from "@/components/ui/site-footer";
+import { Sidebar } from "@/components/sidebar";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -26,22 +26,13 @@ export default async function DashboardLayout({ children, params }: DashboardLay
     await signOut({ redirectTo: "/" });
   }
 
-  // Fetch the laboratory for the current user
-  const lab = await db.labaratory.findFirst({
-    where: {
-      id: params.labId,
-      userId: session.user.id,
-    },
-  });
-
-  if (!lab) {
-    redirect("/");
-  }
-
   return (
     <div className="relative flex min-h-screen flex-col">
-      <Navbar user={user} />
-      <main className="flex-1">{children}</main>
+      <div className="flex-1 flex">
+        <Sidebar labId={params.labId} />
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+      <SiteFooter />
     </div>
   );
 }
