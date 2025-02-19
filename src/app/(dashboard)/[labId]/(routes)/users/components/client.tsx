@@ -91,11 +91,11 @@ export const UserClient: React.FC<UserClientProps> = ({
   };
 
   const handleViewActivityLogs = (userId: string) => {
-    router.push(`/${params.labId}/users/${userId}/logs`)
+    router.push(`/users/${userId}/logs`)
   };
 
   const handlePreRegister = () => {
-    router.push(`/${params.labId}/users/register`)
+    router.push(`/users/register`)
   }
 
   const getYearLevelDisplay = (yearLevel: YearLevel) => {

@@ -9,7 +9,11 @@ interface TurnstileWidgetProps {
 }
 
 const TurnstileWidget = ({ onStatusChange, onError, className }: TurnstileWidgetProps) => {
-
+  // Skip verification in development
+  if (process.env.NODE_ENV === 'development') {
+    onStatusChange('success');
+    return null;
+  }
 
   return (
     <div className={className} style={{ width: '300px', height: '65px' }}>

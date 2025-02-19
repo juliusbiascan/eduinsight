@@ -1,7 +1,5 @@
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
-import { MainNav } from './main-nav';
-import { MobileNav } from './mobile-nav';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserButton } from '@/components/auth/user-button';
 import LabSwitcher from './lab-switcher';
@@ -29,29 +27,16 @@ const Navbar = async ({ user }: NavbarProps) => {
       "backdrop-blur-md",
     )}>
       <div className="h-full px-4 flex items-center justify-between">
-        <NavbarLeft labs={labs} />
-        <MainNav className="hidden lg:flex mx-6" />
-        <NavbarRight labs={labs} user={user} />
+        <div className="flex items-center space-x-4">
+          <LabSwitcher items={labs} />
+        </div>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <UserButton />
+        </div>
       </div>
     </nav>
   );
 };
-
-const NavbarLeft = ({ labs }: { labs: any }) => (
-  <div className="flex items-center space-x-4">
-    <LabSwitcher items={labs} className="hidden lg:flex" />
-  </div>
-);
-
-
-const NavbarRight = ({ labs, user }: { labs: any, user: any }) => (
-  <div className="flex items-center gap-2">
-    <ServerStatusButton className="hidden sm:flex" />
-    <UserButton user={user} className="block" showThemeToggle />
-    <ThemeToggle className="hidden md:flex" />
-    <BeakerIcon className="h-6 w-6 text-[#C9121F] animate-bounce hidden sm:block" />
-    <MobileNav labs={labs} className="md:hidden" />
-  </div>
-);
 
 export default Navbar;

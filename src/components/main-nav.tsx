@@ -27,11 +27,7 @@ export function MainNav({
             label: 'Devices',
             active: pathname === `/${params.labId}/devices`,
         },
-        {
-            href: `/${params.labId}/users`,
-            label: 'Users',
-            active: pathname === `/${params.labId}/users`,
-        },
+        
         {
             href: `/${params.labId}/settings`,
             label: 'Settings',

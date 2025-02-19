@@ -59,7 +59,7 @@ export const LoginForm = () => {
     setError("");
     setSuccess("");
 
-    if (turnstileStatus !== "success") {
+    if (process.env.NODE_ENV !== 'development' && turnstileStatus !== "success") {
       setError("Please verify you are not a robot");
       return;
     }

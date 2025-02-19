@@ -37,21 +37,9 @@ export default async function DashboardLayout({ children, params }: DashboardLay
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Sidebar */}
-      <Sidebar labId={params.labId} />
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col ml-64">
-        {/* Navbar */}
-        <Navbar user={user} />
-        
-        {/* Main Content Area */}
-        <main className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
-      </div>
-    </div>
+    <>
+      {children}
+      <SiteFooter />
+    </>
   );
 }

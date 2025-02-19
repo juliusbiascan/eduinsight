@@ -16,26 +16,12 @@ const UsersPage = async ({
     redirect("/auth/login")
   }
 
-  const lab = await db.labaratory.findFirst({
-    where: {
-      id: params.labId,
-      userId: session.user.id,
-    }
-  });
-
-
-  if (!lab) {
-    redirect('/');
-  };
 
   const devUser = await db.deviceUser.findMany({
-    where: {
-      labId: lab.id,
-    },
+    
     include: {
       activeDevices: {
         where: {
-          labId: lab.id,
           state: State.ACTIVE
         },
         orderBy: {
