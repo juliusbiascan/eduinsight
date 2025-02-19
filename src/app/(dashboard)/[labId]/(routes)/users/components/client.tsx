@@ -91,11 +91,11 @@ export const UserClient: React.FC<UserClientProps> = ({
   };
 
   const handleViewActivityLogs = (userId: string) => {
-    router.push(`/users/${userId}/logs`)
+    router.push(`/${params.labId}/users/${userId}/logs`)
   };
 
   const handlePreRegister = () => {
-    router.push(`/users/register`)
+    router.push(`/${params.labId}/users/register`)
   }
 
   const getYearLevelDisplay = (yearLevel: YearLevel) => {
@@ -113,17 +113,17 @@ export const UserClient: React.FC<UserClientProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-4"
+      className="space-y-4 p-2 sm:p-4"
     >
       <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-3">
-              <Rainbow className="w-8 h-8 text-[#C9121F]" />
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3 w-full sm:w-auto">
+              <Rainbow className="w-6 h-6 sm:w-8 sm:h-8 text-[#C9121F]" />
               <Heading
                 title={`Device Users (${data?.length})`}
                 description="Manage registered users"
-                className="text-black dark:text-white"
+                className="text-black dark:text-white text-sm sm:text-base"
               />
             </div>
             
@@ -140,20 +140,18 @@ export const UserClient: React.FC<UserClientProps> = ({
       </Card>
 
       <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 space-y-4">
           <div className="flex flex-col space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <UserPlus2 className="h-5 w-5 text-[#C9121F]" />
-                <h2 className="text-lg font-semibold">Registered Users</h2>
+                <UserPlus2 className="h-4 w-4 sm:h-5 sm:w-5 text-[#C9121F]" />
+                <h2 className="text-base sm:text-lg font-semibold">Registered Users</h2>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <Select
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Filter by Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -163,13 +161,8 @@ export const UserClient: React.FC<UserClientProps> = ({
                 </SelectContent>
               </Select>
 
-        
-
-              <Select
-                value={courseFilter}
-                onValueChange={setCourseFilter}
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
+              <Select value={courseFilter} onValueChange={setCourseFilter}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Filter by Course" />
                 </SelectTrigger>
                 <SelectContent>
@@ -184,11 +177,8 @@ export const UserClient: React.FC<UserClientProps> = ({
                 </SelectContent>
               </Select>
 
-              <Select
-                value={yearLevelFilter}
-                onValueChange={setYearLevelFilter}
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
+              <Select value={yearLevelFilter} onValueChange={setYearLevelFilter}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Filter by Year" />
                 </SelectTrigger>
                 <SelectContent>
@@ -200,11 +190,8 @@ export const UserClient: React.FC<UserClientProps> = ({
                 </SelectContent>
               </Select>
               
-              <Select
-                value={roleFilter}
-                onValueChange={setRoleFilter}
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Filter by Role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -214,7 +201,7 @@ export const UserClient: React.FC<UserClientProps> = ({
                 </SelectContent>
               </Select>
 
-              <div className="relative w-full sm:w-64">
+              <div className="relative w-full col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-1">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search users..."
@@ -223,7 +210,8 @@ export const UserClient: React.FC<UserClientProps> = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <div className="flex-grow sm:flex sm:justify-end">
+              
+              <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5">
                 <Button
                   onClick={handlePreRegister}
                   className="bg-yellow-600 hover:bg-yellow-700 w-full sm:w-auto"
@@ -237,15 +225,16 @@ export const UserClient: React.FC<UserClientProps> = ({
           </div>
           <Separator className="mt-2" />
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        
+        <CardContent className="p-3 sm:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
             {filteredUsers.map((user) => (
               <motion.div
                 key={user.id}
                 whileHover={{ scale: 1.02 }}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-3 relative"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-4 space-y-3 relative"
               >
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
                   {!user.email || !user.contactNo ? (
                     <Badge
                       variant="destructive"
@@ -265,9 +254,10 @@ export const UserClient: React.FC<UserClientProps> = ({
                     </Badge>
                   )}
                 </div>
+                
                 <div className="flex items-center space-x-3">
-                  <div className="h-12 w-12 rounded-full bg-[#C9121F] flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-lg font-semibold">
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[#C9121F] flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-base sm:text-lg font-semibold">
                       {user.firstName[0]}{user.lastName[0]}
                     </span>
                   </div>
@@ -276,26 +266,28 @@ export const UserClient: React.FC<UserClientProps> = ({
                     <p className="text-sm text-gray-500 truncate">{user.schoolId}</p>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2 text-sm">
+                
+                <div className="space-y-2 text-xs sm:text-sm">
+                  <div className="flex items-center space-x-2">
                     <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
                     <span className="truncate">{user.email || "Not set"}</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm">
+                  <div className="flex items-center space-x-2">
                     <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
                     <span className="truncate">{user.contactNo || "Not set"}</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm">
+                  <div className="flex items-center space-x-2">
                     <BookOpen className="h-4 w-4 text-gray-500 flex-shrink-0" />
                     <span className="truncate">{user.course}</span>
                   </div>
                   {user.role === "STUDENT" && (
-                    <div className="flex items-center space-x-2 text-sm">
+                    <div className="flex items-center space-x-2">
                       <GraduationCap className="h-4 w-4 text-gray-500 flex-shrink-0" />
                       <span className="truncate">{getYearLevelDisplay(user.yearLevel)} Year</span>
                     </div>
                   )}
                 </div>
+                
                 <div className="pt-2 mt-2 border-t">
                   <Button
                     onClick={() => handleViewActivityLogs(user.id)}

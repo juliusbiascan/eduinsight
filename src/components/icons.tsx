@@ -41,6 +41,9 @@ import {
   UserX2Icon,
   LucideIcon,
 } from "lucide-react"
+
+import { BeakerIcon } from '@heroicons/react/24/solid';
+
 export type Icon = LucideIcon;
 
 
@@ -92,7 +95,7 @@ export const Icons = {
   ),
   twitter: Twitter,
   check: Check,
-  
+  laboratory: BeakerIcon,
   users: Users,
   message_circle: MessageCircle,
   server: Server,

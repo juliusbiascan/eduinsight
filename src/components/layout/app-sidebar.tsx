@@ -73,21 +73,39 @@ export default function AppSidebar() {
             items: []
         },
         {
-            title: 'Monitoring',
-            url: `/${params.labId}/monitoring`,
-            icon: 'monitoring',
-            isActive: pathname === `/${params.labId}/monitoring`,
-            shortcut: ['m', 'n'],
-            items: []
+            title: 'Laboratory',
+            url: '#', // Placeholder as there is no direct link for the parent
+            icon: 'laboratory',
+            isActive: true,
+            items: [
+                {
+                    title: 'Monitoring',
+                    url: `/${params.labId}/monitoring`,
+                    icon: 'monitoring',
+                    isActive: pathname === `/${params.labId}/monitoring`,
+                    shortcut: ['m', 'n'],
+                    items: []
+                },
+                {
+                    title: 'Devices',
+                    url: `/${params.labId}/devices`,
+                    icon: 'devices',
+                    isActive: pathname === `/${params.labId}/devices`,
+                    shortcut: ['d', 'v'],
+                    items: []
+                },
+                {
+                    title: 'Settings',
+                    url: `/${params.labId}/settings`,
+                    icon: 'settings',
+                    isActive: pathname === `/${params.labId}/settings`,
+                    shortcut: ['s', 't'],
+                    items: []
+                }
+            ],
+
         },
-        {
-            title: 'Devices',
-            url: `/${params.labId}/devices`,
-            icon: 'devices',
-            isActive: pathname === `/${params.labId}/devices`,
-            shortcut: ['d', 'v'],
-            items: []
-        },
+
         {
             title: 'Users',
             url: `/${params.labId}/users`,
@@ -97,10 +115,10 @@ export default function AppSidebar() {
             items: []
         },
         {
-            title: 'Settings',
-            url: `/${params.labId}/settings`,
-            icon: 'settings',
-            isActive: pathname === `/${params.labId}/settings`,
+            title: 'Account',
+            url: `/${params.labId}/account`,
+            icon: 'billing',
+            isActive: pathname === `/${params.labId}/account`,
             shortcut: ['s', 't'],
             items: []
         }
@@ -110,7 +128,7 @@ export default function AppSidebar() {
         <Sidebar collapsible='icon'>
             <SidebarHeader>
                 <div className='flex gap-2 py-2 text-sidebar-accent-foreground'>
-                    <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
+                    <div className='flex aspect-square size-8 items-center justify-center rounded-lg'>
                         {/* <company.logo className='size-4' /> */}
                         <div className="relative">
                             <Image

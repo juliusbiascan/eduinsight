@@ -43,6 +43,7 @@ import { Device, DeviceUser } from "@prisma/client";
 import { useParams } from "next/navigation";
 import { AnalyticsTabs } from "./components/analytics-tabs";
 import { DashboardReport } from "./components/dashboard-report";
+import PageContainer from "@/components/layout/page-container";
 
 
 
@@ -272,6 +273,7 @@ export default function OverviewPage({
     };
 
     return (
+           <PageContainer>
         <div className="flex flex-col gap-2 sm:gap-4 p-2 sm:p-4">
             {/* Header Card */}
             <Card className="bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
@@ -521,5 +523,6 @@ export default function OverviewPage({
                 </div>
             </div>
         </div>
+        </PageContainer>
     );
 };

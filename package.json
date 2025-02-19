@@ -71,6 +71,7 @@
     "next-auth": "5.0.0-beta.22",
     "next-qrcode": "^2.5.1",
     "next-themes": "^0.3.0",
+    "nextjs-toploader": "^3.7.15",
     "nodemailer": "^6.9.15",
     "os-utils": "^0.0.14",
     "react": "^18",
@@ -96,7 +97,8 @@
     "vaul": "^1.1.2",
     "xlsx": "^0.18.5",
     "zod": "^3.24.1",
-    "zustand": "5.0.0-rc.2"
+    "zustand": "5.0.0-rc.2",
+    "kbar": "^0.1.0-beta.45"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

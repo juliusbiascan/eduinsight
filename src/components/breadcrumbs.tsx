@@ -17,10 +17,10 @@ export function Breadcrumbs({ labs = [] }: { labs: Record<string, any>[] }) {
   const items = useBreadcrumbs();
   const params = useParams();
   const pathname = usePathname();
-  
+
   // Filter out items where the path segment is a labId (24 characters)
   const visibleItems = items.filter(item => !item.link.split('/').some(segment => segment.length === 24));
-  
+
   if (visibleItems.length === 0) return null;
 
   const showLabSwitcher = pathname !== `/${params.labId}/users`;
@@ -28,12 +28,22 @@ export function Breadcrumbs({ labs = [] }: { labs: Record<string, any>[] }) {
   return (
     <Breadcrumb>
       <BreadcrumbList>
+
         {visibleItems.map((item, index) => (
           <Fragment key={item.link}>
             {index === 0 && params.labId && showLabSwitcher ? (
-              <BreadcrumbItem>
-                <CompactLabSwitcher items={labs} />
-              </BreadcrumbItem>
+              <>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href={`/${params.labId}`}>Dashboard</BreadcrumbLink>
+                </BreadcrumbItem>
+
+                <BreadcrumbSeparator className='hidden md:block'>
+                  <Slash />
+                </BreadcrumbSeparator>
+                <BreadcrumbItem>
+                  <CompactLabSwitcher items={labs} />
+                </BreadcrumbItem>
+              </>
             ) : (
               index !== visibleItems.length - 1 && (
                 <BreadcrumbItem className='hidden md:block'>

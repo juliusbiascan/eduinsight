@@ -1,14 +1,13 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Lato } from 'next/font/google';
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { ModalProvider } from "@/providers/modal-provider";
 import { ToasterProvider } from "@/providers/toast-provider";
 import { SocketProvider } from "@/providers/socket-provider";
-
-const inter = Inter({ subsets: ["latin"] });
+import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
   title: "EduInsight",
@@ -22,6 +21,13 @@ export const metadata: Metadata = {
   creator: "juliusbiascan",
 };
 
+const lato = Lato({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  display: 'swap'
+});
+
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +39,8 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="en">
-        <body className={inter.className} suppressHydrationWarning={true}>
+        <body  className={`${lato.className}`} suppressHydrationWarning={true}>
+        <NextTopLoader />
           <SocketProvider>
             <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
               <ToasterProvider />
