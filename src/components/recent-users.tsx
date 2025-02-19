@@ -57,38 +57,40 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data, isLoa
 
   if (isLoading) {
     return (
-      <div className="h-full space-y-2">
-        {[...Array(8)].map((_, index) => (
-          <div key={index} className="bg-[#EAEAEB] dark:bg-[#1A1617] rounded-lg p-3">
-            <div className="flex items-center">
-              <div className="relative">
-                <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
-              </div>
-              <div className="ml-4 flex-grow space-y-2">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse" />
-              </div>
-              <div className="w-20">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+      <div className="h-full overflow-hidden">
+        <div className="space-y-2 pr-4">
+          {[...Array(8)].map((_, index) => (
+            <div key={index} className="bg-[#EAEAEB] dark:bg-[#1A1617] rounded-lg p-3">
+              <div className="flex items-center">
+                <div className="relative">
+                  <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                  <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                </div>
+                <div className="ml-4 flex-grow space-y-2">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 animate-pulse" />
+                </div>
+                <div className="w-20">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   }
 
   if (sortedData.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
-        <p>No recent logins</p>
+      <div className="h-full flex items-center justify-center">
+        <p className="text-gray-500 dark:text-gray-400">No recent logins</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full">
+    <div className="h-screen overflow-hidden">
       <ScrollArea className="h-full">
         <div className="space-y-2 pr-4">
           {sortedData.map((data) => {
@@ -122,6 +124,9 @@ export const RecentUsers: React.FC<RecentUsersProps> = React.memo(({ data, isLoa
                     </p>
                     <p className={`text-sm ${roleColor} mt-1 font-medium flex items-center`}>
                       {user.role}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {device.name || 'Unknown Device'}
                     </p>
                   </div>
                   <div className="text-right">

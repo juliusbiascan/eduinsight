@@ -307,7 +307,7 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
       </Card>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-2 sm:gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-2 sm:gap-4 min-h-[calc(100vh-10rem)]">
         {/* Stats and Charts Section */}
         <div className="xl:col-span-3 space-y-2 sm:space-y-4">
           {/* Main Stats Cards */}
@@ -499,16 +499,18 @@ export const DashboardClient: React.FC<DashboardPageProps> = ({ params }) => {
         </div>
 
         {/* Recent Logins Sidebar */}
-        <div className="xl:col-span-1">
-          <Card className="h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-            <CardHeader className="pb-2 border-b">
+        <div className="xl:col-span-1 h-full">
+          <Card className="h-full bg-white dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60 flex flex-col">
+            <CardHeader className="pb-2 border-b flex-none">
               <CardTitle className="text-sm sm:text-base flex items-center">
                 <Sparkles className="h-4 w-4 text-[#C9121F] mr-2" />
                 Recent Logins
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-2 h-[calc(100%-4rem)]">
-              <RecentUsers data={formattedRecentLogin} isLoading={loading} />
+            <CardContent className="p-0 flex-1 min-h-0">
+              <div className="h-full p-2">
+                <RecentUsers data={formattedRecentLogin} isLoading={loading} />
+              </div>
             </CardContent>
           </Card>
         </div>
