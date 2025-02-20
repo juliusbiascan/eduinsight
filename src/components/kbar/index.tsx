@@ -18,49 +18,77 @@ export default function KBar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams();
-  
+
+  //Info: The following data is used for the sidebar navigation and Cmd K bar.
   const navItems: NavItem[] = [
-          {
-              title: 'Dashboard',
-              url: `/${params.labId}/overview`,
-              icon: 'dashboard',
-              isActive: pathname === `/${params.labId}/overview`,
-              shortcut: ['o', 'v'],
-              items: []
-          },
-          {
-              title: 'Monitoring',
-              url: `/${params.labId}/monitoring`,
-              icon: 'monitoring',
-              isActive: pathname === `/${params.labId}/monitoring`,
-              shortcut: ['m', 'n'],
-              items: []
-          },
-          {
-              title: 'Devices',
-              url: `/${params.labId}/devices`,
-              icon: 'devices',
-              isActive: pathname === `/${params.labId}/devices`,
-              shortcut: ['d', 'v'],
-              items: []
-          },
-          {
-              title: 'Users',
-              url: `/${params.labId}/users`,
-              icon: 'users',
-              isActive: pathname === `/${params.labId}/users`,
-              shortcut: ['d', 'u'],
-              items: []
-          },
-          {
-              title: 'Settings',
-              url: `/${params.labId}/settings`,
-              icon: 'settings',
-              isActive: pathname === `/${params.labId}/settings`,
-              shortcut: ['s', 't'],
-              items: []
-          }
-      ];
+    {
+      title: 'Dashboard',
+      url: `/${params.labId}/overview`,
+      icon: 'dashboard',
+      isActive: pathname === `/${params.labId}/overview`,
+      shortcut: ['o', 'v'],
+      items: []
+    },
+    {
+      title: 'Analytics',
+      url: `/${params.labId}/analytics`,
+      icon: 'analytics',
+      isActive: pathname === `/${params.labId}/analytics`,
+      shortcut: ['d', 'u'],
+      items: []
+    },
+    {
+      title: 'Laboratory',
+      url: '#', // Placeholder as there is no direct link for the parent
+      icon: 'laboratory',
+      isActive: true,
+      items: [
+        {
+          title: 'Monitoring',
+          url: `/${params.labId}/monitoring`,
+          icon: 'monitoring',
+          isActive: pathname === `/${params.labId}/monitoring`,
+          shortcut: ['m', 'n'],
+          items: []
+        },
+        {
+          title: 'Devices',
+          url: `/${params.labId}/devices`,
+          icon: 'devices',
+          isActive: pathname === `/${params.labId}/devices`,
+          shortcut: ['d', 'v'],
+          items: []
+        },
+        {
+          title: 'Settings',
+          url: `/${params.labId}/settings`,
+          icon: 'settings',
+          isActive: pathname === `/${params.labId}/settings`,
+          shortcut: ['s', 't'],
+          items: []
+        }
+      ],
+
+    },
+
+    {
+      title: 'Users',
+      url: `/${params.labId}/users`,
+      icon: 'users',
+      isActive: pathname === `/${params.labId}/users`,
+      shortcut: ['d', 'u'],
+      items: []
+    },
+    {
+      title: 'Account',
+      url: `/${params.labId}/account`,
+      icon: 'billing',
+      isActive: pathname === `/${params.labId}/account`,
+      shortcut: ['s', 't'],
+      items: []
+    }
+  ];
+  
   const navigateTo = (url: string) => {
     router.push(url);
   };
@@ -73,14 +101,14 @@ export default function KBar({ children }: { children: React.ReactNode }) {
         const baseAction =
           navItem.url !== '#'
             ? {
-                id: `${navItem.title.toLowerCase()}Action`,
-                name: navItem.title,
-                shortcut: navItem.shortcut,
-                keywords: navItem.title.toLowerCase(),
-                section: 'Navigation',
-                subtitle: `Go to ${navItem.title}`,
-                perform: () => navigateTo(navItem.url)
-              }
+              id: `${navItem.title.toLowerCase()}Action`,
+              name: navItem.title,
+              shortcut: navItem.shortcut,
+              keywords: navItem.title.toLowerCase(),
+              section: 'Navigation',
+              subtitle: `Go to ${navItem.title}`,
+              perform: () => navigateTo(navItem.url)
+            }
             : null;
 
         // Map child items into actions

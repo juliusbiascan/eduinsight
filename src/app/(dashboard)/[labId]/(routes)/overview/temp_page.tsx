@@ -41,8 +41,7 @@ import { LatencyGraph } from "@/components/latency-graph";
 import { Heading } from "@/components/ui/heading";
 import { Device, DeviceUser } from "@prisma/client";
 import { useParams } from "next/navigation";
-import { AnalyticsTabs } from "./components/analytics-tabs";
-import { DashboardReport } from "./components/dashboard-report";
+import { DashboardReport } from "../../../../../components/dashboard-report";
 import PageContainer from "@/components/layout/page-container";
 
 

@@ -3,14 +3,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Users, Clock, Cpu, BarChart2, PieChart } from "lucide-react";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, 
-  ResponsiveContainer, Cell, LineChart, Line, PieChart as RePieChart, 
-  Pie, AreaChart, Area 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, Cell, LineChart, Line, PieChart as RePieChart,
+  Pie, AreaChart, Area
 } from 'recharts';
-import { DateRange } from "react-day-picker";
-import { 
-  getDeviceUsageStats, 
+import {
+  getDeviceUsageStats,
   getUserActivityStats,
   getHourlyUsageStats,
   getDevicePerformanceStats,
@@ -18,11 +17,11 @@ import {
 } from "@/data/analytics";
 import { useTheme } from 'next-themes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useDateRange } from '@/hooks/use-date-range';
+import { addDays } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 
-interface AnalyticsTabsProps {
-  labId: string;
-  dateRange: DateRange;
-}
+
 
 interface DeviceUsageStats {
   name: string;
@@ -61,8 +60,16 @@ const resourceColors = {
   network: { stroke: '#ffc658', fill: '#ffc65833' }
 };
 
-export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }) => {
+
+const AnalyticsPage = ({ params }: { params: { labId: string } }) => {
   const { theme } = useTheme();
+ 
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: addDays(new Date(), -30),
+    to: new Date(),
+});
+
+
   const [deviceUsageStats, setDeviceUsageStats] = useState<DeviceUsageStats[]>([]);
   const [userActivityStats, setUserActivityStats] = useState<UserActivityStats[]>([]);
   const [hourlyUsage, setHourlyUsage] = useState<HourlyUsage[]>([]);
@@ -70,13 +77,17 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
   const [resourceUtilization, setResourceUtilization] = useState<ResourceUtilization[]>([]);
 
   useEffect(() => {
+
+
     const fetchData = async () => {
+
+
       const [deviceStats, userStats, hourlyStats, perfStats, resourceStats] = await Promise.all([
-        getDeviceUsageStats(labId, dateRange),
-        getUserActivityStats(labId, dateRange),
-        getHourlyUsageStats(labId, dateRange),
-        getDevicePerformanceStats(labId, dateRange),
-        getResourceUtilization(labId, dateRange)
+        getDeviceUsageStats(params.labId, dateRange),
+        getUserActivityStats(params.labId, dateRange),
+        getHourlyUsageStats(params.labId, dateRange),
+        getDevicePerformanceStats(params.labId, dateRange),
+        getResourceUtilization(params.labId, dateRange)
       ]);
 
       setDeviceUsageStats(deviceStats);
@@ -86,7 +97,7 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
       setResourceUtilization(resourceStats);
     };
     fetchData();
-  }, [labId, dateRange]);
+  }, [params.labId, dateRange]);
 
   const colors = useMemo(() => ({
     device: [
@@ -352,8 +363,8 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={devicePerformance}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="name" 
+                  <XAxis
+                    dataKey="name"
                     stroke={chartConfig.style.color}
                     tick={{ fill: chartConfig.style.color, fontSize: 12 }}
                   />
@@ -362,7 +373,7 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
                     stroke={chartConfig.style.color}
                     tick={{ fill: chartConfig.style.color, fontSize: 12 }}
                   />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{
                       backgroundColor: chartConfig.style.background,
                       border: `1px solid ${chartConfig.grid.stroke}`,
@@ -447,4 +458,6 @@ export const AnalyticsTabs: React.FC<AnalyticsTabsProps> = ({ labId, dateRange }
       </TabsContent>
     </Tabs>
   );
-};
+}
+
+export default AnalyticsPage;

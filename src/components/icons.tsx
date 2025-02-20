@@ -40,6 +40,7 @@ import {
   UserPen,
   UserX2Icon,
   LucideIcon,
+  LineChart,
 } from "lucide-react"
 
 import { BeakerIcon } from '@heroicons/react/24/solid';
@@ -124,4 +125,5 @@ export const Icons = {
   alertTriangle: AlertTriangle,
   monitoring: BarChart3,
   devices: MonitorSmartphone,
+  analytics: LineChart,
 }

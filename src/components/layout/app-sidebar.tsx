@@ -62,6 +62,8 @@ export default function AppSidebar() {
     const pathname = usePathname();
     const { state, isMobile } = useSidebar();
     const params = useParams();
+
+    
     //Info: The following data is used for the sidebar navigation and Cmd K bar.
     const navItems: NavItem[] = [
         {
@@ -70,6 +72,14 @@ export default function AppSidebar() {
             icon: 'dashboard',
             isActive: pathname === `/${params.labId}/overview`,
             shortcut: ['o', 'v'],
+            items: []
+        },
+        {
+            title: 'Analytics',
+            url: `/${params.labId}/analytics`,
+            icon: 'analytics',
+            isActive: pathname === `/${params.labId}/analytics`,
+            shortcut: ['d', 'u'],
             items: []
         },
         {

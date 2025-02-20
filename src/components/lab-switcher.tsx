@@ -20,8 +20,6 @@ import {
 } from "@/components/ui/popover";
 import { useLabModal } from "@/hooks/use-lab-modal";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { useTheme } from 'next-themes';
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>;
 
