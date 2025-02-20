@@ -18,6 +18,8 @@ import { Device, DeviceUser } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { DateRange } from 'react-day-picker';
 import { useDateRange } from '@/hooks/use-date-range';
+import { DashboardContextMenu } from '@/components/dashboard-context-menu';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface GraphData {
     name: string;
@@ -67,6 +69,7 @@ const CardStatsPage = ({
 
     const [loading, setLoading] = useState(false);
     const { dateRange, setDateRange } = useDateRange();
+    const [datePickerOpen, setDatePickerOpen] = useState(false);
 
     const [data, setData] = useState<DashboardData>({
         allDevices: 0,
@@ -177,7 +180,7 @@ const CardStatsPage = ({
     const getTrendDescription = useCallback((from?: Date, to?: Date) => {
         if (!from || !to) return "from previous period";
         const diffInDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-        
+
         if (diffInDays <= 1) return "from yesterday";
         if (diffInDays <= 7) return "from last week";
         if (diffInDays <= 30) return "from last month";
@@ -191,14 +194,17 @@ const CardStatsPage = ({
         return Number(trend.toFixed(2));
     };
 
-    return (
+    const handleDatePickerClick = () => {
+        setDatePickerOpen(true);
+    };
 
+    return (
         <>
             <div className='flex items-center justify-between space-y-2'>
                 <h2 className='text-2xl font-bold tracking-tight'>
                     Hi, Welcome back 👋
                 </h2>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full sm:w-auto gap-2">
+                <div className="hidden sm:flex flex-row items-center w-auto gap-2">
                     <CalendarDateRangePicker
                         value={dateRange}
                         onChange={handleDateRangeChange}
@@ -212,7 +218,7 @@ const CardStatsPage = ({
                     >
                         <Button
                             size="sm"
-                            className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8 w-full sm:w-auto"
+                            className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8"
                             disabled={loading}
                         >
                             <Download className="h-4 w-4 mr-1" />
@@ -220,7 +226,51 @@ const CardStatsPage = ({
                         </Button>
                     </PDFDownloadLink>
                 </div>
+                <div className="sm:hidden">
+                    <DashboardContextMenu
+                        dateRange={dateRange}
+                        onDateClick={handleDatePickerClick}
+                        onDownloadClick={() => document.getElementById('download-pdf')?.click()}
+                        loading={loading}
+                    />
+                </div>
             </div>
+
+            {/* Hidden PDFDownloadLink for mobile */}
+            <div className="hidden">
+
+
+                <PDFDownloadLink
+                    document={<DashboardReport data={generateReportData()} />}
+                    fileName={`dashboard-report-${format(
+                        new Date(),
+                        "yyyy-MM-dd"
+                    )}.pdf`}
+                >
+                    <Button
+                        size="sm"
+                        className="bg-[#C9121F] hover:bg-red-700 text-white text-sm py-1 h-8 w-full sm:w-auto"
+                        disabled={loading}
+                    >
+                        <Download className="h-4 w-4 mr-1" />
+                        Download Report
+                    </Button>
+                </PDFDownloadLink>
+            </div>
+
+            {/* Date Picker Dialog for mobile */}
+            <Dialog open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <CalendarDateRangePicker
+                        value={dateRange}
+                        onChange={(newRange) => {
+                            handleDateRangeChange(newRange);
+                            setDatePickerOpen(false);
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
+
             <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
                 <Card>
                     <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>

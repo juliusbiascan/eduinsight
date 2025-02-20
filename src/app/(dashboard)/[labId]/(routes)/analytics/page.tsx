@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Users, Clock, Cpu, BarChart2, PieChart } from "lucide-react";
 import {
@@ -16,12 +16,10 @@ import {
   getResourceUtilization
 } from "@/data/analytics";
 import { useTheme } from 'next-themes';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDateRange } from '@/hooks/use-date-range';
 import { addDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
-
-
+import { CalendarDateRangePicker } from "@/components/date-range-picker";
 
 interface DeviceUsageStats {
   name: string;
@@ -63,11 +61,11 @@ const resourceColors = {
 
 const AnalyticsPage = ({ params }: { params: { labId: string } }) => {
   const { theme } = useTheme();
- 
+
   const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
     to: new Date(),
-});
+  });
 
 
   const [deviceUsageStats, setDeviceUsageStats] = useState<DeviceUsageStats[]>([]);
@@ -76,18 +74,17 @@ const AnalyticsPage = ({ params }: { params: { labId: string } }) => {
   const [devicePerformance, setDevicePerformance] = useState<DevicePerformance[]>([]);
   const [resourceUtilization, setResourceUtilization] = useState<ResourceUtilization[]>([]);
 
-  useEffect(() => {
 
 
-    const fetchData = async () => {
-
+  const fetchData = useCallback(
+    async (newDateRange: DateRange) => {
 
       const [deviceStats, userStats, hourlyStats, perfStats, resourceStats] = await Promise.all([
-        getDeviceUsageStats(params.labId, dateRange),
-        getUserActivityStats(params.labId, dateRange),
-        getHourlyUsageStats(params.labId, dateRange),
-        getDevicePerformanceStats(params.labId, dateRange),
-        getResourceUtilization(params.labId, dateRange)
+        getDeviceUsageStats(params.labId, newDateRange),
+        getUserActivityStats(params.labId, newDateRange),
+        getHourlyUsageStats(params.labId, newDateRange),
+        getDevicePerformanceStats(params.labId, newDateRange),
+        getResourceUtilization(params.labId, newDateRange)
       ]);
 
       setDeviceUsageStats(deviceStats);
@@ -95,10 +92,14 @@ const AnalyticsPage = ({ params }: { params: { labId: string } }) => {
       setHourlyUsage(hourlyStats);
       setDevicePerformance(perfStats);
       setResourceUtilization(resourceStats);
-    };
-    fetchData();
-  }, [params.labId, dateRange]);
+    },
+    [params.labId]
+  );
 
+  useEffect(() => {
+    fetchData(dateRange);
+  }, [dateRange, params.labId, fetchData]);
+  
   const colors = useMemo(() => ({
     device: [
       '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD',
@@ -152,15 +153,25 @@ const AnalyticsPage = ({ params }: { params: { labId: string } }) => {
     return new Date(timestamp).toLocaleTimeString();
   };
 
+  const handleDateRangeChange = (newRange: DateRange | undefined) => {
+    if (newRange && newRange.from && newRange.to) {
+      setDateRange(newRange);
+      fetchData(newRange);
+    }
+  };
   return (
-    <Tabs defaultValue="usage" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="usage">Usage Analytics</TabsTrigger>
-        <TabsTrigger value="performance">Performance Metrics</TabsTrigger>
-        <TabsTrigger value="patterns">Usage Patterns</TabsTrigger>
-      </TabsList>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold tracking-tight">Analytics Dashboard</h2>
+        <CalendarDateRangePicker
+          value={dateRange}
+          onChange={handleDateRangeChange}
+        />
 
-      <TabsContent value="usage">
+      </div>
+
+      <section aria-label="Usage Analytics" className="space-y-4">
+        <h3 className="text-xl font-semibold">Usage Analytics</h3>
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <Card className="overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-2">
@@ -269,9 +280,10 @@ const AnalyticsPage = ({ params }: { params: { labId: string } }) => {
             </CardContent>
           </Card>
         </div>
-      </TabsContent>
+      </section>
 
-      <TabsContent value="performance">
+      <section aria-label="Performance Metrics" className="space-y-4">
+        <h3 className="text-xl font-semibold">Performance Metrics</h3>
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <Card className="overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900">
             <CardHeader className="pb-2">
@@ -391,9 +403,10 @@ const AnalyticsPage = ({ params }: { params: { labId: string } }) => {
             </CardContent>
           </Card>
         </div>
-      </TabsContent>
+      </section>
 
-      <TabsContent value="patterns">
+      <section aria-label="Usage Patterns" className="space-y-4">
+        <h3 className="text-xl font-semibold">Usage Patterns</h3>
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <Card className="overflow-hidden bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900">
             <CardHeader className="pb-2">
@@ -455,8 +468,8 @@ const AnalyticsPage = ({ params }: { params: { labId: string } }) => {
             </CardContent>
           </Card>
         </div>
-      </TabsContent>
-    </Tabs>
+      </section>
+    </div>
   );
 }
 
