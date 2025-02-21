@@ -1,159 +1,191 @@
-import { Device, DeviceUser } from '@prisma/client';
+import { Device } from '@prisma/client';
 import { Document, Page, Text, View, StyleSheet, Image, Font } from '@react-pdf/renderer';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
-// Register a font for a formal look
+// Register fonts for better typography
 Font.register({
-  family: 'Helvetica',
+  family: 'Inter',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/helvetica/v10/5URNQjwBPE-oY7WSsbJDoQ.woff2' }, // Example font URL
-  ],
+    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2', fontWeight: 400 },
+    { src: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuGKYAZ9hiA.woff2', fontWeight: 700 }
+  ]
 });
 
 const styles = StyleSheet.create({
   page: {
-    flexDirection: 'column',
-    backgroundColor: '#EAEAEB',
-    padding: 30,
+    padding: 40,
+    fontFamily: 'Inter'
   },
-  section: {
-    margin: 10,
-    padding: 10,
-    flexGrow: 1
+  header: {
+    marginBottom: 30
   },
-  headerImage: {
-    width: '100%',
-    height: 80,
-    marginBottom: 20,
+  logo: {
+    width: 120,
+    height: 40,
+    marginBottom: 20
   },
   title: {
-    fontSize: 28,
-    marginBottom: 10,
-    color: '#1A1617',
-    textAlign: 'center',
-  },
-  description: {
-    fontSize: 14,
-    marginBottom: 20,
-    color: '#555555',
-    textAlign: 'center',
-  },
-  text: {
-    fontSize: 12,
-    marginBottom: 5,
-    color: '#1A1617',
+    fontSize: 24,
+    fontWeight: 700,
+    marginBottom: 8,
+    color: '#111827'
   },
   subtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 24
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 32
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 8
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 4
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 700,
+    color: '#111827'
+  },
+  section: {
+    marginBottom: 32
+  },
+  sectionTitle: {
     fontSize: 16,
-    marginTop: 10,
-    marginBottom: 5,
-    color: '#1A1617',
-    fontWeight: 'bold',
+    fontWeight: 700,
+    color: '#111827',
+    marginBottom: 16
   },
   table: {
-    display: "flex",
-    width: "auto",
-    marginTop: 10,
-    marginBottom: 10,
+    width: '100%'
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderColor: '#E5E7EB'
   },
   tableRow: {
-    flexDirection: "row",
-  },
-  tableColHeader: {
-    width: "33.33%",
-    borderStyle: "solid",
-    borderWidth: 1,
-    backgroundColor: '#f0f0f0',
-    padding: 5,
-  },
-  tableCol: {
-    width: "33.33%",
-    borderStyle: "solid",
-    borderWidth: 1,
-    padding: 5,
-  },
-  tableCellHeader: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#1A1617',
+    flexDirection: 'row',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderColor: '#E5E7EB'
   },
   tableCell: {
-    fontSize: 10,
-    color: '#333333',
+    flex: 1,
+    fontSize: 12
   },
+  footer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 40,
+    right: 40,
+    textAlign: 'center',
+    color: '#9CA3AF',
+    fontSize: 10,
+    borderTopWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingTop: 16
+  }
 });
 
 interface DashboardReportProps {
   totalLogins: number;
   totalUsers: number;
   totalDevices: number;
+  activeNow: number;
   dateRange: DateRange;
-  studentCount: number;
-  teacherCount: number;
   devices: Device[];
-  users: Array<{ id: string; firstName: string; lastName: string; role: string }>;
+  users: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  }>;
 }
 
 export const DashboardReport: React.FC<{ data: DashboardReportProps }> = ({ data }) => (
   <Document>
     <Page size="A4" style={styles.page}>
-      <Image src={"/pass-banner.png"} style={styles.headerImage} />
-      <View style={styles.section}>
+      <View style={styles.header}>
+        <Image src="/passlogo-small.png" style={styles.logo} />
         <Text style={styles.title}>EduInsight Lab Report</Text>
-        <Text style={styles.description}>This report provides an overview of the lab's activities and usage statistics.</Text>
-        <Text style={styles.text}>
-          Date Range: {data.dateRange.from ? format(data.dateRange.from, 'PP') : 'N/A'} - {data.dateRange.to ? format(data.dateRange.to, 'PP') : 'N/A'}
+        <Text style={styles.subtitle}>
+          {data.dateRange.from && data.dateRange.to
+            ? `${format(data.dateRange.from, 'PPP')} - ${format(data.dateRange.to, 'PPP')}`
+            : 'All Time Report'}
         </Text>
-        <Text style={styles.text}>Total Logins: {data.totalLogins}</Text>
-        <Text style={styles.text}>Total Users: {data.totalUsers}</Text>
-        <Text style={styles.text}>Total Students: {data.studentCount}</Text>
-        <Text style={styles.text}>Total Devices: {data.totalDevices}</Text>
-       
-        <Text style={styles.subtitle}>List of Devices:</Text>
-        <View style={styles.table}>
-          <View style={styles.tableRow}>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>Device Name</Text>
-            </View>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>Status</Text>
-            </View>
-          </View>
-          {data.devices.map(device => (
-            <View style={styles.tableRow} key={device.id}>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{device.name}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{device.isArchived ? 'Archived' : 'Active'}</Text>
-              </View>
-            </View>
-          ))}
+      </View>
+
+      <View style={styles.statsGrid}>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Total Sessions</Text>
+          <Text style={styles.statValue}>{data.totalLogins}</Text>
         </View>
-        
-        <Text style={styles.subtitle}>List of Users:</Text>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Active Users</Text>
+          <Text style={styles.statValue}>{data.activeNow}</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Total Users</Text>
+          <Text style={styles.statValue}>{data.totalUsers}</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Total Devices</Text>
+          <Text style={styles.statValue}>{data.totalDevices}</Text>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Lab Devices</Text>
         <View style={styles.table}>
-          <View style={styles.tableRow}>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>Name</Text>
-            </View>
-            <View style={styles.tableColHeader}>
-              <Text style={styles.tableCellHeader}>Role</Text>
-            </View>
+          <View style={styles.tableHeader}>
+            <Text style={styles.tableCell}>Device Name</Text>
+            <Text style={styles.tableCell}>Status</Text>
+            <Text style={styles.tableCell}>Last Used</Text>
           </View>
-          {data.users.map(user => (
-            <View style={styles.tableRow} key={user.id}>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{user.firstName} {user.lastName}</Text>
-              </View>
-              <View style={styles.tableCol}>
-                <Text style={styles.tableCell}>{user.role}</Text>
-              </View>
+          {data.devices.map((device) => (
+            <View style={styles.tableRow} key={device.id}>
+              <Text style={styles.tableCell}>{device.name}</Text>
+              <Text style={styles.tableCell}>{device.isArchived ? 'Archived' : 'Active'}</Text>
+              <Text style={styles.tableCell}>
+                {device.updatedAt ? format(new Date(device.updatedAt), 'PP') : 'Never'}
+              </Text>
             </View>
           ))}
         </View>
       </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Registered Users</Text>
+        <View style={styles.table}>
+          <View style={styles.tableHeader}>
+            <Text style={styles.tableCell}>Name</Text>
+            <Text style={styles.tableCell}>Role</Text>
+          </View>
+          {data.users.map((user) => (
+            <View style={styles.tableRow} key={user.id}>
+              <Text style={styles.tableCell}>{`${user.firstName} ${user.lastName}`}</Text>
+              <Text style={styles.tableCell}>{user.role}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <Text style={styles.footer}>
+        Generated on {format(new Date(), 'PPP')} • EduInsight Lab Management System
+      </Text>
     </Page>
   </Document>
 );

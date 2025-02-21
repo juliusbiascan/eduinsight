@@ -8,6 +8,7 @@ import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '
 import { getDeviceStats, getUniqueDevices } from '@/data/get-user-activity';
 import { useDateRange } from '@/hooks/use-date-range';
 import { Skeleton } from '@/components/ui/skeleton';
+import { calculateTrend } from '@/lib/utils/calculate-trend';
 
 // Generate random light colors with good contrast
 const generateColor = () => {
@@ -94,109 +95,127 @@ const PieStats = ({ params }: { params: { labId: string } }) => {
     } as ChartConfig);
   }, [chartData, deviceColors]);
 
+  // Replace existing loading return with this more detailed skeleton
   if (isLoading) {
     return (
       <Card className="flex flex-col">
         <CardHeader className="items-center pb-0">
-          <Skeleton className="h-6 w-[200px]" />
-          <Skeleton className="h-4 w-[150px]" />
+          <Skeleton className="h-6 w-[200px] mb-2" />
+          <Skeleton className="h-4 w-[300px]" />
         </CardHeader>
         <CardContent className="flex-1">
-          <div className="mx-auto aspect-square max-h-[360px]">
+          <div className="mx-auto aspect-square max-h-[360px] relative">
             <Skeleton className="h-full w-full rounded-full" />
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+              <Skeleton className="h-8 w-[100px] mb-2" />
+              <Skeleton className="h-4 w-[60px]" />
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Skeleton className="h-4 w-[180px]" />
-          <Skeleton className="h-4 w-[220px]" />
+          <Skeleton className="h-4 w-[250px]" />
+          <Skeleton className="h-4 w-[200px]" />
         </CardFooter>
       </Card>
     );
   }
 
-  const trend = chartData.length > 0 ? 
-    ((totalVisitors - (totalVisitors * 0.8)) / (totalVisitors * 0.8)) * 100 : 0;
+  const trend = chartData.length > 1 
+    ? calculateTrend(
+        totalVisitors,
+        chartData.reduce((acc, curr) => acc + curr.visitors, 0) / chartData.length * chartData.length
+      )
+    : 0;
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Device Distribution</CardTitle>
+        <CardTitle>Workstation Type Distribution</CardTitle>
         <CardDescription>
-          {formatDateRangeText(dateRange || { from: undefined, to: undefined })}
+          {chartData.length === 0 ? (
+            "No workstation data available"
+          ) : (
+            `Analysis of computer types in lab ${formatDateRangeText(dateRange || { from: undefined, to: undefined })}`
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square max-h-[360px]"
-        >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null;
-                const data = payload[0].payload;
-                return (
-                  <div className="rounded-lg bg-background p-2 shadow-md">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-bold">{data.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {data.visitors.toLocaleString()} visitors
-                      </span>
+        {chartData.length === 0 ? (
+          <div className="flex h-[360px] items-center justify-center text-muted-foreground">
+            No data available for the selected period
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[360px]">
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  const data = payload[0].payload;
+                  return (
+                    <div className="rounded-lg bg-background p-2 shadow-md">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm font-bold">{data.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {data.visitors.toLocaleString()} visitors
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                );
-              }}
-            />
-            <Pie
-              data={chartData}
-              dataKey="visitors"
-              nameKey="label"
-              innerRadius={60}
-              strokeWidth={5}
-            >
-              <Label
-                content={({ viewBox }) => {
-                  if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                    return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          className="fill-foreground text-3xl font-bold"
-                        >
-                          {totalVisitors.toLocaleString()}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
-                        >
-                          Visitors
-                        </tspan>
-                      </text>
-                    );
-                  }
+                  );
                 }}
               />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
+              <Pie
+                data={chartData}
+                dataKey="visitors"
+                nameKey="label"
+                innerRadius={60}
+                strokeWidth={5}
+              >
+                <Label
+                  content={({ viewBox }) => {
+                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                      return (
+                        <text
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                        >
+                          <tspan
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            className="fill-foreground text-3xl font-bold"
+                          >
+                            {totalVisitors.toLocaleString()}
+                          </tspan>
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 24}
+                            className="fill-muted-foreground"
+                          >
+                            Visitors
+                          </tspan>
+                        </text>
+                      );
+                    }
+                  }}
+                />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        )}
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          {trend > 0 ? 'Trending up' : 'Trending down'} by {Math.abs(trend).toFixed(1)}% this period
-          <TrendingUp className={`h-4 w-4 ${trend < 0 ? 'rotate-180' : ''}`} />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          {totalVisitors.toLocaleString()} total visitors recorded
-        </div>
-      </CardFooter>
+      {chartData.length > 0 && (
+        <CardFooter className="flex-col gap-2 text-sm">
+          <div className="flex items-center gap-2 font-medium leading-none">
+            {`${trend >= 0 ? '↑' : '↓'} ${Math.abs(trend)}% vs. previous period`}
+            <TrendingUp className={`h-4 w-4 ${trend < 0 ? 'rotate-180' : ''}`} />
+          </div>
+          <div className="leading-none text-muted-foreground">
+            {totalVisitors.toLocaleString()} total lab accesses recorded
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 };

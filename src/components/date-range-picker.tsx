@@ -21,6 +21,42 @@ export function CalendarDateRangePicker({
   value,
   onChange,
 }: CalendarDateRangePickerProps) {
+  const [tempRange, setTempRange] = React.useState<DateRange | undefined>(value);
+  const [selecting, setSelecting] = React.useState<'start' | 'end'>('start');
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+
+    if (selecting === 'start') {
+      setTempRange({ from: date, to: undefined });
+    } else {
+      if (tempRange?.from) {
+        if (date < tempRange.from) {
+          setTempRange({ from: date, to: tempRange.from });
+        } else {
+          setTempRange({ from: tempRange.from, to: date });
+        }
+      }
+    }
+  };
+
+  const handleConfirmDate = () => {
+    if (selecting === 'start') {
+      setSelecting('end');
+    } else {
+      if (tempRange?.from && tempRange.to) {
+        onChange(tempRange);
+        setSelecting('start');
+      }
+    }
+  };
+
+  const handleClear = () => {
+    setTempRange(undefined);
+    setSelecting('start');
+    onChange(undefined);
+  };
+
   const handlePreset = (preset: 'today' | 'last7Days' | 'last30Days') => {
     const today = new Date();
     let from: Date | undefined;
@@ -103,14 +139,34 @@ export function CalendarDateRangePicker({
             </Button>
           </div>
           <hr className="border-gray-300 dark:border-gray-700 mb-4" />
+          <div className="text-sm font-medium mb-2">
+            {selecting === 'start' ? 'Select start date' : 'Select end date'}
+          </div>
           <Calendar
-            mode="range"
+            mode="single"
             defaultMonth={value?.from}
-            selected={value}
-            onSelect={onChange}
-            numberOfMonths={2}
+            selected={selecting === 'start' ? tempRange?.from : tempRange?.to}
+            onSelect={handleDateSelect}
+            
             className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm"
+            disabled={selecting === 'end' && tempRange?.from ? { before: tempRange.from } : undefined}
           />
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClear}
+            >
+              Clear
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleConfirmDate}
+              disabled={selecting === 'start' ? !tempRange?.from : !tempRange?.to}
+            >
+              {selecting === 'start' ? 'Set Start Date' : 'Set End Date'}
+            </Button>
+          </div>
         </PopoverContent>
       </Popover>
     </div>

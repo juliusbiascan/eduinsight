@@ -6,6 +6,7 @@ import { Device, DeviceUser } from "@prisma/client";
 import { useMemo, useState, useEffect } from "react";
 import { useDateRange } from '@/hooks/use-date-range';
 import { getRecentLogins } from "@/data/get-graph-count";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface RecentLoginData {
   id: string;
@@ -85,16 +86,50 @@ const RecentPage = ({
     return `from ${from.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} to ${to.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   };
 
+  if (isLoading) {
+    return (
+      <Card className="h-[435px] flex flex-col">
+        <CardHeader>
+          <Skeleton className="h-6 w-[180px] mb-2" />
+          <Skeleton className="h-4 w-[250px]" />
+        </CardHeader>
+        <CardContent className="flex-1 min-h-0">
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center space-x-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-[200px]" />
+                  <Skeleton className="h-4 w-[150px]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="h-[435px] flex flex-col">
       <CardHeader>
-        <CardTitle>Recent Visits</CardTitle>
+        <CardTitle>Lab Session History</CardTitle>
         <CardDescription>
-          {formattedRecentLogin.length} {formattedRecentLogin.length === 1 ? 'visit' : 'visits'} {getDateRangeDescription(dateRange?.from, dateRange?.to)}
+          {formattedRecentLogin.length === 0 ? (
+            "No lab sessions recorded"
+          ) : (
+            `${formattedRecentLogin.length} ${formattedRecentLogin.length === 1 ? 'person used' : 'people used'} the lab ${getDateRangeDescription(dateRange?.from, dateRange?.to)}`
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 min-h-0">
-        <RecentUsers data={formattedRecentLogin} isLoading={isLoading} />
+        {formattedRecentLogin.length === 0 ? (
+          <div className="flex h-full items-center justify-center text-muted-foreground">
+            No activity to display
+          </div>
+        ) : (
+          <RecentUsers data={formattedRecentLogin} isLoading={isLoading} />
+        )}
       </CardContent>
     </Card>
   );

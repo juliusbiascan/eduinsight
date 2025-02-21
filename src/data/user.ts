@@ -55,11 +55,11 @@ export const getActiveDeviceUserByUserId = async (userId: string) => {
   }
 }
 
-export const getAllDeviceUserCount = async (labId: string, dateRange?: DateRange) => {
+export const getAllDeviceUserCount = async (dateRange?: DateRange) => {
   try {
     const user = await db.deviceUser.count({
       where: {
-        labId,
+       
         createdAt: {
           gte: dateRange?.from,
           lte: dateRange?.to,
@@ -87,11 +87,10 @@ export const getAllDeviceUser = async (labId: string) => {
   }
 }
 
-export const getUsersList = async (labId: string, dateRange: DateRange) => {
+export const getUsersList = async (dateRange: DateRange) => {
   try {
     const users = await db.deviceUser.findMany({
       where: {
-        labId,
         createdAt: {
           gte: dateRange?.from,
           lte: dateRange?.to,

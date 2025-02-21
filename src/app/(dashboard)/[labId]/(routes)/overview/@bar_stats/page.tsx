@@ -21,7 +21,7 @@ const chartConfig = {
 
 const formatDateRangeText = (dateRange: { from?: Date; to?: Date }) => {
   if (!dateRange.from || !dateRange.to) {
-    return 'Showing total visitors';
+    return 'Showing all lab activity';
   }
 
   const diffInDays = Math.ceil(
@@ -29,19 +29,19 @@ const formatDateRangeText = (dateRange: { from?: Date; to?: Date }) => {
   );
 
   if (diffInDays <= 1) {
-    return "Showing today's visitors";
+    return "Today's lab activity";
   }
   if (diffInDays <= 7) {
-    return "Showing this week's visitors";
+    return "This week's lab activity";
   }
   if (diffInDays <= 30) {
-    return "Showing this month's visitors";
+    return "This month's lab activity";
   }
   if (diffInDays <= 90) {
-    return "Showing this quarter's visitors";
+    return "This quarter's lab activity";
   }
   
-  return `Showing visitors from ${dateRange.from.toLocaleDateString('en-US', { 
+  return `Lab activity from ${dateRange.from.toLocaleDateString('en-US', { 
     month: 'long', 
     year: 'numeric' 
   })} to ${dateRange.to.toLocaleDateString('en-US', { 
@@ -118,79 +118,88 @@ const BarStats = ({ params }: { params: { labId: string } }) => {
     <Card>
       <CardHeader className='flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row'>
         <div className='flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6'>
-          <CardTitle>Overview</CardTitle>
+          <CardTitle>Student & Teacher Lab Usage</CardTitle>
           <CardDescription>
-            {formatDateRangeText(dateRange || { from: undefined, to: undefined })}
+            {chartData.length === 0 ? (
+              "No usage records available"
+            ) : (
+              formatDateRangeText(dateRange || { from: undefined, to: undefined })
+            )}
           </CardDescription>
         </div>
-        <div className='flex'>
-          {['students', 'teacher'].map((key) => {
-            const chart = key as keyof typeof chartConfig;
-            if (!chart || total[key as keyof typeof total] === 0) return null;
-            return (
-              <button
-                key={chart}
-                data-active={activeChart === chart}
-                className='relative flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6'
-                onClick={() => setActiveChart(chart)}
-              >
-                <span className='text-xs text-muted-foreground'>
-                  {chartConfig[chart].label}
-                </span>
-                <span className='text-lg font-bold leading-none sm:text-3xl'>
-                  {total[key as keyof typeof total]?.toLocaleString()}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        {chartData.length > 0 && (
+          <div className='flex'>
+            {['students', 'teacher'].map((key) => {
+              const chart = key as keyof typeof chartConfig;
+              if (!chart || total[key as keyof typeof total] === 0) return null;
+              return (
+                <button
+                  key={chart}
+                  data-active={activeChart === chart}
+                  className='relative flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6'
+                  onClick={() => setActiveChart(chart)}
+                >
+                  <span className='text-xs text-muted-foreground'>
+                    {chartConfig[chart].label}
+                  </span>
+                  <span className='text-lg font-bold leading-none sm:text-3xl'>
+                    {total[key as keyof typeof total]?.toLocaleString()}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </CardHeader>
       <CardContent className='px-2 sm:p-6'>
-        <ChartContainer
-          config={chartConfig}
-          className='aspect-auto h-[280px] w-full'
-        >
-          <BarChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey='date'
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric'
-                });
+        {chartData.length === 0 ? (
+          <div className="flex h-[280px] items-center justify-center text-muted-foreground">
+            No data available for the selected period
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig} className='aspect-auto h-[280px] w-full'>
+            <BarChart
+              accessibilityLayer
+              data={chartData}
+              margin={{
+                left: 12,
+                right: 12
               }}
-            />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  className='w-[150px]'
-                  nameKey={activeChart}
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    });
-                  }}
-                />
-              }
-            />
-            <Bar dataKey={activeChart} fill={chartConfig[activeChart].color} />
-          </BarChart>
-        </ChartContainer>
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey='date'
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                }}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    className='w-[150px]'
+                    nameKey={activeChart}
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      });
+                    }}
+                  />
+                }
+              />
+              <Bar dataKey={activeChart} fill={chartConfig[activeChart].color} />
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

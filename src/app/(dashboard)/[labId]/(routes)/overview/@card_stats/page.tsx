@@ -20,6 +20,8 @@ import { DateRange } from 'react-day-picker';
 import { useDateRange } from '@/hooks/use-date-range';
 import { DashboardContextMenu } from '@/components/dashboard-context-menu';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Skeleton } from '@/components/ui/skeleton';
+import { calculateTrend, getTrendDescription } from '@/lib/utils/calculate-trend';
 
 interface GraphData {
     name: string;
@@ -47,11 +49,7 @@ interface DashboardData {
         totalUsers: number;
         totalDevices: number;
         activeNow: number;
-        studentCount: number;
-        teacherCount: number;
     };
-    studentCount: number;
-    teacherCount: number;
     devices: Device[];
     users: Array<{
         id: string;
@@ -82,11 +80,8 @@ const CardStatsPage = ({
             totalUsers: 0,
             totalDevices: 0,
             activeNow: 0,
-            studentCount: 0,
-            teacherCount: 0,
+           
         },
-        studentCount: 0,
-        teacherCount: 0,
         devices: [],
         users: [],
     });
@@ -101,21 +96,18 @@ const CardStatsPage = ({
                 graphLogin,
                 recentLogin,
                 previousStats,
-                studentCount,
-                teacherCount,
+        
                 devicesList, // Fetch devices list
                 usersList, // Fetch users list
             ] = await Promise.all([
                 getTotalDevices(params.labId, newDateRange),
                 getActiveCount(params.labId, newDateRange),
-                getAllDeviceUserCount(params.labId, newDateRange),
+                getAllDeviceUserCount(newDateRange),
                 getGraphLogins(params.labId, newDateRange),
                 getRecentLogins(params.labId, newDateRange),
                 getPreviousStats(params.labId, newDateRange),
-                getStudentCount(params.labId, newDateRange),
-                getTeacherCount(params.labId, newDateRange),
                 getDevicesList(params.labId, newDateRange), // Ensure this function exists
-                getUsersList(params.labId, newDateRange), // Ensure this function exists
+                getUsersList(newDateRange), // Ensure this function exists
             ]);
 
             setData({
@@ -129,11 +121,8 @@ const CardStatsPage = ({
                     totalUsers: 0,
                     totalDevices: 0,
                     activeNow: 0,
-                    studentCount: 0,
-                    teacherCount: 0,
                 },
-                studentCount: studentCount || 0,
-                teacherCount: teacherCount || 0,
+            
                 devices: devicesList || [],
                 users: usersList || [],
             });
@@ -159,8 +148,6 @@ const CardStatsPage = ({
             totalUsers: data.allUser,
             totalDevices: data.allDevices,
             activeNow: data.activeCount,
-            studentCount: data.studentCount,
-            teacherCount: data.teacherCount,
             devices: data.devices,
             users: data.users,
             dateRange,
@@ -170,33 +157,42 @@ const CardStatsPage = ({
         data.allUser,
         data.allDevices,
         data.activeCount,
-        data.studentCount,
-        data.teacherCount,
         data.devices,
         data.users,
         dateRange,
     ]);
 
-    const getTrendDescription = useCallback((from?: Date, to?: Date) => {
-        if (!from || !to) return "from previous period";
-        const diffInDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (diffInDays <= 1) return "from yesterday";
-        if (diffInDays <= 7) return "from last week";
-        if (diffInDays <= 30) return "from last month";
-        if (diffInDays <= 90) return "from last quarter";
-        return "from previous period";
-    }, []);
-
-    const calculateTrend = (current: number, previous: number) => {
-        if (previous === 0) return current > 0 ? 100 : 0;
-        const trend = ((current - previous) / previous) * 100;
-        return Number(trend.toFixed(2));
-    };
-
     const handleDatePickerClick = () => {
         setDatePickerOpen(true);
     };
+
+    if (loading) {
+        return (
+            <>
+                <div className='flex items-center justify-between space-y-2'>
+                    <Skeleton className="h-8 w-[200px]" />
+                    <div className="hidden sm:flex flex-row items-center w-auto gap-2">
+                        <Skeleton className="h-9 w-[300px]" />
+                        <Skeleton className="h-9 w-[150px]" />
+                    </div>
+                </div>
+                <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+                    {[1, 2, 3, 4].map((index) => (
+                        <Card key={index}>
+                            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                                <Skeleton className="h-5 w-[120px]" />
+                                <Skeleton className="h-4 w-4" />
+                            </CardHeader>
+                            <CardContent>
+                                <Skeleton className="h-8 w-[100px] mb-2" />
+                                <Skeleton className="h-4 w-[180px]" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -272,59 +268,31 @@ const CardStatsPage = ({
             </Dialog>
 
             <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-                <Card>
-                    <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                        <CardTitle className='text-sm font-medium'>
-                            Total Visitors
-                        </CardTitle>
-                        <TrendingUp className='h-4 w-4 text-muted-foreground' />
-                    </CardHeader>
-                    <CardContent>
-                        <div className='text-2xl font-bold'>+{data.recentLogin.length}</div>
-                        <p className='text-xs text-muted-foreground'>
-                            {calculateTrend(
-                                data.recentLogin.length,
-                                data.previousStats.totalLogins
-                            )}% {getTrendDescription(dateRange.from, dateRange.to)}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                        <CardTitle className='text-sm font-medium'>
-                            Devices
-                        </CardTitle>
-                        <Icons.devices className='h-4 w-4 text-muted-foreground' />
-                    </CardHeader>
-                    <CardContent>
-                        <div className='text-2xl font-bold'>+{data.allDevices}</div>
-                        <p className='text-xs text-muted-foreground'>
-                            {calculateTrend(
-                                data.allDevices,
-                                data.previousStats.totalDevices
-                            )}% {getTrendDescription(dateRange.from, dateRange.to)}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                        <CardTitle className='text-sm font-medium'>Users</CardTitle>
-                        <Users className='h-4 w-4 text-muted-foreground' />
-                    </CardHeader>
-                    <CardContent>
-                        <div className='text-2xl font-bold'>{data.studentCount}</div>
-                        <p className='text-xs text-muted-foreground'>
-                            {calculateTrend(
-                                data.studentCount,
-                                data.previousStats.studentCount
-                            )}% {getTrendDescription(dateRange.from, dateRange.to)}
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                        <CardTitle className='text-sm font-medium'>Active Now</CardTitle>
-                        <svg
+                {[
+                    {
+                        title: "Lab Session Count",
+                        value: data.recentLogin.length,
+                        previousValue: data.previousStats.totalLogins,
+                        icon: <TrendingUp className='h-4 w-4 text-muted-foreground' />,
+                        prefix: "+"
+                    },
+                    {
+                        title: "Lab Workstations",
+                        value: data.allDevices,
+                        previousValue: data.previousStats.totalDevices,
+                        icon: <Icons.devices className='h-4 w-4 text-muted-foreground' />,
+                    },
+                    {
+                        title: "Registered Users",
+                        value: data.allUser,
+                        previousValue: data.previousStats.totalUsers,
+                        icon: <Users className='h-4 w-4 text-muted-foreground' />,
+                    },
+                    {
+                        title: "Current Lab Users",
+                        value: data.activeCount,
+                        previousValue: data.previousStats.activeNow,
+                        icon: <svg
                             xmlns='http://www.w3.org/2000/svg'
                             viewBox='0 0 24 24'
                             fill='none'
@@ -335,18 +303,27 @@ const CardStatsPage = ({
                             className='h-4 w-4 text-muted-foreground'
                         >
                             <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
-                        </svg>
-                    </CardHeader>
-                    <CardContent>
-                        <div className='text-2xl font-bold'>+{data.activeCount}</div>
-                        <p className='text-xs text-muted-foreground'>
-                            {calculateTrend(
-                                data.activeCount,
-                                data.previousStats.activeNow
-                            )}% {getTrendDescription(dateRange.from, dateRange.to)}
-                        </p>
-                    </CardContent>
-                </Card>
+                        </svg>,
+                    }
+                ].map((card, index) => (
+                    <Card key={index}>
+                        <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                            <CardTitle className='text-sm font-medium'>{card.title}</CardTitle>
+                            {card.icon}
+                        </CardHeader>
+                        <CardContent>
+                            <div className='text-2xl font-bold'>
+                                {card.prefix || ''}{card.value}
+                            </div>
+                            <p className='text-xs text-muted-foreground'>
+                                {(() => {
+                                    const trend = calculateTrend(card.value, card.previousValue);
+                                    return `${trend >= 0 ? '↑' : '↓'} ${Math.abs(trend)}% ${getTrendDescription(dateRange.from, dateRange.to)}`;
+                                })()}
+                            </p>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         </>
     );

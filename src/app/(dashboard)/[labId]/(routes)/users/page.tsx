@@ -4,6 +4,7 @@ import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { State } from '@prisma/client'
 import { UserClient } from './components/client'
+import PageContainer from '@/components/layout/page-container'
 
 const UsersPage = async ({
   params
@@ -18,7 +19,7 @@ const UsersPage = async ({
 
 
   const devUser = await db.deviceUser.findMany({
-    
+
     include: {
       activeDevices: {
         where: {
@@ -35,11 +36,13 @@ const UsersPage = async ({
   })
 
   return (
-    <div className="flex-col">
-      <div className="flex-1 p-8 pt-6 space-y-4">
-        <UserClient data={devUser} />
+    <PageContainer scrollable={false}>
+      <div className="flex-col">
+        <div className="flex-1 p-8 pt-6 space-y-4">
+          <UserClient data={devUser} />
+        </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

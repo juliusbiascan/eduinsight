@@ -10,13 +10,23 @@ export async function getPreviousStats(labId: string, dateRange: DateRange): Pro
   totalUsers: number;
   totalDevices: number;
   activeNow: number;
-  studentCount: number;
-  teacherCount: number;
 }> {
-  const previousFrom = subDays(dateRange.from!, 1);
-  const previousTo = subDays(dateRange.to!, 1);
+  if (!dateRange.from || !dateRange.to) {
+    return {
+      totalLogins: 0,
+      totalUsers: 0,
+      totalDevices: 0,
+      activeNow: 0,
+    };
+  }
 
-  const [totalLogins, totalUsers, totalDevices, activeNow, studentCount, teacherCount] = await Promise.all([
+  const currentPeriodDays = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+  const previousFrom = new Date(dateRange.from);
+  previousFrom.setDate(previousFrom.getDate() - currentPeriodDays);
+  const previousTo = new Date(dateRange.from);
+  previousTo.setDate(previousTo.getDate() - 1);
+
+  const [totalLogins, totalUsers, totalDevices, activeNow] = await Promise.all([
     db.activeUserLogs.count({
       where: {
         labId: labId,
@@ -51,24 +61,6 @@ export async function getPreviousStats(labId: string, dateRange: DateRange): Pro
         state: State.ACTIVE,
       },
     }),
-    db.deviceUser.count({
-      where: {
-        labId: labId,
-        createdAt: {
-          lte: previousTo,
-        },
-        role: 'STUDENT',
-      },
-    }),
-    db.deviceUser.count({
-      where: {
-        labId: labId,
-        createdAt: {
-          lte: previousTo,
-        },
-        role: 'TEACHER',
-      },
-    })
   ]);
 
   return {
@@ -76,8 +68,5 @@ export async function getPreviousStats(labId: string, dateRange: DateRange): Pro
     totalUsers,
     totalDevices,
     activeNow,
-    studentCount,
-    teacherCount,
-   
   };
 }
