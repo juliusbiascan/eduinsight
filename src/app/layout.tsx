@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { ModalProvider } from "@/providers/modal-provider";
 import { ToasterProvider } from "@/providers/toast-provider";
 import { SocketProvider } from "@/providers/socket-provider";
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import NextTopLoader from 'nextjs-toploader';
-
 export const metadata: Metadata = {
   title: "EduInsight",
   description: "Developed by Julius Biascan",
@@ -41,6 +41,7 @@ export default async function RootLayout({
       <html lang="en">
         <body  className={`${lato.className}`} suppressHydrationWarning={true}>
         <NextTopLoader />
+        <NuqsAdapter>
           <SocketProvider>
             <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
               <ToasterProvider />
@@ -48,6 +49,7 @@ export default async function RootLayout({
               {children}
             </ThemeProvider>
           </SocketProvider>
+          </NuqsAdapter>
         </body>
       </html>
     </SessionProvider>

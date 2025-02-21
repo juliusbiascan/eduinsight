@@ -74,21 +74,7 @@ export const RegisterClient = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <Card className="bg-white/10 backdrop-blur-sm">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/20">
-              <UserPlus2 className="w-8 h-8 text-[#C9121F]" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">Pre Register User</h2>
-              <p className="text-gray-500 dark:text-gray-400">Add a new user to the system</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="space-y-4">
       <Card>
         <CardHeader>
           <h3 className="text-xl font-semibold">User Information</h3>

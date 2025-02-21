@@ -3,6 +3,9 @@ import { db } from "@/lib/db"
 import { redirect } from "next/navigation"
 import { ActivityLogsClient } from "./components/client"
 import { formatActivities } from "@/data/activity"
+import PageContainer from "@/components/layout/page-container"
+import { Heading } from "@/components/ui/heading"
+import { Separator } from "@/components/ui/separator"
 
 interface ActivityLogsPageProps {
   params: {
@@ -54,15 +57,20 @@ const ActivityLogsPage = async ({ params }: ActivityLogsPageProps) => {
   ]);
 
   return (
-    <div className="flex-col">
-      <div className="flex-1 p-8 pt-6 space-y-4">
+    <PageContainer>
+      <div className='flex flex-1 flex-col space-y-4'>
+        <Heading
+          title={`${user.firstName} ${user.lastName}'s Activity Logs`}
+          description="View user activity and session history"
+        />
+        <Separator />
         <ActivityLogsClient 
           user={user}
-          breakdown={breakdown} // Passed breakdown instead of activityLogs
+          breakdown={breakdown}
           activeUserLogs={activeUserLogs}
         />
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon, Sun, Clock} from "lucide-react"; // Updated imports
+import { CalendarIcon, Sun, Clock } from "lucide-react"; // Updated imports
 import { format, addDays } from "date-fns";
 import { DateRange } from "react-day-picker";
 
@@ -61,8 +61,8 @@ export function CalendarDateRangePicker({
     const today = new Date();
     let from: Date | undefined;
     let to: Date = today;
-    
-    switch(preset) {
+
+    switch (preset) {
       case 'today':
         from = today;
         break;
@@ -75,7 +75,7 @@ export function CalendarDateRangePicker({
       default:
         from = undefined;
     }
-    
+
     onChange(from && to ? { from, to } : undefined);
   };
 
@@ -90,7 +90,7 @@ export function CalendarDateRangePicker({
             className={cn(
               "w-[260px] justify-start text-left font-normal",
               !value && "text-muted-foreground",
-              "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900"
+
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -147,7 +147,7 @@ export function CalendarDateRangePicker({
             defaultMonth={value?.from}
             selected={selecting === 'start' ? tempRange?.from : tempRange?.to}
             onSelect={handleDateSelect}
-            
+
             className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm"
             disabled={selecting === 'end' && tempRange?.from ? { before: tempRange.from } : undefined}
           />

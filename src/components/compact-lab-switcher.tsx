@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, BeakerIcon, PlusCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
+import { BeakerIcon } from '@heroicons/react/24/solid';
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -53,7 +53,7 @@ export function CompactLabSwitcher({ items = [] }: CompactLabSwitcherProps) {
           size="sm"
           className="h-auto p-1 flex items-center gap-1 font-normal"
         >
-          <BeakerIcon className="h-4 w-4" />
+           <BeakerIcon className="h-4 w-4 text-[#C9121F] animate-bounce hidden sm:block" />
           <span>{currentLab?.label || "Select Lab"}</span>
           <ChevronsUpDown className="h-4 w-4 opacity-50" />
         </Button>
@@ -69,7 +69,7 @@ export function CompactLabSwitcher({ items = [] }: CompactLabSwitcherProps) {
                   key={lab.value}
                   onSelect={() => onLabSelect(lab)}
                 >
-                  <BeakerIcon className="h-4 w-4 mr-2" />
+                  <BeakerIcon className="h-4 w-4 mr-2 text-[#C9121F] animate-bounce hidden sm:block" />
                   {lab.label}
                   {currentLab?.value === lab.value && (
                     <Check className="ml-auto h-4 w-4" />

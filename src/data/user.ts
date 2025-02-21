@@ -109,3 +109,22 @@ export const getUsersList = async (dateRange: DateRange) => {
   }
 };
 
+export const getAllDeviceUsers = async () => {
+  try {
+    const users = await db.deviceUser.findMany({
+     
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+      orderBy: {
+        firstName: 'asc'
+      }
+    });
+    return users;
+  } catch {
+    return [];
+  }
+};
+

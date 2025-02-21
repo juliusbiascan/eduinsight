@@ -8,7 +8,6 @@ import { ThemeToggle } from '../theme-toggle';
 import { UserButton } from '../auth/user-button';
 import SearchInput from '../search';
 import { ServerStatusButton } from '../server-status-button';
-import { BeakerIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { redirect } from 'next/navigation';
@@ -36,7 +35,7 @@ export default async function Header() {
         <ServerStatusButton className="hidden sm:flex" />
         <UserButton />
         <ThemeToggle />
-        <BeakerIcon className="h-6 w-6 text-[#C9121F] animate-bounce hidden sm:block" />
+        
       </div>
     </header>
   );

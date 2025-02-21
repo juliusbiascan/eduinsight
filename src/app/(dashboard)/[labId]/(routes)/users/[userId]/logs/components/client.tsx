@@ -1,7 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Heading } from "@/components/ui/heading"
+import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ActiveUserLogs, DeviceUser, Device } from "@prisma/client"
 import { format } from "date-fns" // Removed formatDuration
@@ -36,17 +35,6 @@ export const ActivityLogsClient = ({
   
   return (
     <div className="space-y-4">
-      <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <Heading
-              title={`${user.firstName} ${user.lastName}'s Activity Logs`}
-              description="View user activity and session history"
-            />
-          </div>
-        </CardHeader>
-      </Card>
-
       <Tabs defaultValue="activity" className="space-y-4">
         <TabsList>
           <TabsTrigger value="activity">

@@ -1,10 +1,11 @@
-
-
 import React from 'react';
 import PageContainer from '@/components/layout/page-container';
 import { DateRangeProvider } from "@/hooks/use-date-range";
 
-
+export const metadata = {
+    title: 'Dashboard: Overview'
+  };
+  
 export default function OverViewLayout({
     recent,
     card_stats,

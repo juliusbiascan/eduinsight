@@ -34,6 +34,16 @@ enum YearLevel {
   FOURTH // 4th year
 }
 
+enum ConnectionMode {
+  LOCAL
+  REMOTE
+}
+
+enum DevicePurpose {
+  TEACHING
+  STUDENT
+}
+
 model User {
   id                    String                 @id @default(cuid())
   name                  String?
@@ -106,9 +116,10 @@ model Labaratory {
   name      String
   secretKey String   @unique @default(cuid())
   userId    String
+  isRegistrationDisabled Boolean  @default(false)
+  Device    Device[] @relation("LabToDevice")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Device    Device[] @relation("LabToDevice")
 }
 
 model Device {
@@ -120,6 +131,8 @@ model Device {
   devHostname         String
   devMACaddress       String
   isArchived          Boolean
+  connectionMode      ConnectionMode        @default(LOCAL)
+  devicePurpose       DevicePurpose         @default(STUDENT)
   isUsed              Boolean               @default(false)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
@@ -138,6 +151,7 @@ model DeviceUser {
   firstName     String
   lastName      String
   email         String
+  emailVerified DateTime?
   course        Course
   yearLevel     YearLevel
   contactNo     String
@@ -153,8 +167,11 @@ model DeviceUser {
 
   ActiveUserLogs ActiveUserLogs[]
 
-  @@index([email])
   @@index([role])
+  @@fulltext([firstName])
+  @@fulltext([lastName])
+  @@fulltext([email])
+  @@fulltext([firstName, lastName, email, schoolId])
 }
 
 model ActivityLogs {
@@ -167,7 +184,7 @@ model ActivityLogs {
   owner       String
   memoryUsage Int?
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime   @default(now())
   user        DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
   device      Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
 
@@ -185,7 +202,7 @@ model ActiveDeviceUser {
   device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   state     State      @default(INACTIVE)
   createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  updatedAt DateTime   @default(now())
 
   @@index([userId])
   @@index([deviceId])
@@ -194,14 +211,14 @@ model ActiveDeviceUser {
 model ActiveUserLogs {
   id String @id @default(uuid())
 
-  labId     String
-  userId    String
-  deviceId  String
-  device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  user      DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now())
+  labId    String
+  userId   String
+  deviceId String
+  device   Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  user     DeviceUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
   @@index([deviceId])
   @@index([userId])

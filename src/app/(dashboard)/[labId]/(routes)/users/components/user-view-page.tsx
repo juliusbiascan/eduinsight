@@ -1,32 +1,25 @@
 "use client"
 
-import { Separator } from "@/components/ui/separator"
-import { UserPlus2, Rainbow, Mail, Phone, BookOpen, GraduationCap, Search, FileSpreadsheet, Activity, PlusIcon } from "lucide-react"
-import { useParams, useRouter } from "next/navigation"
 import React from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { motion } from 'framer-motion'
-import { Heading } from '@/components/ui/heading'
+import { useParams, useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { ActiveDeviceUser, DeviceUser, YearLevel } from "@prisma/client"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { UserPlus2, Rainbow, Mail, Phone, BookOpen, GraduationCap, Search, FileSpreadsheet, Activity } from "lucide-react"
 import * as XLSX from 'xlsx'
+import { Separator } from "@/components/ui/separator"
 
-interface UserClientProps {
+interface UserViewPageProps {
   data: (DeviceUser & {
     activeDevices: ActiveDeviceUser[] | null
   })[]
 }
 
-export const UserClient: React.FC<UserClientProps> = ({
+export const UserViewPage: React.FC<UserViewPageProps> = ({
   data
 }) => {
   const params = useParams();
@@ -109,46 +102,10 @@ export const UserClient: React.FC<UserClientProps> = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-4 p-2 sm:p-4"
-    >
-      <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center space-x-3 w-full sm:w-auto">
-              <Rainbow className="w-6 h-6 sm:w-8 sm:h-8 text-[#C9121F]" />
-              <Heading
-                title={`Device Users (${data?.length})`}
-                description="Manage registered users"
-                className="text-black dark:text-white text-sm sm:text-base"
-              />
-            </div>
-            
-            <Button
-              onClick={handleExportToExcel}
-              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-              size="sm"
-            >
-              <FileSpreadsheet className="h-4 w-4 mr-2" />
-              Export to Excel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardHeader className="pb-2 space-y-4">
+    <div className="space-y-4">
+      <Card className="bg-white dark:bg-gray-800">
+        <CardHeader className="pb-3">
           <div className="flex flex-col space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <UserPlus2 className="h-4 w-4 sm:h-5 sm:w-5 text-[#C9121F]" />
-                <h2 className="text-base sm:text-lg font-semibold">Registered Users</h2>
-              </div>
-            </div>
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full">
@@ -201,38 +158,38 @@ export const UserClient: React.FC<UserClientProps> = ({
                 </SelectContent>
               </Select>
 
-              <div className="relative w-full col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-1">
+              <div className="relative w-full">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search users..."
-                  className="pl-8 w-full"
+                  className="pl-8"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              
-              <div className="col-span-1 sm:col-span-2 lg:col-span-4 xl:col-span-5">
-                <Button
-                  onClick={handlePreRegister}
-                  className="bg-yellow-600 hover:bg-yellow-700 w-full sm:w-auto"
-                  size="sm"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Pre Register
-                </Button>
-              </div>
+            </div>
+            
+            <div className="flex justify-end">
+              <Button
+                onClick={handleExportToExcel}
+                className="bg-green-600 hover:bg-green-700"
+                size="sm"
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export to Excel
+              </Button>
             </div>
           </div>
-          <Separator className="mt-2" />
+          <Separator className="mt-4" />
         </CardHeader>
         
-        <CardContent className="p-3 sm:p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4">
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
             {filteredUsers.map((user) => (
               <motion.div
                 key={user.id}
                 whileHover={{ scale: 1.02 }}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 sm:p-4 space-y-3 relative"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-3 border"
               >
                 <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
                   {!user.email || !user.contactNo ? (
@@ -305,6 +262,6 @@ export const UserClient: React.FC<UserClientProps> = ({
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   )
 }

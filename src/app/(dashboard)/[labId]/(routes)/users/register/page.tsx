@@ -1,13 +1,20 @@
+import PageContainer from '@/components/layout/page-container';
+import { Heading } from "@/components/ui/heading";
+import { Separator } from "@/components/ui/separator";
 import { RegisterClient } from "./components/client";
 
 const RegisterPage = async () => {
     return (
-        <div className="flex-col">
-            <div className="flex-1 p-8 pt-6 space-y-4">
+        <PageContainer>
+            <div className='flex flex-1 flex-col space-y-4'>
+                <Heading
+                    title="Pre Register User"
+                    description="Add a new user to the system"
+                />
+                <Separator />
                 <RegisterClient />
             </div>
-        </div>
-
+        </PageContainer>
     );
 }
 
