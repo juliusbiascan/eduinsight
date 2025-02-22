@@ -8,18 +8,10 @@ import {
 
 import {
   Cloud,
-  CreditCard,
   Github,
-  Keyboard,
   LifeBuoy,
   LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
   Settings,
-  UserPlus,
-  Users,
 } from "lucide-react"
 
 import {
@@ -28,19 +20,14 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
 import { Button } from "@/components/ui/button"
 import { useParams, useRouter } from "next/navigation"
 import { LogoutButton } from "./logout-button"
-import { User } from "@prisma/client"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useSession } from "next-auth/react"

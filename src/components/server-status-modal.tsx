@@ -30,7 +30,18 @@ interface ServerStats {
         used: number;
         active: number;
     };
-    uptime: number; // in seconds
+    uptime: number;
+    storage: {
+        devices: Array<{
+            fs: string;
+            type: string;
+            size: number;
+            used: number;
+            available: number;
+            mount: string;
+            usePercent: number;
+        }>;
+    };
 }
 
 interface ServiceStatus {
@@ -134,6 +145,7 @@ export const ServerStatusModal = ({ isOpen, onClose }: ServerStatusModalProps) =
                     <ServerStats
                         stats={stats}
                         error={statsError}
+                        loading={isStatsLoading}
                         className="bg-background/50 backdrop-blur-sm"
                     />
                     <div className="space-y-2">

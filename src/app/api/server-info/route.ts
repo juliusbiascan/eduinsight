@@ -3,13 +3,14 @@ import si from 'systeminformation';
 
 export async function GET() {
   try {
-    const [system, cpu, mem, temp, osInfo, time] = await Promise.all([
+    const [system, cpu, mem, temp, osInfo, time, fsSize] = await Promise.all([
       si.system(),
       si.cpu(),
       si.mem(),
       si.cpuTemperature(),
       si.osInfo(),
       si.time(),
+      si.fsSize(),
     ]);
 
     const cpuLoad = await si.currentLoad();
@@ -38,6 +39,17 @@ export async function GET() {
         free: mem.free,
         used: mem.used,
         active: mem.active,
+      },
+      storage: {
+        devices: fsSize.map(fs => ({
+          fs: fs.fs,
+          type: fs.type,
+          size: fs.size,
+          used: fs.used,
+          available: fs.available,
+          mount: fs.mount,
+          usePercent: fs.use
+        }))
       },
       uptime: time.uptime,
     });

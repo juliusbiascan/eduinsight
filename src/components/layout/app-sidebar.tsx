@@ -12,6 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
+    DropdownMenuShortcut,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
@@ -39,11 +40,15 @@ import {
     CreditCard,
     GalleryVerticalEnd,
     LogOut,
-    SparklesIcon
+    SparklesIcon,
+    Settings,
+    Github,
+    LifeBuoy,
+    Cloud
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useParams, usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
 
@@ -62,6 +67,7 @@ export default function AppSidebar() {
     const pathname = usePathname();
     const { state, isMobile } = useSidebar();
     const params = useParams();
+    const router = useRouter()
 
     
     //Info: The following data is used for the sidebar navigation and Cmd K bar.
@@ -152,8 +158,8 @@ export default function AppSidebar() {
                         </div>
                     </div>
                     <div className='grid flex-1 text-left text-sm leading-tight'>
-                        <span className='truncate font-semibold'>{company.name}</span>
-                        <span className='truncate text-xs'>{company.plan}</span>
+                        <span className='truncate font-semibold dark:text-gray-200'>{company.name}</span>
+                        <span className='truncate text-xs dark:text-gray-300'>{company.plan}</span>
                     </div>
                 </div>
             </SidebarHeader>
@@ -224,12 +230,13 @@ export default function AppSidebar() {
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton
                                     size='lg'
-                                    className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+                                    className='hover:bg-[#C9121F]/10 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
                                 >
-                                    <Avatar className='h-8 w-8 rounded-lg'>
+                                    <Avatar className='h-8 w-8 rounded-lg border-2 border-[#C9121F]/20'>
                                         <AvatarImage
                                             src={session?.user?.image || ''}
                                             alt={session?.user?.name || ''}
+                                            className="object-cover"
                                         />
                                         <AvatarFallback className='rounded-lg'>
                                             {session?.user?.name?.slice(0, 2)?.toUpperCase() || 'CN'}
@@ -239,7 +246,7 @@ export default function AppSidebar() {
                                         <span className='truncate font-semibold'>
                                             {session?.user?.name || ''}
                                         </span>
-                                        <span className='truncate text-xs'>
+                                        <span className='truncate text-xs text-muted-foreground'>
                                             {session?.user?.email || ''}
                                         </span>
                                     </div>
@@ -275,26 +282,31 @@ export default function AppSidebar() {
                                         </div>
                                     </div>
                                 </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-
                                 <DropdownMenuGroup>
-                                    <DropdownMenuItem>
-                                        <BadgeCheck />
-                                        Account
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <CreditCard />
-                                        Billing
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Bell />
-                                        Notifications
+                                    <DropdownMenuItem onClick={() => router.push(`/${params.labId}/account`)}>
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        <span>Settings</span>
+                                        <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
+                                <DropdownMenuItem>
+                                    <Github className="mr-2 h-4 w-4" />
+                                    <span>GitHub</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <LifeBuoy className="mr-2 h-4 w-4" />
+                                    <span>Support</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem disabled>
+                                    <Cloud className="mr-2 h-4 w-4" />
+                                    <span>API</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => signOut()}>
-                                    <LogOut />
-                                    Log out
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Log out</span>
+                                    <DropdownMenuShortcut>⌘+Q</DropdownMenuShortcut>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

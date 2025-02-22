@@ -32,15 +32,27 @@ interface ServerStats {
     active: number;
   };
   uptime: number;
+  storage: {
+    devices: Array<{
+      fs: string;
+      type: string;
+      size: number;
+      used: number;
+      available: number;
+      mount: string;
+      usePercent: number;
+    }>;
+  };
 }
 
 interface ServerStatsProps {
   stats: ServerStats | null;
   error?: string;
   className?: string;
+  loading?: boolean; // Add this prop
 }
 
-export function ServerStats({ stats, error, className }: ServerStatsProps) {
+export function ServerStats({ stats, error, className, loading }: ServerStatsProps) {
   const formatBytes = (bytes: number) => {
     return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
   };
@@ -77,6 +89,7 @@ export function ServerStats({ stats, error, className }: ServerStatsProps) {
       </Alert>
     );
   }
+
 
   if (!stats) {
     return (
@@ -179,6 +192,22 @@ export function ServerStats({ stats, error, className }: ServerStatsProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Storage Card */}
+          <Card className="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-xl transition-all duration-300">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <Badge variant="outline" className="text-teal-500">Storage</Badge>
+                <Icons.hardDrive className="h-4 w-4 text-teal-500" />
+              </div>
+              <div className="text-2xl font-bold mb-1">
+                {stats ? formatBytes(stats.storage.devices[0]?.used || 0) : "—"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {stats ? `${stats.storage.devices[0]?.usePercent.toFixed(1)}% Used` : "No data"}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {stats && (
@@ -205,6 +234,37 @@ export function ServerStats({ stats, error, className }: ServerStatsProps) {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+
+        {stats && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium mb-3">Storage Devices</h3>
+            <div className="space-y-3">
+              {stats.storage.devices.map((device, index) => (
+                <Card key={index} className="bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-md">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{device.mount}</span>
+                      <span className="text-xs text-muted-foreground">{device.type}</span>
+                    </div>
+                    <Progress 
+                      value={device.usePercent}
+                      className={cn(
+                        "h-1",
+                        "transition-all duration-500",
+                        device.usePercent > 90 ? "[&>div]:bg-red-500" :
+                        device.usePercent > 70 ? "[&>div]:bg-yellow-500" : "[&>div]:bg-green-500"
+                      )}
+                    />
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>{formatBytes(device.used)} used</span>
+                      <span>{formatBytes(device.size)} total</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>

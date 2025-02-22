@@ -88,7 +88,7 @@ export default function KBar({ children }: { children: React.ReactNode }) {
       items: []
     }
   ];
-  
+
   const navigateTo = (url: string) => {
     router.push(url);
   };
@@ -141,11 +141,11 @@ const KBarComponent = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <KBarPortal>
-        <KBarPositioner className='scrollbar-hide fixed inset-0 z-[99999] bg-black/80 !p-0 backdrop-blur-sm'>
-          <KBarAnimator className='relative !mt-64 w-full max-w-[600px] !-translate-y-12 overflow-hidden rounded-lg border bg-background text-foreground shadow-lg'>
-            <div className='bg-background'>
-              <div className='border-x-0 border-b-2'>
-                <KBarSearch className='w-full border-none bg-background px-6 py-4 text-lg outline-none focus:outline-none focus:ring-0 focus:ring-offset-0' />
+        <KBarPositioner className='scrollbar-hide fixed inset-0 z-[99999] bg-background/80 dark:bg-background/90 !p-0 backdrop-blur-sm'>
+          <KBarAnimator className='relative !mt-64 w-full max-w-[600px] !-translate-y-12 overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-lg'>
+            <div className='bg-background/95 dark:bg-background/95'>
+              <div className='border-border border-x-0 border-b'>
+                <KBarSearch className='w-full border-none bg-transparent px-6 py-4 text-lg outline-none focus:outline-none focus:ring-0 focus:ring-offset-0' />
               </div>
               <RenderResults />
             </div>

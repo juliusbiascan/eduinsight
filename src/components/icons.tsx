@@ -44,6 +44,7 @@ import {
 } from "lucide-react"
 
 import { BeakerIcon } from '@heroicons/react/24/solid';
+import { HardDrive } from "lucide-react"
 
 export type Icon = LucideIcon;
 
@@ -77,6 +78,7 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
+  hardDrive: HardDrive,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'
