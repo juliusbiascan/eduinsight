@@ -65,11 +65,17 @@ export const company = {
 export default function AppSidebar() {
     const { data: session } = useSession();
     const pathname = usePathname();
-    const { state, isMobile } = useSidebar();
+    const { isMobile, setOpenMobile } = useSidebar();
     const params = useParams();
-    const router = useRouter()
+    const router = useRouter();
 
-    
+    const handleMenuItemClick = React.useCallback(() => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    }, [isMobile, setOpenMobile]);
+
+
     //Info: The following data is used for the sidebar navigation and Cmd K bar.
     const navItems: NavItem[] = [
         {
@@ -92,10 +98,10 @@ export default function AppSidebar() {
             title: 'Laboratory',
             url: `/${params.labId}/laboratory`, // Changed from '#' to actual link
             icon: 'laboratory',
-            isActive: pathname === `/${params.labId}/laboratory` || 
-                     pathname === `/${params.labId}/monitoring` || 
-                     pathname === `/${params.labId}/devices` || 
-                     pathname === `/${params.labId}/settings`,
+            isActive: pathname === `/${params.labId}/laboratory` ||
+                pathname === `/${params.labId}/monitoring` ||
+                pathname === `/${params.labId}/devices` ||
+                pathname === `/${params.labId}/settings`,
             items: [
                 {
                     title: 'Monitoring',
@@ -173,9 +179,9 @@ export default function AppSidebar() {
                         {navItems.map((item) => {
                             const Icon = item.icon ? Icons[item.icon] : Icons.logo;
                             const forceExpanded = item.title === 'Laboratory' && (
-                                pathname === `/${params.labId}/laboratory` || 
-                                pathname === `/${params.labId}/monitoring` || 
-                                pathname === `/${params.labId}/devices` || 
+                                pathname === `/${params.labId}/laboratory` ||
+                                pathname === `/${params.labId}/monitoring` ||
+                                pathname === `/${params.labId}/devices` ||
                                 pathname === `/${params.labId}/settings`
                             );
 
@@ -187,7 +193,7 @@ export default function AppSidebar() {
                                     open={forceExpanded ? true : undefined}
                                     className='group/collapsible'
                                 >
-                                    <SidebarMenuItem>
+                                    <SidebarMenuItem onClick={handleMenuItemClick}>
                                         <CollapsibleTrigger asChild>
                                             <SidebarMenuButton
                                                 tooltip={item.title}
@@ -218,7 +224,7 @@ export default function AppSidebar() {
                                     </SidebarMenuItem>
                                 </Collapsible>
                             ) : (
-                                <SidebarMenuItem key={item.title}>
+                                <SidebarMenuItem key={item.title} onClick={handleMenuItemClick}>
                                     <SidebarMenuButton
                                         asChild
                                         tooltip={item.title}
