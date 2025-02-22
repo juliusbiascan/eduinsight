@@ -8,11 +8,12 @@ import {
   BreadcrumbSeparator
 } from '@/components/ui/breadcrumb';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
-import { CompactLabSwitcher } from './compact-lab-switcher';
+import { LabSwitcher } from './lab-switcher';
 import { Slash } from 'lucide-react';
 import { Fragment } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { UserSwitcher } from './user-switcher';
+import { DeviceSwitcher } from './device-switcher';
 
 export function Breadcrumbs({ labs = [] }: { labs: Record<string, any>[] }) {
   const items = useBreadcrumbs();
@@ -21,8 +22,9 @@ export function Breadcrumbs({ labs = [] }: { labs: Record<string, any>[] }) {
 
   // Filter out items where the path segment is a labId (24 characters)
   const visibleItems = items.filter(item => !item.link.split('/').some(segment => segment.length === 24));
-  const showLabSwitcher = pathname !== `/${params.labId}/users`;
+  const showLabSwitcher = !pathname.includes('/users');
   const showUserSwitcher = params.userId && (pathname.includes('/logs') || pathname.includes('/users'));
+  const showDeviceSwitcher = params.devId;
 
   if (visibleItems.length === 0) return null;
 
@@ -33,13 +35,19 @@ export function Breadcrumbs({ labs = [] }: { labs: Record<string, any>[] }) {
           <BreadcrumbLink href={`/${params.labId}`}>Dashboard</BreadcrumbLink>
         </BreadcrumbItem>
 
-        <BreadcrumbSeparator className='hidden md:block'>
-          <Slash />
-        </BreadcrumbSeparator>
 
-        <BreadcrumbItem>
-          <CompactLabSwitcher items={labs} />
-        </BreadcrumbItem>
+
+        {showLabSwitcher && (
+          <>
+            <BreadcrumbSeparator className='hidden md:block'>
+              <Slash />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <LabSwitcher items={labs} />
+            </BreadcrumbItem>
+          </>
+
+        )}
 
         {visibleItems.map((item, index) => (
           <Fragment key={item.link}>
@@ -51,6 +59,10 @@ export function Breadcrumbs({ labs = [] }: { labs: Record<string, any>[] }) {
               showUserSwitcher ? (
                 <BreadcrumbItem>
                   <UserSwitcher />
+                </BreadcrumbItem>
+              ) : showDeviceSwitcher ? (
+                <BreadcrumbItem>
+                  <DeviceSwitcher />
                 </BreadcrumbItem>
               ) : (
                 <BreadcrumbPage>{item.title}</BreadcrumbPage>

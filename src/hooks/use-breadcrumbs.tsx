@@ -13,7 +13,8 @@ export function useBreadcrumbs() {
     // Filter out labId and userId segments
     const filteredSegments = segments.filter(segment => 
       segment !== params.labId && 
-      segment !== params.userId
+      segment !== params.userId &&
+      segment !== params.devId
     );
     
     return filteredSegments.map((segment, index) => {

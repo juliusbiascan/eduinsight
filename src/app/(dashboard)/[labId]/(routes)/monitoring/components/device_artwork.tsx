@@ -4,6 +4,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useState, useTransition } from "react"
 import toast from "react-hot-toast"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 import {
@@ -19,194 +20,130 @@ import { getDeviceUserById } from "@/data/user"
 import { getDeviceById } from "@/data/device"
 import { logoutUser } from "@/actions/logout"
 import { useSocket } from "@/providers/socket-provider"
-import { 
-  Search, 
-  RefreshCcw, 
-  Power, 
-  ClipboardList, 
-  Battery, 
+import {
+  Search,
+  RefreshCcw,
+  Power,
+  ClipboardList,
+  Battery,
   LogOut,
   Activity
 } from "lucide-react"
 
-interface DeviceStatus {
-  status: 'online' | 'offline' | 'idle';
-  lastActivity?: Date;
-  batteryLevel?: number;
-}
 
 interface DeviceArtworkProps extends React.HTMLAttributes<HTMLDivElement> {
   labId: String;
-  activeDevice?: ActiveDeviceUser;
-  inactiveDevice?: Device;
+  device: Device,
+  user?: DeviceUser,
   aspectRatio?: "portrait" | "square";
   width?: number;
   height?: number;
+
   onChanged: () => void;
-  deviceStatus?: DeviceStatus;
 }
 
 export function DeviceArtwork({
   labId,
-  activeDevice,
-  inactiveDevice,
+  device,
+  user,
   aspectRatio = "portrait",
   width,
   height,
   onChanged,
-  deviceStatus = { status: 'offline' },
   className,
+
   ...props
 }: DeviceArtworkProps) {
   const router = useRouter()
-  const [user, setUser] = useState<DeviceUser | null>(null)
-  const [device, setDevice] = useState<Device | null>(null)
-  const [isPending, startTransition] = useTransition()
+
   const { socket } = useSocket();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (activeDevice) {
-        const fetchedUser = await getDeviceUserById(activeDevice.userId)
-        setUser(fetchedUser)
-      }
-      const fetchedDevice = await getDeviceById(activeDevice ? activeDevice.deviceId : inactiveDevice ? inactiveDevice.id : '')
-      setDevice(fetchedDevice)
-    }
-    startTransition(() => {
-      fetchData()
-    })
-  }, [activeDevice, inactiveDevice])
-
   const handleLogout = async () => {
-    if (activeDevice) {
-      logoutUser(activeDevice.userId, activeDevice.deviceId).then((message) => {
+    if (device && user) {
+      logoutUser(user.id, device.id).then((message) => {
         toast.success(message.success)
         if (socket) {
-          socket.emit("logout-user", { deviceId: activeDevice.deviceId, userId: activeDevice.userId });
+          socket.emit("logout-user", { deviceId: device.id, userId: user.id });
         }
         onChanged()
       })
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'idle': return 'bg-yellow-500';
-      case 'offline': return 'bg-gray-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'online': return 'Online';
-      case 'idle': return 'Idle';
-      case 'offline': return 'Offline';
-      default: return 'Unknown';
-    }
-  };
-
   return (
-    <div className={cn("space-y-3 flex flex-col items-center relative", className)} {...props}>
-      <div className="absolute top-2 right-2 flex items-center space-x-2">
-        <div className={`h-3 w-3 rounded-full ${getStatusColor(deviceStatus.status)}`} />
-        <span className="text-xs text-muted-foreground">
-          {getStatusText(deviceStatus.status)}
-        </span>
-      </div>
-      
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300 }}
+      className={cn("group relative rounded-xl p-2 transition-all hover:bg-accent",
+        className)}
+      {...(props as any)}
+    >
       <ContextMenu>
         <ContextMenuTrigger>
-          <div className="overflow-hidden rounded-md">
-            {isPending ? (
-              <Skeleton className="h-40 w-40" />
-            ) : (
-              <Image
-                src={activeDevice ? "/preferences-desktop-display-blue.png" : "/preferences-desktop-display.png"}
-                alt=""
-                width={width}
-                height={height}
-                className={cn(
-                  "h-auto w-auto object-cover transition-all hover:scale-105",
-                  aspectRatio === "portrait" ? "aspect-[3/4]" : "aspect-square"
-                )} 
-              />
-            )}
+          <div className="relative">
+            {/* Monitor Frame */}
+            <div className={cn(
+              "relative w-48 h-32 bg-gray-800 rounded-lg p-2",
+              "before:absolute before:content-[''] before:w-20 before:h-4 before:bg-gray-700",
+              "before:bottom-[-0.5rem] before:left-1/2 before:transform before:-translate-x-1/2",
+              "before:rounded-b-lg",
+              "after:absolute after:content-[''] after:w-24 after:h-1",
+              "after:bottom-[-0.75rem] after:left-1/2 after:transform after:-translate-x-1/2",
+              "after:bg-gray-600 after:rounded-full"
+            )}>
+              {/* Screen */}
+              <div className={cn(
+                "w-full h-full rounded-sm relative overflow-hidden",
+                "bg-gradient-to-br from-gray-900 to-gray-800",
+                !device.isUsed && "border-2 border-primary/20",
+                "shadow-[inset_0_0_12px_rgba(0,0,0,0.6)]"
+              )}>
+                {/* Screen Content */}
+                <div className="absolute inset-0 p-2">
+                  {!device.isUsed && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80">
+                      <div className="w-3 h-3 rounded-full bg-red-500/80 animate-pulse mb-2" />
+                      <span className="text-xs text-red-500 font-medium">OFFLINE</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/80 p-2 backdrop-blur-sm">
+                    <p className="text-sm font-semibold text-gray-100 truncate">{device.name}</p>
+                    {user && (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-gray-300 truncate">{user.firstName} {user.lastName}</p>
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {/* Screen Glare */}
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+              </div>
+            </div>
           </div>
         </ContextMenuTrigger>
-        {!inactiveDevice && (
-          <ContextMenuContent className="w-56">
-            <ContextMenuItem onClick={() => router.push(`/${labId}/monitoring/${device?.id}`)}>
-              <Search className="mr-2 h-4 w-4" />
-              Inspect
-            </ContextMenuItem>
-            <ContextMenuItem
-              onClick={() => {
-                if (socket) {
-                  socket.emit("reboot", { deviceId: device?.id });
-                }
-              }}>
-              <RefreshCcw className="mr-2 h-4 w-4" />
-              Restart
-            </ContextMenuItem>
-            <ContextMenuItem onClick={() => {
-              if (socket) {
-                socket.emit("shutdown", { deviceId: device?.id });
-              }
-            }}>
-              <Power className="mr-2 h-4 w-4" />
-              Shutdown
-            </ContextMenuItem>
-            <ContextMenuSeparator />
-            <ContextMenuItem 
-            onClick={() => router.push(`/${labId}/monitoring/${device?.id}/activitylogs`)}>
-              <ClipboardList className="mr-2 h-4 w-4" />
-              View Activity Logs
-            </ContextMenuItem>
-            <ContextMenuSeparator />
-            <ContextMenuItem>
-              <Battery className="mr-2 h-4 w-4" />
-              System Info
-            </ContextMenuItem>
-            <ContextMenuItem>
-              <Activity className="mr-2 h-4 w-4" />
-              Performance
-            </ContextMenuItem>
-            <ContextMenuSeparator />
-            <ContextMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </ContextMenuItem>
-          </ContextMenuContent>
-        )}
+
+        <ContextMenuContent className="w-56">
+
+          <ContextMenuItem
+            onClick={() => router.push(`/${labId}/monitoring/${device.id}/activitylogs`)}>
+            <ClipboardList className="mr-2 h-4 w-4" />
+            View Activity Logs
+          </ContextMenuItem>
+
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </ContextMenuItem>
+        </ContextMenuContent>
+
       </ContextMenu>
 
-      <div className="space-y-1 text-sm text-center">
-        {isPending ? (
-          <Skeleton className="h-4 w-40" />
-        ) : (
-          <h3 className="font-medium leading-none">{device?.name}</h3>
-        )}
-        {activeDevice && (
-          isPending ? (
-            <Skeleton className="h-4 w-30" />
-          ) : (
-            <p className="text-xs text-muted-foreground">{user?.firstName} {user?.lastName}</p>
-          )
-        )}
-        {deviceStatus.lastActivity && (
-          <p className="text-xs text-muted-foreground">
-            Last active: {new Date(deviceStatus.lastActivity).toLocaleString()}
-          </p>
-        )}
-        {deviceStatus.batteryLevel !== undefined && (
-          <p className="text-xs text-muted-foreground">
-            Battery: {deviceStatus.batteryLevel}%
-          </p>
-        )}
-      </div>
-    </div>
+    </motion.div>
   )
 }

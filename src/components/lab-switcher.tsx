@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, BeakerIcon, PlusCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
+import { BeakerIcon } from '@heroicons/react/24/solid';
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -20,17 +20,18 @@ import {
 } from "@/components/ui/popover";
 import { useLabModal } from "@/hooks/use-lab-modal";
 import { useParams, useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>;
-
-interface LabSwitcherProps extends PopoverTriggerProps {
+interface LabSwitcherProps {
   items: Record<string, any>[];
+  isLoading?: boolean;
 }
 
-export default function LabSwitcher({ className, items = [] }: LabSwitcherProps) {
+export function LabSwitcher({ items = [], isLoading = false }: LabSwitcherProps) {
   const labModal = useLabModal();
   const params = useParams();
   const router = useRouter();
+  const [open, setOpen] = React.useState(false);
 
   const formattedItems = items.map((item) => ({
     label: item.name,
@@ -39,77 +40,59 @@ export default function LabSwitcher({ className, items = [] }: LabSwitcherProps)
 
   const currentLab = formattedItems.find((item) => item.value === params.labId);
 
-  const [open, setOpen] = React.useState(false);
-
   const onLabSelect = (lab: { value: string, label: string }) => {
     setOpen(false);
-    router.push(`/${lab.value}`);
+    const currentPath = window.location.pathname;
+    const newPath = currentPath.replace(/^\/[^\/]+/, `/${lab.value}`);
+    router.push(newPath);
   };
+
+  if (isLoading) {
+    return <Skeleton className="h-8 w-[120px]" />;
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          size="lg"
-          role="combobox"
-          aria-expanded={open}
-          aria-label="Select a lab"
-          className={cn(
-            "w-full md:w-[300px] justify-between transition-all duration-200 ease-in-out",
-            "bg-[#EAEAEB] dark:bg-[#1A1617] border-none",
-            "text-[#1A1617] dark:text-[#EAEAEB]",
-            "hover:bg-[#C9121F] hover:text-white dark:hover:bg-[#EBC42E] dark:hover:text-[#1A1617]",
-            className
-          )}
+          variant="ghost"
+          size="sm"
+          className="h-auto p-1 flex items-center gap-1 font-normal"
         >
-          <div className="flex items-center">
-            <BeakerIcon className="h-5 w-5 mr-3" />
-            <span className="text-sm font-medium">
-              {currentLab?.label || "Select Lab"}
-            </span>
-          </div>
-          <ChevronsUpDown className="h-5 w-5 opacity-50" />
+           <BeakerIcon className="h-4 w-4 text-[#C9121F] animate-bounce hidden sm:block" />
+          <span>{currentLab?.label || "Select Lab"}</span>
+          <ChevronsUpDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[calc(100vw-2rem)] md:w-[300px] p-1 bg-[#EAEAEB] dark:bg-[#1A1617] border-none">
-        <Command className="bg-transparent">
-          <CommandInput placeholder="Search lab..." className="h-11" />
+      <PopoverContent className="w-[200px] p-1">
+        <Command>
+          <CommandInput placeholder="Search lab..." />
           <CommandList>
             <CommandEmpty>No lab found.</CommandEmpty>
-            <CommandGroup heading="Laboratories">
+            <CommandGroup>
               {formattedItems.map((lab) => (
                 <CommandItem
                   key={lab.value}
                   onSelect={() => onLabSelect(lab)}
-                  className={cn(
-                    "px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ease-in-out",
-                    "text-[#1A1617] dark:text-[#EAEAEB]",
-                    "hover:bg-[#C9121F] hover:text-white dark:hover:bg-[#EBC42E] dark:hover:text-[#1A1617]",
-                    currentLab?.value === lab.value && "bg-[#C9121F] text-white dark:bg-[#EBC42E] dark:text-[#1A1617]"
-                  )}
                 >
-                  <BeakerIcon className="h-5 w-5 mr-3" />
+                  <BeakerIcon className="h-4 w-4 mr-2 text-[#C9121F] animate-bounce hidden sm:block" />
                   {lab.label}
                   {currentLab?.value === lab.value && (
-                    <Check className="ml-auto h-5 w-5" />
+                    <Check className="ml-auto h-4 w-4" />
                   )}
                 </CommandItem>
               ))}
             </CommandGroup>
-            <CommandSeparator className="bg-gray-200 dark:bg-gray-700" />
+            <CommandSeparator />
             <CommandGroup>
               <CommandItem
                 onSelect={() => {
                   setOpen(false);
                   labModal.onOpen();
                 }}
-                className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ease-in-out
-                text-[#1A1617] dark:text-[#EAEAEB]
-                hover:bg-[#C9121F] hover:text-white dark:hover:bg-[#EBC42E] dark:hover:text-[#1A1617]"
               >
-                <PlusCircle className="h-5 w-5 mr-3" />
-                Create New Lab
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create Lab
               </CommandItem>
             </CommandGroup>
           </CommandList>
@@ -117,4 +100,4 @@ export default function LabSwitcher({ className, items = [] }: LabSwitcherProps)
       </PopoverContent>
     </Popover>
   );
-};
+}

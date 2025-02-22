@@ -9,17 +9,7 @@ import { ToasterProvider } from "@/providers/toast-provider";
 import { SocketProvider } from "@/providers/socket-provider";
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import NextTopLoader from 'nextjs-toploader';
-export const metadata: Metadata = {
-  title: "EduInsight",
-  description: "Developed by Julius Biascan",
-  authors: [
-    {
-      name: "Julius Biascan",
-      url: "https://juliusbiascan.vercel.app",
-    },
-  ],
-  creator: "juliusbiascan",
-};
+
 
 const lato = Lato({
   subsets: ['latin'],
@@ -27,6 +17,45 @@ const lato = Lato({
   display: 'swap'
 });
 
+export const metadata: Metadata = {
+  metadataBase: new URL('https://admin.eduinsight.systems'),
+  title: "EduInsight - Computer Lab Monitoring System",
+  description: "EduInsight is a comprehensive computer lab monitoring system for educational institutions. Monitor student activities, track computer usage, and manage lab resources efficiently.",
+  keywords: "computer lab monitoring, educational software, lab management, student monitoring, computer tracking",
+  authors: [{ name: "EduInsight Team" }],
+  openGraph: {
+    title: "EduInsight - Computer Lab Monitoring System",
+    description: "Comprehensive computer lab monitoring system for educational institutions",
+    url: "https://admin.eduinsight.systems",
+    siteName: "EduInsight",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "EduInsight Dashboard Preview",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EduInsight - Computer Lab Monitoring System",
+    description: "Comprehensive computer lab monitoring system for educational institutions",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon-16x16.png",
+  },
+};
 
 export default async function RootLayout({
   children,

@@ -5,9 +5,9 @@ import { State } from "@prisma/client";
 import { getDeviceUserById } from "./user";
 import { DateRange } from "react-day-picker";
 
-export const getAllDevice = async (labId: string) => {
+export const getAllDevices = async (labId: string) => {
   try {
-    const device = await db.device.findMany({ where: { labId, isUsed: false, } });
+    const device = await db.device.findMany({ where: { labId } });
     return device;
   } catch {
     return null;

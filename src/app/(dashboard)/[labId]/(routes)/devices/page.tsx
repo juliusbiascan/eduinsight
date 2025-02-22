@@ -2,6 +2,12 @@ import { db } from '@/lib/db'
 import { DeviceClient } from './components/client'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
+import PageContainer from '@/components/layout/page-container'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { Separator } from '@radix-ui/react-dropdown-menu'
+import { Link, Plus } from 'lucide-react'
+import { Heading } from '@/components/ui/heading'
 
 const DevicePage = async ({
   params
@@ -58,7 +64,7 @@ const DevicePage = async ({
   const sortedDevices = devices.sort((a, b) => {
     const aMatch = a.name.match(/^(.*?)(\d+)/) || [a.name, a.name, ""];
     const bMatch = b.name.match(/^(.*?)(\d+)/) || [b.name, b.name, ""];
-    
+
     const [, aText, aNum] = aMatch;
     const [, bText, bNum] = bMatch;
 
@@ -69,11 +75,13 @@ const DevicePage = async ({
   });
 
   return (
-    <div className="flex-col">
-      <div className="flex-1 p-8 pt-6 space-y-4">
+
+    <PageContainer scrollable={false}>
+      <div className='flex flex-1 flex-col space-y-4'>
+
         <DeviceClient devices={sortedDevices} />
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

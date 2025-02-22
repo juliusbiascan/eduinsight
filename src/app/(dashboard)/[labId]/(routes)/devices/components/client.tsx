@@ -71,12 +71,12 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
   useEffect(() => {
     const filtered = devices.filter(device => {
       const matchesSearch = device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          device.devHostname.toLowerCase().includes(searchQuery.toLowerCase());
-      
+        device.devHostname.toLowerCase().includes(searchQuery.toLowerCase());
+
       const matchesStatus = statusFilter === "all" ? true :
         statusFilter === "online" ? device.activeUsers.length > 0 :
-        statusFilter === "offline" ? device.activeUsers.length === 0 :
-        statusFilter === "archived" ? device.isArchived : true;
+          statusFilter === "offline" ? device.activeUsers.length === 0 :
+            statusFilter === "archived" ? device.isArchived : true;
 
       return matchesSearch && matchesStatus;
     });
@@ -126,14 +126,14 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
     const timeAgo = new Date(lastLog.createdAt).getTime();
     const now = new Date().getTime();
     const diffInHours = Math.floor((now - timeAgo) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 24) {
       return {
         user: lastLog.user,
         timeAgo: diffInHours === 0 ? 'Less than an hour ago' : `${diffInHours} hours ago`
       };
     }
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     return {
       user: lastLog.user,
@@ -148,51 +148,47 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
       transition={{ duration: 0.5 }}
       className="space-y-4 px-4 sm:px-0"
     >
-      <Card className="bg-[#EAEAEB] dark:bg-[#1A1617] backdrop-blur supports-[backdrop-filter]:bg-opacity-60">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-col space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <Laptop className="w-6 h-6 sm:w-8 sm:h-8 text-[#C9121F]" />
-                <Heading
-                  title={`Devices (${filteredDevices.length})`}
-                  description="Manage devices for your laboratory"
-                  className="text-black dark:text-white text-sm sm:text-base"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search devices..."
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Select
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Devices</SelectItem>
-                  <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="offline">Offline</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <Laptop className="w-6 h-6 sm:w-8 sm:h-8 text-[#C9121F]" />
+            <Heading
+              title={`Devices (${filteredDevices.length})`}
+              description="Manage devices for your laboratory"
+              className="text-black dark:text-white text-sm sm:text-base"
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search devices..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Select
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+          >
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Devices</SelectItem>
+              <SelectItem value="online">Online</SelectItem>
+              <SelectItem value="offline">Offline</SelectItem>
+              <SelectItem value="archived">Archived</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {filteredDevices.map((device) => (
-          <Card 
+          <Card
             key={device.id}
             className="bg-white dark:bg-[#1A1617] hover:shadow-lg transition-shadow"
           >
@@ -203,7 +199,7 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                     <Laptop className="w-4 h-4 sm:w-5 sm:h-5 text-[#C9121F]" />
                     <h3 className="font-semibold text-sm sm:text-base">{device.name}</h3>
                   </div>
-                  <Badge 
+                  <Badge
                     variant={getDeviceStatus(device) === 'online' ? 'success' : 'secondary'}
                     className="text-xs"
                   >
@@ -215,7 +211,7 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                   <p>Status: {device.isArchived ? 'Archived' : 'Active'}</p>
                   {device.powerMonitoringLogs?.[0] && (
                     <div className="flex items-center gap-2">
-                      <Badge 
+                      <Badge
                         variant={getPowerBadgeVariant(device.powerMonitoringLogs[0].pm_status)}
                       >
                         {getPowerState(device.powerMonitoringLogs[0].pm_status)}
@@ -255,8 +251,8 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                     </div>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           className="w-full sm:w-auto text-xs sm:text-sm"
                           onClick={() => setSelectedDevice(device)}
@@ -273,7 +269,7 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                           <TabsList>
                             <TabsTrigger value="active">Active Sessions</TabsTrigger>
                             <TabsTrigger value="history">Session History</TabsTrigger>
-                            
+
                           </TabsList>
                           <TabsContent value="active">
                             <div className="space-y-4">
@@ -281,8 +277,8 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                                 <p className="text-sm text-muted-foreground">No active sessions</p>
                               ) : (
                                 device.activeUsers.map((session) => (
-                                  <div 
-                                    key={session.id} 
+                                  <div
+                                    key={session.id}
                                     className="border p-3 rounded-lg"
                                   >
                                     <p className="font-medium">{session.user.firstName} {session.user.lastName}</p>
@@ -304,8 +300,8 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                                 <div className="border rounded-lg overflow-hidden">
                                   <div className="divide-y max-h-[400px] overflow-y-auto">
                                     {getSortedSessionLogs(device.activeUserLogs).map((log) => (
-                                      <div 
-                                        key={log.id} 
+                                      <div
+                                        key={log.id}
                                         className="p-4 hover:bg-muted/50 transition-colors"
                                       >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

@@ -83,89 +83,94 @@ export const SettingsForm: React.FC<SettingsFormProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-lg">
+    <div className="space-y-4">
       <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={onDelete}
         loading={loading}
       />
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-2xl font-bold">
-          <Beaker className="w-6 h-6 inline-block mr-2" />
-          Lab Settings
-        </CardTitle>
-        <Button
-          disabled={loading}
-          variant="destructive"
-          size="sm"
-          onClick={() => setOpen(true)}
-        >
-          <Trash className="h-4 w-4 mr-2" />
-          Delete Lab
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground mb-6">Manage your laboratory preferences</p>
-        <Separator className="my-6" />
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Lab Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={loading}
-                      placeholder="Enter your lab name"
-                      {...field}
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormItem>
-              <FormLabel>Secret Key</FormLabel>
-              <div className="relative">
-                <Input
-                  disabled
-                  value={initialData.secretKey}
-                  className="w-full font-mono bg-muted pr-12"
-                />
-                <Button
-                  onClick={() => onCopy(initialData.secretKey)}
-                  type="button"
-                  variant="ghost"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-muted-foreground/5"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="text-xl font-semibold">Lab Information</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Update your laboratory details and settings</p>
+            </div>
+            <Button
+              disabled={loading}
+              variant="destructive"
+              size="sm"
+              onClick={() => setOpen(true)}
+            >
+              <Trash className="h-4 w-4 mr-2" />
+              Delete Lab
+            </Button>
+          </div>
+          <Separator className="mt-4" />
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid gap-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lab Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          disabled={loading}
+                          placeholder="Enter your lab name"
+                          {...field}
+                          className="w-full"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
+                />
+                <FormItem>
+                  <FormLabel>Secret Key</FormLabel>
+                  <div className="relative">
+                    <Input
+                      disabled
+                      value={initialData.secretKey}
+                      className="w-full font-mono bg-muted/50 pr-12"
+                    />
+                    <Button
+                      onClick={() => onCopy(initialData.secretKey)}
+                      type="button"
+                      variant="ghost"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-muted-foreground/5"
+                    >
+                      {copied ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    This is your lab's secret key. Keep it safe and secure.
+                  </p>
+                </FormItem>
+              </div>
+              <div className="flex justify-end pt-4">
+                <Button
+                  disabled={loading}
+                  type="submit"
+                  className="w-full sm:w-auto"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Changes
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
-                This is your lab's secret key. Keep it safe!
-              </p>
-            </FormItem>
-            <div className="flex justify-end">
-              <Button
-                disabled={loading}
-                type="submit"
-                className="w-full sm:w-auto"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

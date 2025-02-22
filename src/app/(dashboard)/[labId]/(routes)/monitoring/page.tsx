@@ -3,6 +3,9 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { MonitoringClient } from "./components/client";
 import { getDeviceStats } from "@/data/device-stats";
+import PageContainer from "@/components/layout/page-container";
+import { State } from "@prisma/client";
+import { Suspense } from "react";
 
 const Monitoring = async ({
   params
@@ -22,22 +25,37 @@ const Monitoring = async ({
     }
   });
 
-
   if (!lab) {
     redirect('/');
   };
 
-  const stats = await getDeviceStats(params.labId);
+
+  const activeDevices = await db.activeDeviceUser.findMany({
+    where: {
+      labId: lab.id,
+      state: State.ACTIVE
+    },
+    include: {
+      device: true,
+      user: true
+    }
+  });
+
+  const inactiveDevices = await db.device.findMany({ where: { labId: lab.id, isUsed: false } })
 
   return (
-    <div className="flex-col">
-      <div className="flex-1 p-8 pt-6 space-y-4">
-        <MonitoringClient 
-          labId={lab.id}
-          initialStats={stats}
-        />
-      </div>
-    </div>
+    <PageContainer>
+      <Suspense fallback={<div>Loading...</div>}>
+        <div className="flex-1 space-y-4">
+          <MonitoringClient
+            labId={lab.id}
+            allActiveDevice={activeDevices}
+            allInactiveDevice={inactiveDevices}
+          
+          />
+        </div>
+      </Suspense>
+    </PageContainer>
   );
 }
 

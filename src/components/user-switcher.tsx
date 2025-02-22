@@ -19,18 +19,25 @@ import {
 import { getAllDeviceUsers } from '@/data/user';
 import { useParams, useRouter } from 'next/navigation';
 import { DeviceUser } from '@prisma/client';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function UserSwitcher() {
   const params = useParams();
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [users, setUsers] = React.useState<Partial<DeviceUser>[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const fetchUsers = async () => {
       if (params.labId) {
-        const fetchedUsers = await getAllDeviceUsers();
-        setUsers(fetchedUsers);
+        setLoading(true);
+        try {
+          const fetchedUsers = await getAllDeviceUsers();
+          setUsers(fetchedUsers);
+        } finally {
+          setLoading(false);
+        }
       }
     };
     fetchUsers();
@@ -47,6 +54,10 @@ export function UserSwitcher() {
     setOpen(false);
     router.push(`/${params.labId}/users/${user.value}/logs`);
   };
+
+  if (loading) {
+    return <Skeleton className="h-8 w-[120px]" />;
+  }
 
   if (!users.length) return null;
 

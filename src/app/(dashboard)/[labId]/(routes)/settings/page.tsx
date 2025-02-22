@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
-import { SettingsForm } from "./components/settings-form";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-
+import PageContainer from "@/components/layout/page-container";
+import { Heading } from "@/components/ui/heading";
+import { Separator } from "@/components/ui/separator";
+import { SettingsForm } from "./components/settings-form";
 
 const SettingsPage = async ({
   params
@@ -29,11 +31,18 @@ const SettingsPage = async ({
   };
 
   return (
-    <div className="flex-col">
-      <div className="flex-1 space-y-4 p-8 pt-6">
+    <PageContainer>
+      <div className='flex flex-1 flex-col space-y-4'>
+        <div className='flex items-start justify-between'>
+          <Heading
+            title='Settings'
+            description='Manage your laboratory preferences'
+          />
+        </div>
+        <Separator />
         <SettingsForm initialData={lab} />
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
