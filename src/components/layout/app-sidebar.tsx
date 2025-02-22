@@ -90,9 +90,12 @@ export default function AppSidebar() {
         },
         {
             title: 'Laboratory',
-            url: '#', // Placeholder as there is no direct link for the parent
+            url: `/${params.labId}/laboratory`, // Changed from '#' to actual link
             icon: 'laboratory',
-            isActive: true,
+            isActive: pathname === `/${params.labId}/laboratory` || 
+                     pathname === `/${params.labId}/monitoring` || 
+                     pathname === `/${params.labId}/devices` || 
+                     pathname === `/${params.labId}/settings`,
             items: [
                 {
                     title: 'Monitoring',
@@ -169,11 +172,19 @@ export default function AppSidebar() {
                     <SidebarMenu>
                         {navItems.map((item) => {
                             const Icon = item.icon ? Icons[item.icon] : Icons.logo;
+                            const forceExpanded = item.title === 'Laboratory' && (
+                                pathname === `/${params.labId}/laboratory` || 
+                                pathname === `/${params.labId}/monitoring` || 
+                                pathname === `/${params.labId}/devices` || 
+                                pathname === `/${params.labId}/settings`
+                            );
+
                             return item?.items && item?.items?.length > 0 ? (
                                 <Collapsible
                                     key={item.title}
                                     asChild
                                     defaultOpen={item.isActive}
+                                    open={forceExpanded ? true : undefined}
                                     className='group/collapsible'
                                 >
                                     <SidebarMenuItem>
@@ -181,6 +192,7 @@ export default function AppSidebar() {
                                             <SidebarMenuButton
                                                 tooltip={item.title}
                                                 isActive={pathname === item.url}
+                                                onClick={() => router.push(item.url)}
                                             >
                                                 {item.icon && <Icon />}
                                                 <span>{item.title}</span>
