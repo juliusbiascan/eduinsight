@@ -15,7 +15,6 @@ import { ActiveDeviceUser, Device, DeviceUser } from '@prisma/client';
 
 
 interface MonitoringClientProps {
-  labId: string;
   allActiveDevice: (ActiveDeviceUser & { device: Device, user: DeviceUser })[];
   allInactiveDevice: Device[];
 
@@ -23,11 +22,10 @@ interface MonitoringClientProps {
 
 
 export const MonitoringClient: React.FC<MonitoringClientProps> = ({
-  labId,
   allActiveDevice,
   allInactiveDevice,
-
 }) => {
+
 
   const { socket } = useSocket();
 
@@ -82,7 +80,6 @@ export const MonitoringClient: React.FC<MonitoringClientProps> = ({
           activeDevices={allActiveDevice}
           inactiveDevices={allInactiveDevice}
           onRefresh={refresh}
-          labId={labId}
 
         />
       </div>

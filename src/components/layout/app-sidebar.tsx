@@ -33,11 +33,8 @@ import {
 } from '@/components/ui/sidebar';
 
 import {
-    BadgeCheck,
-    Bell,
     ChevronRight,
     ChevronsUpDown,
-    CreditCard,
     GalleryVerticalEnd,
     LogOut,
     SparklesIcon,
@@ -99,18 +96,11 @@ export default function AppSidebar() {
             url: `/${params.labId}/laboratory`, // Changed from '#' to actual link
             icon: 'laboratory',
             isActive: pathname === `/${params.labId}/laboratory` ||
-                pathname === `/${params.labId}/monitoring` ||
+                pathname === `/${params.labId}/laboratory` ||
                 pathname === `/${params.labId}/devices` ||
                 pathname === `/${params.labId}/settings`,
             items: [
-                {
-                    title: 'Monitoring',
-                    url: `/${params.labId}/monitoring`,
-                    icon: 'monitoring',
-                    isActive: pathname === `/${params.labId}/monitoring`,
-                    shortcut: ['m', 'n'],
-                    items: []
-                },
+               
                 {
                     title: 'Devices',
                     url: `/${params.labId}/devices`,
@@ -180,7 +170,7 @@ export default function AppSidebar() {
                             const Icon = item.icon ? Icons[item.icon] : Icons.logo;
                             const forceExpanded = item.title === 'Laboratory' && (
                                 pathname === `/${params.labId}/laboratory` ||
-                                pathname === `/${params.labId}/monitoring` ||
+                                pathname === `/${params.labId}/laboratory` ||
                                 pathname === `/${params.labId}/devices` ||
                                 pathname === `/${params.labId}/settings`
                             );

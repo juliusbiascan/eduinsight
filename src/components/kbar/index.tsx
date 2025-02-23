@@ -45,9 +45,9 @@ export default function KBar({ children }: { children: React.ReactNode }) {
       items: [
         {
           title: 'Monitoring',
-          url: `/${params.labId}/monitoring`,
+          url: `/${params.labId}/laboratory`,
           icon: 'monitoring',
-          isActive: pathname === `/${params.labId}/monitoring`,
+          isActive: pathname === `/${params.labId}/laboratory`,
           shortcut: ['m', 'n'],
           items: []
         },

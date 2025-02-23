@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { motion } from "framer-motion"
 
@@ -22,7 +22,6 @@ import {
 
 
 interface DeviceArtworkProps extends React.HTMLAttributes<HTMLDivElement> {
-  labId: String;
   device: Device,
   user?: DeviceUser,
   aspectRatio?: "portrait" | "square";
@@ -33,7 +32,6 @@ interface DeviceArtworkProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function DeviceArtwork({
-  labId,
   device,
   user,
   aspectRatio = "portrait",
@@ -41,9 +39,10 @@ export function DeviceArtwork({
   height,
   onChanged,
   className,
-
   ...props
 }: DeviceArtworkProps) {
+
+  const params = useParams();
   const router = useRouter()
 
   const { socket } = useSocket();
@@ -142,7 +141,7 @@ export function DeviceArtwork({
         <ContextMenuContent className="w-56">
 
           <ContextMenuItem
-            onClick={() => router.push(`/${labId}/monitoring/${device.id}/activitylogs`)}>
+            onClick={() => router.push(`/${params.labId}/laboratory/${device.id}/activitylogs`)}>
             <ClipboardList className="mr-2 h-4 w-4" />
             View Activity Logs
           </ContextMenuItem>

@@ -53,7 +53,7 @@ export function DeviceSwitcher() {
 
     const onDeviceSelect = (device: { value: string, label: string }) => {
         setOpen(false);
-        router.push(`/${params.labId}/monitoring/${device.value}/activitylogs`);
+        router.push(`/${params.labId}/laboratory/${device.value}/activitylogs`);
     };
 
     if (loading) {

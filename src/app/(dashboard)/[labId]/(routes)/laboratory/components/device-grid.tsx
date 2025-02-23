@@ -10,16 +10,12 @@ interface DeviceGridProps {
   activeDevices: (ActiveDeviceUser & { device: Device, user: DeviceUser })[];
   inactiveDevices: Device[];  // Fix type
   onRefresh: () => void;
-  labId: string;
-  
 }
 
 export const DeviceGrid: React.FC<DeviceGridProps> = ({
   activeDevices,
   inactiveDevices,
   onRefresh,
-  labId,
-  
 }) => {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -69,7 +65,7 @@ export const DeviceGrid: React.FC<DeviceGridProps> = ({
                   className="transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg rounded-xl"
                 >
                   <DeviceArtwork
-                    labId={labId}
+                  
                     device={data.device}
                     user={data.user}
                     className="w-full h-full"
@@ -105,7 +101,7 @@ export const DeviceGrid: React.FC<DeviceGridProps> = ({
               >
                 <DeviceArtwork
                   key={inactive.id}
-                  labId={labId}
+                
                   device={inactive}
                   className="w-full h-full"
                   aspectRatio="square"
