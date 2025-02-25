@@ -100,7 +100,7 @@ export default function AppSidebar() {
                 pathname === `/${params.labId}/devices` ||
                 pathname === `/${params.labId}/settings`,
             items: [
-               
+
                 {
                     title: 'Devices',
                     url: `/${params.labId}/devices`,
@@ -116,7 +116,15 @@ export default function AppSidebar() {
                     isActive: pathname === `/${params.labId}/settings`,
                     shortcut: ['s', 't'],
                     items: []
-                }
+                },
+                {
+                    title: 'Teams',
+                    url: `/${params.labId}/teams`,
+                    icon: 'teams',
+                    isActive: pathname === `/${params.labId}/teams`,
+                    shortcut: ['t', 'm'],
+                    items: []
+                },
             ],
 
         },

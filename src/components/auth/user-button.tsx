@@ -12,6 +12,7 @@ import {
   LifeBuoy,
   LogOut,
   Settings,
+  Users,
 } from "lucide-react"
 
 import {
@@ -96,7 +97,11 @@ export const UserButton = ({ className, showThemeToggle }: UserButtonProps) => {
               <span>Settings</span>
               <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
             </DropdownMenuItem>
-
+            <DropdownMenuItem onClick={() => router.push(`/${params.labId}/teams`)}>
+              <Users className="mr-2 h-4 w-4" />
+              <span>Teams</span>
+              <DropdownMenuShortcut>⌘T</DropdownMenuShortcut>
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem>

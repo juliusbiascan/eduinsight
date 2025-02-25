@@ -11,24 +11,41 @@ const SettingsPage = async ({
 }: {
   params: { labId: string }
 }) => {
-
+  let lab;
   const session = await auth()
 
   if (!session) {
     redirect("/auth/login")
   }
 
-  const lab = await db.labaratory.findFirst({
+  const team = await db.team.findFirst({
     where: {
-      id: params.labId,
-      userId: session.user.id,
+      labId: params.labId,
+      users: {
+        some: {
+          id: session.user.id,
+        },
+      }
     }
   });
 
+  if (team) {
+    lab = await db.labaratory.findFirst({
+      where: {
+        id: team.labId,
+      },
+    });
 
-  if (!lab) {
-    redirect('/');
-  };
+    if (!lab) {
+      redirect('/');
+    }
+  } else {
+    lab = await db.labaratory.findFirst({ where: { id: params.labId, userId: session.user.id } });
+
+    if (!lab) {
+      redirect('/');
+    }
+  }
 
   return (
     <PageContainer>

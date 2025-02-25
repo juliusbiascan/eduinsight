@@ -3,11 +3,6 @@ import { DeviceClient } from './components/client'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import PageContainer from '@/components/layout/page-container'
-import { buttonVariants } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import { Separator } from '@radix-ui/react-dropdown-menu'
-import { Link, Plus } from 'lucide-react'
-import { Heading } from '@/components/ui/heading'
 
 const DevicePage = async ({
   params
@@ -21,17 +16,34 @@ const DevicePage = async ({
     redirect("/auth/login")
   }
 
-  const lab = await db.labaratory.findFirst({
+  const team = await db.team.findFirst({
     where: {
-      id: params.labId,
-      userId: session.user.id,
+      labId: params.labId,
+      users: {
+        some: {
+          id: session.user.id,
+        },
+      }
     }
   });
 
+  if (team) {
+    const lab = await db.labaratory.findFirst({
+      where: {
+        id: team.labId,
+      },
+    });
 
-  if (!lab) {
-    redirect('/');
-  };
+    if (!lab) {
+      redirect('/');
+    }
+  } else {
+    const lab = await db.labaratory.findFirst({ where: { id: params.labId, userId: session.user.id } });
+
+    if (!lab) {
+      redirect('/');
+    }
+  }
 
   const devices = await db.device.findMany({
     where: {

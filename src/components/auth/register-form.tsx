@@ -31,7 +31,19 @@ const ExtendedRegisterSchema = RegisterSchema.extend({
   path: ["confirmPassword"],
 });
 
-export const RegisterForm = () => {
+interface RegisterFormProps {
+  token?: string | null;
+  labId?: string | null;
+  inviteEmail?: string | null;
+  isRoot?: boolean;
+}
+
+export const RegisterForm = ({ 
+  token, 
+  labId,
+  inviteEmail ,
+  isRoot
+}: RegisterFormProps) => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -39,7 +51,7 @@ export const RegisterForm = () => {
   const form = useForm<z.infer<typeof ExtendedRegisterSchema>>({
     resolver: zodResolver(ExtendedRegisterSchema),
     defaultValues: {
-      email: "",
+      email: inviteEmail || "",
       password: "",
       confirmPassword: "",
       name: "",
@@ -51,8 +63,12 @@ export const RegisterForm = () => {
     setSuccess("");
 
     startTransition(() => {
-      register(values)
+      register(values, token, labId, isRoot)
         .then((data) => {
+          if (data.success && labId) {
+            // Update redirection path to match new structure
+            window.location.href = `/teams/accept?labId=${labId}`;
+          }
           setError(data.error);
           setSuccess(data.success);
         });
@@ -112,12 +128,17 @@ export const RegisterForm = () => {
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={isPending}
+                      disabled={isPending || !!inviteEmail}
                       placeholder="Email"
                       type="email"
-                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm"
+                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-[#C9121F] rounded-lg shadow-sm disabled:opacity-50"
                     />
                   </FormControl>
+                  {inviteEmail && (
+                    <p className="text-xs text-muted-foreground">
+                      This email is from your team invitation
+                    </p>
+                  )}
                   <FormMessage className="text-red-500" />
                 </FormItem>
               )}

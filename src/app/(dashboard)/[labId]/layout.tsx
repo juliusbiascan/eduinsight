@@ -17,7 +17,9 @@ export default async function DashboardLayout({ children, params }: DashboardLay
     const session = await auth();
     // Persisting the sidebar state in the cookie.
     const cookieStore = await cookies();
+
     const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true';
+
     if (!session) {
         redirect("/auth/login");
     }
@@ -31,6 +33,36 @@ export default async function DashboardLayout({ children, params }: DashboardLay
     if (!user) {
         await signOut({ redirectTo: "/" });
     }
+
+    const team = await db.team.findFirst({
+        where: {
+            labId: params.labId,
+            users: {
+                some: {
+                    id: session.user.id,
+                },
+            }
+        }
+    });
+
+    if (team) {
+        const lab = await db.labaratory.findFirst({
+            where: {
+                id: team.labId,
+            },
+        });
+
+        if (!lab) {
+            redirect('/');
+        }
+    } else {
+        const lab = await db.labaratory.findFirst({ where: { id: params.labId, userId: session.user.id } });
+
+        if (!lab) {
+            redirect('/');
+        }
+    }
+
 
     return (
         <KBar>

@@ -1,24 +1,61 @@
 import React from 'react';
 import PageContainer from '@/components/layout/page-container';
 import { DateRangeProvider } from "@/hooks/use-date-range";
+import { db } from '@/lib/db';
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
 
 export const metadata = {
     title: 'Dashboard: Overview'
-  };
-  
-export default function OverViewLayout({
+};
+
+export default async function OverViewLayout({
     recent,
     card_stats,
     pie_stats,
     bar_stats,
-    area_stats
+    area_stats,
+    params
 }: {
     card_stats: React.ReactNode;
     recent: React.ReactNode;
     pie_stats: React.ReactNode;
     bar_stats: React.ReactNode;
     area_stats: React.ReactNode;
+    params: { labId: string };
 }) {
+    const session = await auth();
+
+    if (!session) redirect("/auth/login");
+
+    const team = await db.team.findFirst({
+        where: {
+            labId: params.labId,
+            users: {
+                some: {
+                    id: session.user.id,
+                },
+            }
+        }
+    });
+
+    if (team) {
+        const lab = await db.labaratory.findFirst({
+            where: {
+                id: team.labId,
+            },
+        });
+
+        if (!lab) {
+            redirect('/');
+        }
+    } else {
+        const lab = await db.labaratory.findFirst({ where: { id: params.labId, userId: session.user.id } });
+
+        if (!lab) {
+            redirect('/');
+        } 
+    }
 
 
     return (

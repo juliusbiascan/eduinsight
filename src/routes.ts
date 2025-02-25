@@ -7,6 +7,8 @@ export const publicRoutes = [
   "/",
   "/auth/new-verification",
   "/auth/logout",
+  "/teams/accept",
+  "/setup"  // Add this line
 ];
 
 /**

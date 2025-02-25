@@ -35,13 +35,13 @@ export const LoginForm = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
   const urlError = searchParams.get("error") === "OAuthAccountNotLinked"
-    ? "Email already in use with different provider!"
-    : "";
+  ? "Email already in use with different provider!"
+  : "";
   const [turnstileStatus, setTurnstileStatus] = useState<
-    "success" | "error" | "expired" | "required"
+  "success" | "error" | "expired" | "required"
   >("required");
   const turnstileRef = useRef<string>();
-
+  
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -87,24 +87,14 @@ export const LoginForm = () => {
 
   return (
     <CardWrapper
-      headerLabel="Server Access"
-      headerComponent={
-        <div className="flex items-center justify-center space-x-2 flex-wrap">
-          <Image
-            src="/passlogo-small.png"
-            alt="PASS Logo"
-            width={40}
-            height={40}
-            className="rounded-full border-2 border-[#C9121F] sm:w-12 sm:h-12"
-          />
-          <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#C9121F] to-[#1A1617] text-transparent bg-clip-text">
-            Server Access
-          </span>
-        </div>
-      }
-      backButtonHref="/auth/login"
-      backButtonLabel="Back"
+      headerLabel="Welcome back"
+      backButtonLabel="Don't have an account?"
+      backButtonHref="/auth/register"
+      showSocial
     >
+      {error && (
+        <FormError message={error} />
+      )}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

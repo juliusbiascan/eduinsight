@@ -44,6 +44,12 @@ enum DevicePurpose {
   STUDENT
 }
 
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
 model User {
   id                    String                 @id @default(cuid())
   name                  String?
@@ -53,7 +59,37 @@ model User {
   password              String?
   accounts              Account[]
   isTwoFactorEnabled    Boolean                @default(false)
-  twoFactorConfirmation TwoFactorConfirmation? 
+  twoFactorConfirmation TwoFactorConfirmation?
+  teamRole              TeamRole?
+  teamId                String?
+  team                  Team?                  @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdAt             DateTime               @default(now())
+
+  @@index([teamId])
+}
+
+model Team {
+  id          String           @id @default(cuid())
+  name        String
+  labId       String           @unique
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       User[]
+  invitations TeamInvitation[]
+}
+
+model TeamInvitation {
+  id        String   @id @default(cuid())
+  email     String
+  role      TeamRole @default(MEMBER)
+  token     String   @unique
+  labId     String
+  expires   DateTime
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([email, teamId])
 }
 
 model Account {
@@ -112,14 +148,14 @@ model TwoFactorConfirmation {
 }
 
 model Labaratory {
-  id        String   @id @default(cuid())
-  name      String
-  secretKey String   @unique @default(cuid())
-  userId    String
+  id                     String   @id @default(cuid())
+  name                   String
+  secretKey              String   @unique @default(cuid())
+  userId                 String
   isRegistrationDisabled Boolean  @default(false)
-  Device    Device[] @relation("LabToDevice")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  Device                 Device[] @relation("LabToDevice")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 model Device {
@@ -135,7 +171,7 @@ model Device {
   devicePurpose       DevicePurpose         @default(STUDENT)
   isUsed              Boolean               @default(false)
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  updatedAt           DateTime              @default(now())
   activeUsers         ActiveDeviceUser[]
   activeUserLogs      ActiveUserLogs[]
   powerMonitoringLogs PowerMonitoringLogs[]
@@ -162,7 +198,7 @@ model DeviceUser {
   powerLogs     PowerMonitoringLogs[]
   activityLogs  ActivityLogs[]
   createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  updatedAt     DateTime              @default(now())
   notifications Notification[]
 
   ActiveUserLogs ActiveUserLogs[]

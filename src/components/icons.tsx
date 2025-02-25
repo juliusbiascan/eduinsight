@@ -128,4 +128,5 @@ export const Icons = {
   monitoring: BarChart3,
   devices: MonitorSmartphone,
   analytics: LineChart,
+  teams: Users,
 }
