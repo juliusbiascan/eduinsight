@@ -25,6 +25,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const Page = () => {
     const { toast } = useToast();
@@ -138,129 +144,143 @@ const Page = () => {
                 />
                 <Separator />
 
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <Input 
-                            placeholder="URL" 
-                            name="address"
-                            value={formData.address as string}
-                            onChange={handleInputChange}
-                        />
-                        <Input 
-                            placeholder="List description (optional)" 
-                            name="comment"
-                            value={formData.comment || ''}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="flex gap-4 justify-end">
-                        <Button onClick={() => handleAddList('block')}>
-                            Add Block List
-                        </Button>
-                        <Button 
-                            variant="outline" 
-                            onClick={() => handleAddList('allow')}
-                        >
-                            Add Allow List
-                        </Button>
-                    </div>
-                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Add a new subscribed list</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <Input 
+                                    placeholder="URL" 
+                                    name="address"
+                                    value={formData.address as string}
+                                    onChange={handleInputChange}
+                                />
+                                <Input 
+                                    placeholder="List description (optional)" 
+                                    name="comment"
+                                    value={formData.comment || ''}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                            <div className="flex gap-4 justify-end">
+                                <Button onClick={() => handleAddList('block')}>
+                                    Add Block List
+                                </Button>
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => handleAddList('allow')}
+                                >
+                                    Add Allow List
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <Alert>
                     <InfoIcon className="h-4 w-4" />
                     <AlertDescription>
-                        Please run pihole -g or update your gravity list online after modifying your lists.
+                        Please run eduinsight -g or update your gravity list online after modifying your lists.
                         Multiple lists can be added by separating each unique URL with a space or comma.
                         Click on the icon in the first column to get additional information about your lists. 
                         The icons correspond to the health of the list.
                     </AlertDescription>
                 </Alert>
 
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            Show 
-                            <Select defaultValue="10">
-                                <SelectTrigger className="w-[70px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="10">10</SelectItem>
-                                    <SelectItem value="25">25</SelectItem>
-                                    <SelectItem value="50">50</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            entries
-                        </div>
-                    </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Subscribed Lists</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    Show 
+                                    <Select defaultValue="10">
+                                        <SelectTrigger className="w-[70px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="10">10</SelectItem>
+                                            <SelectItem value="25">25</SelectItem>
+                                            <SelectItem value="50">50</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    entries
+                                </div>
+                            </div>
 
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Updated At</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Address</TableHead>
-                                <TableHead>Comment</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Invalid Domains</TableHead>
-                                <TableHead>Action</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center">
-                                        Loading...
-                                    </TableCell>
-                                </TableRow>
-                            ) : lists.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center">
-                                        No lists found
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                lists.map((list) => (
-                                    <TableRow key={list.id}>
-                                        <TableCell>{formatDate(list.date_updated)}</TableCell>
-                                        <TableCell>{list.type}</TableCell>
-                                        <TableCell className="max-w-[200px] truncate">
-                                            <Link 
-                                                href={list.address} 
-                                                target="_blank"
-                                                className="text-blue-600 hover:text-blue-800 hover:underline"
-                                            >
-                                                {list.address}
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell>{list.comment || '-'}</TableCell>
-                                        <TableCell>
-                                            <span className={list.enabled ? "text-green-600" : "text-red-600"}>
-                                                {list.enabled ? 'Active' : 'Disabled'}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>{list.invalid_domains}</TableCell>
-                                        <TableCell>
-                                            <Button 
-                                                variant="destructive" 
-                                                size="sm"
-                                                onClick={() => handleDeleteList(list.address, list.type)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </TableCell>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Updated At</TableHead>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Address</TableHead>
+                                        <TableHead>Comment</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Invalid Domains</TableHead>
+                                        <TableHead>Action</TableHead>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="text-center">
+                                                Loading...
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : lists.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="text-center">
+                                                No lists found
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        lists.map((list) => (
+                                            <TableRow key={list.id}>
+                                                <TableCell>{formatDate(list.date_updated)}</TableCell>
+                                                <TableCell>{list.type}</TableCell>
+                                                <TableCell className="max-w-[200px] truncate">
+                                                    <Link 
+                                                        href={list.address} 
+                                                        target="_blank"
+                                                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                                                    >
+                                                        {list.address}
+                                                    </Link>
+                                                </TableCell>
+                                                <TableCell>{list.comment || '-'}</TableCell>
+                                                <TableCell>
+                                                    <span className={list.enabled ? "text-green-600" : "text-red-600"}>
+                                                        {list.enabled ? 'Active' : 'Disabled'}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>{list.invalid_domains}</TableCell>
+                                                <TableCell>
+                                                    <Button 
+                                                        variant="destructive" 
+                                                        size="sm"
+                                                        onClick={() => handleDeleteList(list.address, list.type)}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
 
-                    <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">
-                            Showing {lists.length} {lists.length === 1 ? 'entry' : 'entries'}
-                        </p>
-                    </div>
-                </div>
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">
+                                    Showing {lists.length} {lists.length === 1 ? 'entry' : 'entries'}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

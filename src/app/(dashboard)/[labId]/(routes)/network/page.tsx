@@ -131,7 +131,7 @@ export default function NetworkPage() {
         <Separator className="my-4" />
 
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {cards.map((card, index) => (
             <Card key={index} className="col-span-1">
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
@@ -153,12 +153,12 @@ export default function NetworkPage() {
           <ClientActivityGraph data={clientHistory} />
         </div>
 
-        <div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <QueryTypesPie data={queryTypes} />
-            <UpstreamServersPie data={upstreamServers} />
-          </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <QueryTypesPie data={queryTypes} />
+          <UpstreamServersPie data={upstreamServers} />
         </div>
+
 
         <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
           <Card className="w-full">

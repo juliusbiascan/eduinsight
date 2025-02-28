@@ -762,3 +762,30 @@ export const deleteList = async (address: string, type: 'allow' | 'block'): Prom
         throw new Error(`Delete list failed: ${error.message}`);
     }
 }
+
+export interface AllDomainsResponse {
+    domains: DomainEntry[];
+    took: number;
+}
+
+/**
+ * Get all domains in a single request
+ * More efficient than making separate requests for each domain type
+ */
+export const getAllDomains = async (): Promise<AllDomainsResponse> => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const response = await axiosInstance.get<AllDomainsResponse>(
+            `${API_BASE_URL}/api/domains?sid=${session.sid}`
+        );
+        return response.data;
+    } catch (error: any) {
+        throw new Error(`Failed to fetch domains: ${error.message}`);
+    }
+}

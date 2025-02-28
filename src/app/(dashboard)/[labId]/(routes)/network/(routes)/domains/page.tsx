@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { getDomain } from "@/lib/pihole";
+import { getAllDomains } from "@/lib/pihole";
 import { DomainEntry } from "@/lib/pihole";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -13,23 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
     Dialog,
     DialogContent,
@@ -41,6 +25,11 @@ import { addDomain, batchDeleteDomains } from "@/lib/pihole";
 import { toast } from "sonner";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { FileSpreadsheet, Globe, Shield, Search } from "lucide-react";
+import PageContainer from "@/components/layout/page-container";
+import * as XLSX from 'xlsx';
 
 interface FormData {
     domain: string;
@@ -170,6 +159,26 @@ const AddDomainDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     );
 };
 
+const LoadingSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+        {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-3 border animate-pulse">
+                <div className="flex items-center space-x-3">
+                    <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700" />
+                    <div className="space-y-2 flex-1">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
+                </div>
+            </div>
+        ))}
+    </div>
+);
+
 const DomainsPage = () => {
     const [domains, setDomains] = useState<DomainEntry[]>([]);
     const [loading, setLoading] = useState(true);
@@ -182,7 +191,6 @@ const DomainsPage = () => {
     });
     const [pageSize, setPageSize] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalEntries, setTotalEntries] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set());
     
@@ -235,25 +243,14 @@ const DomainsPage = () => {
         setLoading(true);
         setError(null);
         try {
-            const results: DomainEntry[] = [];
-
-            if (filters.exactAllow) {
-                const allowExact = await getDomain('allow', 'exact', '');
-                results.push(...allowExact.domains);
-            }
-            if (filters.regexAllow) {
-                const allowRegex = await getDomain('allow', 'regex', '');
-                results.push(...allowRegex.domains);
-            }
-            if (filters.exactDeny) {
-                const denyExact = await getDomain('deny', 'exact', '');
-                results.push(...denyExact.domains);
-            }
-            if (filters.regexDeny) {
-                const denyRegex = await getDomain('deny', 'regex', '');
-                results.push(...denyRegex.domains);
-            }
-
+            const response = await getAllDomains();
+            const results = response.domains.filter(domain => {
+                if (domain.type === 'allow' && domain.kind === 'exact' && !filters.exactAllow) return false;
+                if (domain.type === 'allow' && domain.kind === 'regex' && !filters.regexAllow) return false;
+                if (domain.type === 'deny' && domain.kind === 'exact' && !filters.exactDeny) return false;
+                if (domain.type === 'deny' && domain.kind === 'regex' && !filters.regexDeny) return false;
+                return true;
+            });
             setDomains(results);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to fetch domains');
@@ -296,201 +293,225 @@ const DomainsPage = () => {
         return new Date(timestamp * 1000).toLocaleString();
     };
 
-    return (
-        <div className="flex-col">
-            <div className="flex-1 space-y-4 p-8 pt-6">
-                <Heading
-                    title="Domain Management"
-                    description="Manage your allow and deny lists for domains. Control access to specific domains using exact matches or regex patterns."
+    const renderFilters = () => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            <Select value={filters.exactAllow ? "true" : "false"} onValueChange={(v) => setFilters(prev => ({ ...prev, exactAllow: v === "true" }))}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Exact Allow" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="true">Show Exact Allow</SelectItem>
+                    <SelectItem value="false">Hide Exact Allow</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <Select value={filters.regexAllow ? "true" : "false"} onValueChange={(v) => setFilters(prev => ({ ...prev, regexAllow: v === "true" }))}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Regex Allow" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="true">Show Regex Allow</SelectItem>
+                    <SelectItem value="false">Hide Regex Allow</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <Select value={filters.exactDeny ? "true" : "false"} onValueChange={(v) => setFilters(prev => ({ ...prev, exactDeny: v === "true" }))}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Exact Deny" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="true">Show Exact Deny</SelectItem>
+                    <SelectItem value="false">Hide Exact Deny</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <Select value={filters.regexDeny ? "true" : "false"} onValueChange={(v) => setFilters(prev => ({ ...prev, regexDeny: v === "true" }))}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Regex Deny" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="true">Show Regex Deny</SelectItem>
+                    <SelectItem value="false">Hide Regex Deny</SelectItem>
+                </SelectContent>
+            </Select>
+
+            <div className="relative w-full">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search domains..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <Separator />
+            </div>
 
-                <Card className="p-4">
-                    <div className="flex flex-col gap-4">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                Show
-                                <Select
-                                    value={pageSize.toString()}
-                                    onValueChange={(value) => setPageSize(Number(value))}
-                                >
-                                    <SelectTrigger className="w-[100px]">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {[10, 25, 50, 100].map((size) => (
-                                            <SelectItem key={size} value={size.toString()}>
-                                                {size}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                entries
-                            </div>
-                            <AddDomainDialog onSuccess={fetchDomains} />
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="exactAllow"
-                                    checked={filters.exactAllow}
-                                    onCheckedChange={(checked) =>
-                                        setFilters(prev => ({ ...prev, exactAllow: checked === true }))
-                                    }
-                                />
-                                <label htmlFor="exactAllow">Exact Allow</label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="regexAllow"
-                                    checked={filters.regexAllow}
-                                    onCheckedChange={(checked) =>
-                                        setFilters(prev => ({ ...prev, regexAllow: checked === true }))
-                                    }
-                                />
-                                <label htmlFor="regexAllow">Regex Allow</label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="exactDeny"
-                                    checked={filters.exactDeny}
-                                    onCheckedChange={(checked) =>
-                                        setFilters(prev => ({ ...prev, exactDeny: checked === true }))
-                                    }
-                                />
-                                <label htmlFor="exactDeny">Exact Deny</label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="regexDeny"
-                                    checked={filters.regexDeny}
-                                    onCheckedChange={(checked) =>
-                                        setFilters(prev => ({ ...prev, regexDeny: checked === true }))
-                                    }
-                                />
-                                <label htmlFor="regexDeny">Regex Deny</label>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span>Search:</span>
-                            <Input
-                                type="search"
-                                placeholder="Search domains, types, kinds, or comments..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="max-w-sm"
-                            />
-                        </div>
-                        {selectedDomains.size > 0 && (
-                            <div className="mt-4 flex items-center gap-2">
-                                <Button 
-                                    variant="destructive" 
-                                    onClick={handleBatchDelete}
-                                >
-                                    Delete Selected ({selectedDomains.size})
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                </Card>
+            <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Page Size" />
+                </SelectTrigger>
+                <SelectContent>
+                    {[10, 20, 50, 100].map(size => (
+                        <SelectItem key={size} value={size.toString()}>
+                            {size} per page
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+    );
 
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        {error}
-                    </div>
-                )}
-
-                {loading ? (
-                    <div className="text-center">Loading domains...</div>
-                ) : (
-                    <Card>
-                        <div className="p-6 pb-2">
-                            <h2 className="text-lg font-semibold">List of Domains</h2>
-                        </div>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[50px]">
-                                        <Checkbox
-                                            checked={currentDomains.length > 0 && 
-                                                currentDomains.every(d => 
-                                                    selectedDomains.has(`${d.domain}-${d.id}`)
-                                                )}
-                                            onCheckedChange={handleSelectAll}
-                                        />
-                                    </TableHead>
-                                    <TableHead>Domain</TableHead>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Kind</TableHead>
-                                    <TableHead>Comment</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Added</TableHead>
-                                    <TableHead>Modified</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {currentDomains.map((domain) => (
-                                    <TableRow key={`${domain.domain}-${domain.id}`}>
-                                        <TableCell>
-                                            <Checkbox
-                                                checked={selectedDomains.has(
-                                                    `${domain.domain}-${domain.id}`
-                                                )}
-                                                onCheckedChange={(checked) =>
-                                                    handleSelectDomain(
-                                                        `${domain.domain}-${domain.id}`,
-                                                        checked === true
-                                                    )
-                                                }
-                                            />
-                                        </TableCell>
-                                        <TableCell>{domain.unicode || domain.domain}</TableCell>
-                                        <TableCell>{domain.type}</TableCell>
-                                        <TableCell>{domain.kind}</TableCell>
-                                        <TableCell>{domain.comment || '-'}</TableCell>
-                                        <TableCell>{domain.enabled ? 'Enabled' : 'Disabled'}</TableCell>
-                                        <TableCell>{formatDate(domain.date_added)}</TableCell>
-                                        <TableCell>{formatDate(domain.date_modified)}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                        <div className="flex items-center justify-between px-4 py-4">
-                            <div className="text-sm text-gray-700">
-                                Showing {startIndex + 1} to {endIndex} of {filteredDomains.length} entries
-                                {searchQuery && ` (filtered from ${domains.length} total entries)`}
-                            </div>
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious 
-                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                                        />
-                                    </PaginationItem>
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                        <PaginationItem key={page}>
-                                            <PaginationLink
-                                                onClick={() => setCurrentPage(page)}
-                                                isActive={currentPage === page}
-                                            >
-                                                {page}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    ))}
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-                        </div>
-                    </Card>
-                )}
+    const PaginationControls = () => (
+        <div className="flex justify-between items-center mt-4">
+            <div className="text-sm text-gray-500">
+                Showing {startIndex + 1}-{endIndex} of {filteredDomains.length} domains
+            </div>
+            <div className="flex gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                >
+                    Previous
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                >
+                    Next
+                </Button>
             </div>
         </div>
+    );
+
+    return (
+        <PageContainer scrollable={false}>
+            <div className="flex flex-1 flex-col space-y-4">
+                <div className="flex items-start justify-between">
+                    <Heading
+                        title="Domains"
+                        description="Manage domain filtering rules"
+                    />
+                    <AddDomainDialog onSuccess={fetchDomains} />
+                </div>
+                <Separator />
+
+                <Card className="bg-white dark:bg-gray-800">
+                    <CardHeader className="pb-3">
+                        <div className="flex flex-col space-y-4">
+                            {renderFilters()}
+
+                            <div className="flex justify-between items-center mt-4">
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                        checked={selectedDomains.size === currentDomains.length && currentDomains.length > 0}
+                                        onCheckedChange={handleSelectAll}
+                                        id="select-all"
+                                    />
+                                    <label htmlFor="select-all">Select All</label>
+                                </div>
+                                {selectedDomains.size > 0 && (
+                                    <Button 
+                                        variant="destructive" 
+                                        onClick={handleBatchDelete}
+                                        size="sm"
+                                    >
+                                        Delete Selected ({selectedDomains.size})
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                        <Separator className="mt-4" />
+                    </CardHeader>
+
+                    <CardContent>
+                        {error && (
+                            <div className="text-red-500 p-4 text-center bg-red-50 rounded-lg mb-4">
+                                {error}
+                            </div>
+                        )}
+                        
+                        {loading ? (
+                            <LoadingSkeleton />
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+                                    {currentDomains.map((domain) => (
+                                        <motion.div
+                                            key={`${domain.domain}-${domain.id}`}
+                                            whileHover={{ scale: 1.02 }}
+                                            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-3 border relative"
+                                        >
+                                            <div className="absolute top-4 right-4 z-10">
+                                                <Badge
+                                                    variant={domain.enabled ? "success" : "secondary"}
+                                                    className={`
+                                                        px-2 py-1 text-xs font-semibold
+                                                        ${domain.enabled
+                                                            ? "bg-green-100 text-green-700 border border-green-200"
+                                                            : "bg-gray-100 text-gray-700 border border-gray-200"
+                                                        }
+                                                    `}
+                                                >
+                                                    {domain.enabled ? "Enabled" : "Disabled"}
+                                                </Badge>
+                                            </div>
+
+                                            <div className="flex items-center space-x-3 mt-2">
+                                                <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                                    domain.type === 'allow' ? 'bg-green-100' : 'bg-red-100'
+                                                }`}>
+                                                    {domain.type === 'allow' ? (
+                                                        <Globe className="h-6 w-6 text-green-600" />
+                                                    ) : (
+                                                        <Shield className="h-6 w-6 text-red-600" />
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h3 className="font-semibold truncate">
+                                                        {domain.unicode || domain.domain}
+                                                    </h3>
+                                                    <p className="text-sm text-gray-500 truncate">
+                                                        {domain.type} - {domain.kind}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2 text-sm">
+                                                {domain.comment && (
+                                                    <p className="text-gray-600 dark:text-gray-300">
+                                                        {domain.comment}
+                                                    </p>
+                                                )}
+                                                <div className="text-xs text-gray-500">
+                                                    Added: {new Date(domain.date_added * 1000).toLocaleString()}
+                                                </div>
+                                                <div className="text-xs text-gray-500">
+                                                    Modified: {new Date(domain.date_modified * 1000).toLocaleString()}
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-2 mt-2 border-t">
+                                                <Checkbox
+                                                    checked={selectedDomains.has(`${domain.domain}-${domain.id}`)}
+                                                    onCheckedChange={(checked) =>
+                                                        handleSelectDomain(`${domain.domain}-${domain.id}`, checked === true)
+                                                    }
+                                                    className="ml-1"
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                                <PaginationControls />
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </PageContainer>
     );
 };
 
