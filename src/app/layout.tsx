@@ -9,6 +9,7 @@ import { ToasterProvider } from "@/providers/toast-provider";
 import { SocketProvider } from "@/providers/socket-provider";
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import NextTopLoader from 'nextjs-toploader';
+import { Toaster } from "sonner";
 
 
 const lato = Lato({
@@ -76,6 +77,7 @@ export default async function RootLayout({
               <ToasterProvider />
               <ModalProvider />
               {children}
+              <Toaster />
             </ThemeProvider>
           </SocketProvider>
           </NuqsAdapter>

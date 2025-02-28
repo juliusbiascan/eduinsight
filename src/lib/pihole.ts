@@ -1,9 +1,8 @@
 "use server"
 
 import axios from "axios"
-import { PrismaClient } from "@prisma/client"
+import { db } from "./db";
 
-const prisma = new PrismaClient()
 
 /**
  * Base URL for the API
@@ -139,6 +138,150 @@ export interface TopClientsResponse {
     took: number;
 }
 
+export interface QueryReply {
+    type: string | null;
+    time: number;
+}
+
+export interface QueryClient {
+    ip: string;
+    name: string | null;
+}
+
+export interface QueryEde {
+    code: number;
+    text: string | null;
+}
+
+export interface Query {
+    id: number;
+    time: number;
+    type: string;
+    domain: string;
+    cname: string | null;
+    status: string | null;
+    client: QueryClient;
+    dnssec: string | null;
+    reply: QueryReply;
+    list_id: number | null;
+    upstream: string | null;
+    ede: QueryEde;
+}
+
+export interface QueriesResponse {
+    queries: Query[];
+    cursor: number;
+    recordsTotal: number;
+    recordsFiltered: number;
+    draw: number;
+    took: number;
+}
+
+export interface DomainEntry {
+    domain: string;
+    unicode: string;
+    type: 'allow' | 'deny';
+    kind: 'exact' | 'regex';
+    comment: string | null;
+    groups: number[];
+    enabled: boolean;
+    id: number;
+    date_added: number;
+    date_modified: number;
+}
+
+export interface DomainResponse {
+    domains: DomainEntry[];
+    took: number;
+}
+
+export interface DomainAddRequest {
+    domain: string | string[];
+    comment?: string | null;
+    groups?: number[];
+    enabled?: boolean;
+}
+
+export interface DomainSuccess {
+    item: string;
+}
+
+export interface DomainError {
+    item: string;
+    error: string;
+}
+
+export interface DomainProcessed {
+    success: DomainSuccess[];
+    errors: DomainError[];
+}
+
+export interface AddDomainResponse {
+    domains: DomainEntry[];
+    processed: DomainProcessed | null;
+    took: number;
+}
+
+export interface DomainDeleteItem {
+    item: string;
+    type: 'allow' | 'deny';
+    kind: 'exact' | 'regex';
+}
+
+export interface List {
+    address: string;
+    type: 'allow' | 'block';
+    comment: string | null;
+    groups: number[];
+    enabled: boolean;
+    id: number;
+    date_added: number;
+    date_modified: number;
+    date_updated: number;
+    number: number;
+    invalid_domains: number;
+    abp_entries: number;
+    status: number;
+}
+
+export interface ListResponse {
+    lists: List[];
+    took: number;
+}
+
+export interface AddListRequest {
+    address: string | string[];
+    type: 'allow' | 'block';
+    comment?: string | null;
+    groups?: number[];
+    enabled?: boolean;
+}
+
+export interface AddListResponse {
+    lists: List[];
+    processed: {
+        success: Array<{ item: string }>;
+        errors: Array<{ item: string; error: string }>;
+    } | null;
+    took: number;
+}
+
+interface QueryParams {
+    from?: number;
+    until?: number;
+    length?: number;
+    start?: number;
+    cursor?: number;
+    domain?: string;
+    client_ip?: string;
+    client_name?: string;
+    upstream?: string;
+    type?: string;
+    status?: string;
+    reply?: string;
+    dnssec?: string;
+}
+
 class SessionManager {
     private static instance: SessionManager;
     private currentSession: Session | null = null;
@@ -146,7 +289,7 @@ class SessionManager {
     private constructor() {}
 
     private async saveToDatabase(session: Session) {
-        await prisma.piHoleSession.upsert({
+        await db.piHoleSession.upsert({
             where: { sid: session.sid! },
             create: {
                 sid: session.sid!,
@@ -168,7 +311,7 @@ class SessionManager {
     }
 
     private async loadFromDatabase(): Promise<Session | null> {
-        const storedSession = await prisma.piHoleSession.findFirst({
+        const storedSession = await db.piHoleSession.findFirst({
             orderBy: { updatedAt: 'desc' }
         });
 
@@ -222,7 +365,7 @@ class SessionManager {
 
     public async clearSession() {
         this.currentSession = null;
-        await prisma.piHoleSession.deleteMany();
+        await db.piHoleSession.deleteMany();
     }
 }
 
@@ -401,5 +544,156 @@ export const getTopClients = async (count: number = 10, blocked: boolean = false
         return response.data;
     } catch (error: any) {
         throw new Error(`Top clients failed: ${error.message}`);
+    }
+}
+
+export const getQueries = async (params: QueryParams = {}): Promise<QueriesResponse> => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const queryParams = new URLSearchParams();
+        queryParams.append('sid', session.sid!);
+        
+        // Add all optional parameters to the query string
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined) {
+                queryParams.append(key, value.toString());
+            }
+        });
+
+        const response = await axiosInstance.get<QueriesResponse>(
+            `${API_BASE_URL}/api/queries?${queryParams.toString()}`
+        );
+        return response.data;
+    } catch (error: any) {
+        throw new Error(`Queries request failed: ${error.message}`);
+    }
+}
+
+export const getDomain = async (
+    type: 'allow' | 'deny',
+    kind: 'exact' | 'regex',
+    domain: string
+): Promise<DomainResponse> => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const response = await axiosInstance.get<DomainResponse>(
+            `${API_BASE_URL}/api/domains/${type}/${kind}/${encodeURIComponent(domain)}?sid=${session.sid}`
+        );
+        return response.data;
+    } catch (error: any) {
+        throw new Error(`Domain lookup failed: ${error.message}`);
+    }
+}
+
+export const addDomain = async (
+    type: 'allow' | 'deny',
+    kind: 'exact' | 'regex',
+    data: DomainAddRequest
+): Promise<AddDomainResponse> => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const response = await axiosInstance.post<AddDomainResponse>(
+            `${API_BASE_URL}/api/domains/${type}/${kind}?sid=${session.sid}`,
+            data
+        );
+        return response.data;
+    } catch (error: any) {
+        throw new Error(`Add domain failed: ${error.message}`);
+    }
+}
+
+export const batchDeleteDomains = async (domains: DomainDeleteItem[]) => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const response = await axiosInstance.post(
+            `${API_BASE_URL}/api/domains:batchDelete?sid=${session.sid}`,
+            domains
+        );
+        return response.status;
+    } catch (error: any) {
+        throw new Error(`Batch delete failed: ${error.message}`);
+    }
+}
+
+export const getLists = async (): Promise<ListResponse> => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const response = await axiosInstance.get<ListResponse>(
+            `${API_BASE_URL}/api/lists?sid=${session.sid}`
+        );
+        return response.data;
+    } catch (error: any) {
+        throw new Error(`Get lists failed: ${error.message}`);
+    }
+}
+
+export const addList = async (data: AddListRequest): Promise<AddListResponse> => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const response = await axiosInstance.post<AddListResponse>(
+            `${API_BASE_URL}/api/lists?sid=${session.sid}`,
+            data
+        );
+        return response.data;
+    } catch (error: any) {
+        throw new Error(`Add list failed: ${error.message}`);
+    }
+}
+
+export const deleteList = async (address: string, type: 'allow' | 'block'): Promise<void> => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const encodedAddress = encodeURIComponent(address);
+        const response = await axiosInstance.delete(
+            `${API_BASE_URL}/api/lists/${encodedAddress}?type=${type}&sid=${session.sid}`
+        );
+
+        if (response.status !== 204) {
+            throw new Error('Failed to delete list');
+        }
+    } catch (error: any) {
+        throw new Error(`Delete list failed: ${error.message}`);
     }
 }
