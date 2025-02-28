@@ -22,7 +22,7 @@ export function Breadcrumbs({ labs = [] }: { labs: Record<string, any>[] }) {
 
   // Filter out items where the path segment is a labId (24 characters)
   const visibleItems = items.filter(item => !item.link.split('/').some(segment => segment.length === 24));
-  const showLabSwitcher = !pathname.includes('/users') && labs.length > 1;
+  const showLabSwitcher = !pathname.includes('/users') && labs.length !== 0;
   const showUserSwitcher = params.userId && (pathname.includes('/logs') || pathname.includes('/users'));
   const showDeviceSwitcher = params.devId;
 
@@ -34,8 +34,6 @@ export function Breadcrumbs({ labs = [] }: { labs: Record<string, any>[] }) {
         <BreadcrumbItem>
           <BreadcrumbLink href={`/${params.labId}`}>Dashboard</BreadcrumbLink>
         </BreadcrumbItem>
-
-
 
         {showLabSwitcher && (
           <>

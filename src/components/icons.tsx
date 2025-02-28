@@ -41,6 +41,8 @@ import {
   UserX2Icon,
   LucideIcon,
   LineChart,
+  Globe,
+  List,
 } from "lucide-react"
 
 import { BeakerIcon } from '@heroicons/react/24/solid';
@@ -129,4 +131,6 @@ export const Icons = {
   devices: MonitorSmartphone,
   analytics: LineChart,
   teams: Users,
+  globe: Globe,
+  list: List,
 }

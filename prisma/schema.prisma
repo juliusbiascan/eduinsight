@@ -371,3 +371,15 @@ model Notification {
 
   @@index([userId])
 }
+
+model PiHoleSession {
+  id        String    @id @default(cuid())
+  sid       String    @unique
+  csrf      String?
+  valid     Boolean
+  totp      Boolean
+  validity  Int
+  message   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

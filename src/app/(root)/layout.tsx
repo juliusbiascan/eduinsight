@@ -7,62 +7,58 @@ export default async function SetupLayout({
 }: {
   children: React.ReactNode;
 }) {
-  try {
-    const users = await db.user.findMany();
 
-    if (users.length === 0) {
-      return redirect("/setup");
+  const users = await db.user.findMany();
+
+  if (users.length === 0) {
+    redirect("/setup");
+  }
+
+  const session = await auth();
+
+  if (!session) {
+    redirect("/auth/login");
+  }
+
+  const user = await db.user.findUnique({
+    where: {
+      id: session.user.id
     }
+  });
 
-    const session = await auth();
+  if (!user) {
+    await signOut({ redirectTo: "/" });
+  }
 
-    if (!session) {
-      return redirect("/auth/login");
-    }
-
-    const user = await db.user.findUnique({
-      where: {
-        id: session.user.id
-      }
-    });
-
-    if (!user) {
-      return await signOut({ redirectTo: "/" });
-    }
-
-    const team = await db.team.findFirst({
-      where: {
-        users: {
-          some: {
-            id: session.user.id,
-          },
-        }
-      }
-    });
-
-    let lab = null;
-
-    if (team?.labId) {
-      lab = await db.labaratory.findUnique({
-        where: {
-          id: team.labId,
-        },
-      });
-    } else {
-      lab = await db.labaratory.findUnique({
-        where: {
+  const team = await db.team.findFirst({
+    where: {
+      users: {
+        some: {
           id: session.user.id,
         },
-      });
+      }
     }
+  });
 
-    if (lab?.id) {
-      return redirect(`/${lab.id}`);
-    }
+  let lab = null;
 
-    return <>{children}</>;
-  } catch (error) {
-    console.error("Layout Error:", error);
-    return redirect("/error");
+  if (team) {
+    lab = await db.labaratory.findUnique({
+      where: {
+        id: team.labId,
+      },
+    });
+  } else {
+    lab = await db.labaratory.findFirst({
+      where: {
+        userId: session.user.id,
+      },
+    });
   }
+
+  if (lab) {
+    return redirect(`/${lab.id}`);
+  }
+
+  return <>{children}</>;
 }

@@ -91,6 +91,7 @@ export default function AppSidebar() {
             shortcut: ['d', 'u'],
             items: []
         },
+
         {
             title: 'Laboratory',
             url: `/${params.labId}/laboratory`, // Changed from '#' to actual link
@@ -128,7 +129,41 @@ export default function AppSidebar() {
             ],
 
         },
-
+        {
+            title: 'Network',
+            url: `/${params.labId}/network`,
+            icon: 'network',
+            isActive: pathname === `/${params.labId}/network` ||
+                pathname === `/${params.labId}/network/query-log` ||
+                pathname === `/${params.labId}/network/domains` ||
+                pathname === `/${params.labId}/network/list`,
+            items: [
+                {
+                    title: 'Query Log',
+                    url: `/${params.labId}/network/query-log`,
+                    icon: 'activity',
+                    isActive: pathname === `/${params.labId}/network/query-log`,
+                    shortcut: ['q', 'l'],
+                    items: []
+                },
+                {
+                    title: 'Domains',
+                    url: `/${params.labId}/network/domains`,
+                    icon: 'globe',
+                    isActive: pathname === `/${params.labId}/network/domains`,
+                    shortcut: ['d', 'm'],
+                    items: []
+                },
+                {
+                    title: 'List',
+                    url: `/${params.labId}/network/list`,
+                    icon: 'list',
+                    isActive: pathname === `/${params.labId}/network/list`,
+                    shortcut: ['l', 't'],
+                    items: []
+                },
+            ],
+        },
         {
             title: 'Users',
             url: `/${params.labId}/users`,

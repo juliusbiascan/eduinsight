@@ -12,45 +12,41 @@ export default async function UserListingPage() {
     const role = searchParamsCache.get('role');
     const yearLevel = searchParamsCache.get('yearLevel');
 
+    const whereClause = {
+        ...(search && {
+            OR: [
+                { firstName: { contains: search } },
+                { lastName: { contains: search } },
+                { email: { contains: search } },
+            ]
+        }),
+        ...(course && {
+            OR: course.split('.').map(c => ({
+                course: c as Course
+            }))
+        }),
+        ...(role && {
+            OR: role.split('.').map(r => ({
+                role: r as DeviceUserRole
+            }))
+        }),
+        ...(yearLevel && {
+            OR: yearLevel.split('.').map(y => ({
+                yearLevel: y as YearLevel
+            }))
+        }),
+    };
+
+    // Get total count first
+    const totalItems = await db.deviceUser.count({
+        where: whereClause
+    });
+
+    // Then fetch paginated data
     const users = await db.deviceUser.findMany({
         skip: (page - 1) * pageLimit,
         take: pageLimit,
-        where: {
-            ...(search && {
-                OR: [
-                    {
-                        firstName: {
-                            contains: search,
-                        }
-                    },
-                    {
-                        lastName: {
-                            contains: search,
-                        }
-                    },
-                    {
-                        email: {
-                            contains: search,
-                        }
-                    },
-                ]
-            }),
-            ...(course && {
-                OR: course.split('.').map(c => ({
-                    course: c as Course
-                }))
-            }),
-            ...(role && {
-                OR: role.split('.').map(r => ({
-                    role: r as DeviceUserRole
-                }))
-            }),
-            ...(yearLevel && {
-                OR: yearLevel.split('.').map(y => ({
-                    yearLevel: y as YearLevel
-                }))
-            }),
-        },
+        where: whereClause,
         include: {
             activeDevices: {
                 where: { state: State.ACTIVE }
@@ -63,7 +59,7 @@ export default async function UserListingPage() {
         <DataTable
             columns={columns}
             data={users}
-            totalItems={users.length}
+            totalItems={totalItems}
         />
     );
 }
