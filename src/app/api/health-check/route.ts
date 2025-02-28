@@ -3,10 +3,19 @@ import { db } from "@/lib/db";
 
 export async function GET() {
   try {
-    // Check database connection
-    const dbStatus = await db.$queryRaw`SELECT 1+1 as result`
-      .then(() => true)
-      .catch(() => false);
+    // Check database connection with timeout
+    const dbStatus = await Promise.race([
+      db.$queryRaw`SELECT 1+1 as result`
+        .then(() => true)
+        .catch((error) => {
+          console.error('Database health check failed:', error);
+          return false;
+        }),
+      new Promise((resolve) => setTimeout(() => {
+        console.error('Database health check timeout');
+        resolve(false);
+      }, 5000))  // 5 second timeout
+    ]);
 
     // Check API health (self-check)
     const apiStatus = true;

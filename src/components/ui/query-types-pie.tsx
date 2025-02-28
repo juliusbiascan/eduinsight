@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
 
 interface QueryTypesPieProps {
@@ -47,8 +47,9 @@ export function QueryTypesPie({ data }: QueryTypesPieProps) {
     <Card>
       <CardHeader>
         <CardTitle>Query Types</CardTitle>
+        <CardDescription>Distribution of DNS query types (A, AAAA, PTR, etc.)</CardDescription>
       </CardHeader>
-      <CardContent className="h-[400px]">
+      <CardContent className="h-[300px] sm:h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -57,7 +58,8 @@ export function QueryTypesPie({ data }: QueryTypesPieProps) {
               nameKey="name"
               cx="50%"
               cy="50%"
-              outerRadius={130}
+              outerRadius={100}
+              innerRadius={60}
               label={false}
             >
               {pieData.map((_, index) => (

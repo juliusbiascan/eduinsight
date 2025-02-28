@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "./card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./card"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { UpstreamServersResponse } from "@/lib/pihole";
 
@@ -34,8 +34,9 @@ export const UpstreamServersPie = ({ data }: Props) => {
         <Card>
             <CardHeader>
                 <CardTitle>Upstream Servers</CardTitle>
+                <CardDescription>Distribution of DNS queries among different upstream DNS servers</CardDescription>
             </CardHeader>
-            <CardContent className="h-[400px]">
+            <CardContent className="h-[300px] sm:h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
@@ -43,7 +44,8 @@ export const UpstreamServersPie = ({ data }: Props) => {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            outerRadius={130}
+                            outerRadius={100}
+                            innerRadius={60}
                             dataKey="value"
                         >
                             {chartData.map((_, index) => (

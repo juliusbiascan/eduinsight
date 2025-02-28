@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 
 interface ClientActivityGraphProps {
@@ -66,12 +66,13 @@ export function ClientActivityGraph({ data }: ClientActivityGraphProps) {
     .slice(0, 8);
 
   return (
-    <Card className="col-span-4">
+    <Card className="col-span-full">
       <CardHeader>
         <CardTitle>Client activity over last 24 hours</CardTitle>
+        <CardDescription>DNS query distribution across different network clients</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]">
+        <div className="h-[200px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={formattedData}>
               <XAxis

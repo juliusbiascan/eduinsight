@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 
 interface NetworkGraphProps {
@@ -63,12 +63,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function NetworkGraph({ data }: NetworkGraphProps) {
   return (
-    <Card className="col-span-4">
+    <Card className="col-span-full">
       <CardHeader>
         <CardTitle>Total queries over last 24 hours</CardTitle>
+        <CardDescription>Shows forwarded, cached, and blocked DNS queries over time</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]">
+        <div className="h-[200px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
               <XAxis 

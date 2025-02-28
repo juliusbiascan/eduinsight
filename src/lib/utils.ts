@@ -27,3 +27,11 @@ export function formatDuration(minutes: number): string {
     return `${seconds}s`;
   }
 }
+
+export function toPercent(number: number, fractionDigits = 0, locale = 'en-US') {
+  return new Intl.NumberFormat(locale, {
+    style: "percent",
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(number / 100);
+}

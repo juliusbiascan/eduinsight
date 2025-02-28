@@ -43,11 +43,79 @@ export interface HistoryResponse {
     took: number;
 }
 
-export interface DatabaseSummaryResponse {
-    sum_queries: number;
-    sum_blocked: number;
-    percent_blocked: number;
-    total_clients: number;
+export interface SummaryResponse {
+    queries: {
+        total: number;
+        blocked: number;
+        percent_blocked: number;
+        unique_domains: number;
+        forwarded: number;
+        cached: number;
+        frequency: number;
+        types: {
+            A: number;
+            AAAA: number;
+            ANY: number;
+            SRV: number;
+            SOA: number;
+            PTR: number;
+            TXT: number;
+            NAPTR: number;
+            MX: number;
+            DS: number;
+            RRSIG: number;
+            DNSKEY: number;
+            NS: number;
+            SVCB: number;
+            HTTPS: number;
+            OTHER: number;
+        };
+        status: {
+            UNKNOWN: number;
+            GRAVITY: number;
+            FORWARDED: number;
+            CACHE: number;
+            REGEX: number;
+            DENYLIST: number;
+            EXTERNAL_BLOCKED_IP: number;
+            EXTERNAL_BLOCKED_NULL: number;
+            EXTERNAL_BLOCKED_NXRA: number;
+            GRAVITY_CNAME: number;
+            REGEX_CNAME: number;
+            DENYLIST_CNAME: number;
+            RETRIED: number;
+            RETRIED_DNSSEC: number;
+            IN_PROGRESS: number;
+            DBBUSY: number;
+            SPECIAL_DOMAIN: number;
+            CACHE_STALE: number;
+            EXTERNAL_BLOCKED_EDE15: number;
+        };
+        replies: {
+            UNKNOWN: number;
+            NODATA: number;
+            NXDOMAIN: number;
+            CNAME: number;
+            IP: number;
+            DOMAIN: number;
+            RRNAME: number;
+            SERVFAIL: number;
+            REFUSED: number;
+            NOTIMP: number;
+            OTHER: number;
+            DNSSEC: number;
+            NONE: number;
+            BLOB: number;
+        };
+    };
+    clients: {
+        active: number;
+        total: number;
+    };
+    gravity: {
+        domains_being_blocked: number;
+        last_update: number;
+    };
     took: number;
 }
 
@@ -455,10 +523,7 @@ export const getClientHistory = async (n: number = 0): Promise<ClientHistoryResp
  * @param from - Unix timestamp (in seconds) for start of period. Defaults to 24 hours ago
  * @param until - Unix timestamp (in seconds) for end of period. Defaults to current time
  */
-export const getDatabaseSummary = async (
-    from: number = Math.floor(Date.now() / 1000) - 86400,
-    until: number = Math.floor(Date.now() / 1000)
-): Promise<DatabaseSummaryResponse> => {
+export const getSummary = async (): Promise<SummaryResponse> => {
     try {
         const sessionManager = SessionManager.getInstance();
         const session = await sessionManager.getValidSession();
@@ -467,12 +532,12 @@ export const getDatabaseSummary = async (
             throw new Error('Invalid session');
         }
 
-        const response = await axiosInstance.get<DatabaseSummaryResponse>(
-            `${API_BASE_URL}/api/stats/database/summary?from=${from}&until=${until}&sid=${session.sid}`
+        const response = await axiosInstance.get<SummaryResponse>(
+            `${API_BASE_URL}/api/stats/summary?sid=${session.sid}`
         );
         return response.data;
     } catch (error: any) {
-        throw new Error(`Database summary failed: ${error.message}`);
+        throw new Error(`Summary request failed: ${error.message}`);
     }
 }
 
