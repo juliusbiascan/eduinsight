@@ -8,7 +8,7 @@ import { db } from "./db";
  * Base URL for the API
  * @constant
  */
-const API_BASE_URL = 'http://192.168.1.142'
+const API_BASE_URL = 'https://pi.eduinsight.systems'
 
 const axiosInstance = axios.create({
     headers: {

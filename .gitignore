@@ -16,6 +16,9 @@
 # production
 /build
 
+# pihole
+/etc-pihole
+
 # misc
 .DS_Store
 *.pem

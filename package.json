@@ -10,7 +10,7 @@
     "start:migrate:prod": "node server.js",
     "resetdb": "cross-env NODE_ENV=test npx prisma db push --force-reset && npx prisma db seed",
     "postinstall": "prisma generate",
-    "prod": "docker-compose down --remove-orphans && docker compose --env-file .env -f docker-compose.yml up -d --build"
+    "prod": "docker-compose down --remove-orphans -v \"$(docker ps -aq --filter name=pihole)\" && docker compose --env-file .env -f docker-compose.yml up -d --build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.6.0",

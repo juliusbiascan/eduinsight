@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { useEffect, useState } from "react";
 import { getLists, addList, deleteList, List, AddListRequest } from "@/lib/pihole";
 import { Heading } from "@/components/ui/heading";
@@ -132,7 +133,7 @@ const Page = () => {
         <div className="flex-col">
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <Heading 
-                    title="Subscribed Lists Group Management"
+                    title="Subscribed Lists Management"
                     description="Manage your subscribed block and allow lists"
                 />
                 <Separator />
@@ -152,7 +153,7 @@ const Page = () => {
                             onChange={handleInputChange}
                         />
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 justify-end">
                         <Button onClick={() => handleAddList('block')}>
                             Add Block List
                         </Button>
@@ -223,8 +224,14 @@ const Page = () => {
                                     <TableRow key={list.id}>
                                         <TableCell>{formatDate(list.date_updated)}</TableCell>
                                         <TableCell>{list.type}</TableCell>
-                                        <TableCell className="max-w-[200px] truncate" title={list.address}>
-                                            {list.address}
+                                        <TableCell className="max-w-[200px] truncate">
+                                            <Link 
+                                                href={list.address} 
+                                                target="_blank"
+                                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                            >
+                                                {list.address}
+                                            </Link>
                                         </TableCell>
                                         <TableCell>{list.comment || '-'}</TableCell>
                                         <TableCell>
