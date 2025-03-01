@@ -35,6 +35,7 @@ import { GroupsCell } from '@/components/cells/groups-cell';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Textarea } from "@/components/ui/textarea"; // Add this import
 import { NewListDialog } from "@/components/dialogs/new-list-dialog";
+import { TableSkeleton } from "@/components/skeletons/table-skeleton";
 
 const Page = () => {
     const { toast } = useToast();
@@ -288,11 +289,7 @@ const Page = () => {
                                 </TableHeader>
                                 <TableBody>
                                     {loading ? (
-                                        <TableRow>
-                                            <TableCell colSpan={6} className="text-center">
-                                                Loading...
-                                            </TableCell>
-                                        </TableRow>
+                                        <TableSkeleton />
                                     ) : lists.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={6} className="text-center">

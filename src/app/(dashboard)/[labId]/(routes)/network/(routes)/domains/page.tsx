@@ -32,6 +32,8 @@ import PageContainer from "@/components/layout/page-container";
 import * as XLSX from 'xlsx';
 import { GroupsCell } from '@/components/cells/groups-cell';
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Filter } from "lucide-react";
 
 interface FormData {
     domain: string;
@@ -350,69 +352,155 @@ const DomainsPage = () => {
     };
 
     const renderFilters = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-            <Select value={filters.exactAllow ? "true" : "false"} onValueChange={(v) => setFilters(prev => ({ ...prev, exactAllow: v === "true" }))}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Exact Allow" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="true">Show Exact Allow</SelectItem>
-                    <SelectItem value="false">Hide Exact Allow</SelectItem>
-                </SelectContent>
-            </Select>
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <Tabs defaultValue="all" className="w-auto">
+                    <TabsList>
+                        <TabsTrigger 
+                            value="all" 
+                            onClick={() => setFilters({
+                                exactAllow: true,
+                                regexAllow: true,
+                                exactDeny: true,
+                                regexDeny: true,
+                            })}
+                        >
+                            All
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="allow" 
+                            onClick={() => setFilters({
+                                exactAllow: true,
+                                regexAllow: true,
+                                exactDeny: false,
+                                regexDeny: false,
+                            })}
+                        >
+                            Allow List
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="deny" 
+                            onClick={() => setFilters({
+                                exactAllow: false,
+                                regexAllow: false,
+                                exactDeny: true,
+                                regexDeny: true,
+                            })}
+                        >
+                            Deny List
+                        </TabsTrigger>
+                    </TabsList>
+                </Tabs>
 
-            <Select value={filters.regexAllow ? "true" : "false"} onValueChange={(v) => setFilters(prev => ({ ...prev, regexAllow: v === "true" }))}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Regex Allow" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="true">Show Regex Allow</SelectItem>
-                    <SelectItem value="false">Hide Regex Allow</SelectItem>
-                </SelectContent>
-            </Select>
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search domains..."
+                            className="pl-8 w-[200px] lg:w-[300px]"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
 
-            <Select value={filters.exactDeny ? "true" : "false"} onValueChange={(v) => setFilters(prev => ({ ...prev, exactDeny: v === "true" }))}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Exact Deny" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="true">Show Exact Deny</SelectItem>
-                    <SelectItem value="false">Hide Exact Deny</SelectItem>
-                </SelectContent>
-            </Select>
+                    <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
+                        <SelectTrigger className="w-[100px]">
+                            <SelectValue placeholder="Show" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {[10, 20, 50, 100].map(size => (
+                                <SelectItem key={size} value={size.toString()}>
+                                    {size} items
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
-            <Select value={filters.regexDeny ? "true" : "false"} onValueChange={(v) => setFilters(prev => ({ ...prev, regexDeny: v === "true" }))}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Regex Deny" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="true">Show Regex Deny</SelectItem>
-                    <SelectItem value="false">Hide Regex Deny</SelectItem>
-                </SelectContent>
-            </Select>
-
-            <div className="relative w-full">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search domains..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <Filter className="h-4 w-4 mr-2" />
+                                Filters
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-sm">
+                            <DialogHeader>
+                                <DialogTitle>Filter Domains</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Allow List</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox 
+                                                checked={filters.exactAllow}
+                                                onCheckedChange={(checked) => 
+                                                    setFilters(prev => ({ ...prev, exactAllow: checked === true }))
+                                                }
+                                            />
+                                            <label className="text-sm">Exact Match</label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox 
+                                                checked={filters.regexAllow}
+                                                onCheckedChange={(checked) => 
+                                                    setFilters(prev => ({ ...prev, regexAllow: checked === true }))
+                                                }
+                                            />
+                                            <label className="text-sm">Regex</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Deny List</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox 
+                                                checked={filters.exactDeny}
+                                                onCheckedChange={(checked) => 
+                                                    setFilters(prev => ({ ...prev, exactDeny: checked === true }))
+                                                }
+                                            />
+                                            <label className="text-sm">Exact Match</label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox 
+                                                checked={filters.regexDeny}
+                                                onCheckedChange={(checked) => 
+                                                    setFilters(prev => ({ ...prev, regexDeny: checked === true }))
+                                                }
+                                            />
+                                            <label className="text-sm">Regex</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </div>
 
-            <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(Number(v))}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Page Size" />
-                </SelectTrigger>
-                <SelectContent>
-                    {[10, 20, 50, 100].map(size => (
-                        <SelectItem key={size} value={size.toString()}>
-                            {size} per page
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                    <Checkbox
+                        checked={selectedDomains.size === currentDomains.length && currentDomains.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        id="select-all"
+                    />
+                    <label htmlFor="select-all" className="text-sm">
+                        Select All
+                    </label>
+                </div>
+                {selectedDomains.size > 0 && (
+                    <Button 
+                        variant="destructive" 
+                        onClick={handleBatchDelete}
+                        size="sm"
+                    >
+                        Delete Selected ({selectedDomains.size})
+                    </Button>
+                )}
+            </div>
         </div>
     );
 
@@ -454,31 +542,9 @@ const DomainsPage = () => {
                 </div>
                 <Separator />
 
-                <Card className="bg-white dark:bg-gray-800">
+                <Card>
                     <CardHeader className="pb-3">
-                        <div className="flex flex-col space-y-4">
-                            {renderFilters()}
-
-                            <div className="flex justify-between items-center mt-4">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        checked={selectedDomains.size === currentDomains.length && currentDomains.length > 0}
-                                        onCheckedChange={handleSelectAll}
-                                        id="select-all"
-                                    />
-                                    <label htmlFor="select-all">Select All</label>
-                                </div>
-                                {selectedDomains.size > 0 && (
-                                    <Button 
-                                        variant="destructive" 
-                                        onClick={handleBatchDelete}
-                                        size="sm"
-                                    >
-                                        Delete Selected ({selectedDomains.size})
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
+                    {renderFilters()}
                         <Separator className="mt-4" />
                     </CardHeader>
 
@@ -498,74 +564,59 @@ const DomainsPage = () => {
                                         <motion.div
                                             key={`${domain.domain}-${domain.id}`}
                                             whileHover={{ scale: 1.02 }}
-                                            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 space-y-3 border relative"
+                                            className="rounded-lg shadow-sm p-4 border relative flex flex-col h-full"
                                         >
-                                            <div className="absolute top-4 right-4 z-10">
+                                            <div className="absolute top-4 left-4">
+                                                <Checkbox
+                                                    checked={selectedDomains.has(`${domain.domain}-${domain.id}`)}
+                                                    onCheckedChange={(checked) =>
+                                                        handleSelectDomain(`${domain.domain}-${domain.id}`, checked === true)
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className="flex items-center justify-between pl-8 mb-3">
+                                                <div className="flex items-center space-x-3">
+                                                    {domain.type === 'allow' ? (
+                                                        <Globe className="h-5 w-5" />
+                                                    ) : (
+                                                        <Shield className="h-5 w-5" />
+                                                    )}
+                                                    <div>
+                                                        <h3 className="font-medium truncate">
+                                                            {domain.unicode || domain.domain}
+                                                        </h3>
+                                                        <p className="text-sm text-muted-foreground truncate">
+                                                            {domain.type} - {domain.kind}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                                 <Badge
-                                                    variant={domain.enabled ? "success" : "secondary"}
-                                                    className={`
-                                                        px-2 py-1 text-xs font-semibold
-                                                        ${domain.enabled
-                                                            ? "bg-green-100 text-green-700 border border-green-200"
-                                                            : "bg-gray-100 text-gray-700 border border-gray-200"
-                                                        }
-                                                    `}
+                                                    variant={domain.enabled ? "outline" : "secondary"}
+                                                    className="text-xs"
                                                 >
                                                     {domain.enabled ? "Enabled" : "Disabled"}
                                                 </Badge>
                                             </div>
 
-                                            <div className="flex items-center space-x-3 mt-2">
-                                                <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                                    domain.type === 'allow' ? 'bg-green-100' : 'bg-red-100'
-                                                }`}>
-                                                    {domain.type === 'allow' ? (
-                                                        <Globe className="h-6 w-6 text-green-600" />
-                                                    ) : (
-                                                        <Shield className="h-6 w-6 text-red-600" />
-                                                    )}
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <h3 className="font-semibold truncate">
-                                                        {domain.unicode || domain.domain}
-                                                    </h3>
-                                                    <p className="text-sm text-gray-500 truncate">
-                                                        {domain.type} - {domain.kind}
-                                                    </p>
-                                                </div>
+                                            {domain.comment && (
+                                                <p className="text-sm text-muted-foreground mb-3">
+                                                    {domain.comment}
+                                                </p>
+                                            )}
+
+                                            <div className="text-xs text-muted-foreground space-y-1 mb-3">
+                                                <div>Added: {new Date(domain.date_added * 1000).toLocaleString()}</div>
+                                                <div>Modified: {new Date(domain.date_modified * 1000).toLocaleString()}</div>
                                             </div>
 
-                                            <div className="space-y-2 text-sm">
-                                                {domain.comment && (
-                                                    <p className="text-gray-600 dark:text-gray-300">
-                                                        {domain.comment}
-                                                    </p>
-                                                )}
-                                                <div className="text-xs text-gray-500">
-                                                    Added: {new Date(domain.date_added * 1000).toLocaleString()}
-                                                </div>
-                                                <div className="text-xs text-gray-500">
-                                                    Modified: {new Date(domain.date_modified * 1000).toLocaleString()}
-                                                </div>
-                                            </div>
-
-                                            <div className="pt-2 mt-2 border-t">
+                                            <div className="pt-2 border-t mt-auto">
                                                 <GroupsCell
                                                     clientId={domain.id}
                                                     clientIdentifier={domain.domain}
                                                     groups={domain.groups.map(String)}
                                                     availableGroups={availableGroups}
                                                     onUpdate={handleGroupUpdate}
-                                                />
-                                            </div>
-
-                                            <div className="pt-2 mt-2 border-t">
-                                                <Checkbox
-                                                    checked={selectedDomains.has(`${domain.domain}-${domain.id}`)}
-                                                    onCheckedChange={(checked) =>
-                                                        handleSelectDomain(`${domain.domain}-${domain.id}`, checked === true)
-                                                    }
-                                                    className="ml-1"
                                                 />
                                             </div>
                                         </motion.div>
