@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useNetworkData } from '@/hooks/use-network-data';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DomainsTable } from "@/components/domains/domains-table";
@@ -14,8 +14,16 @@ import { Separator } from "@/components/ui/separator";
 import { Heading } from "@/components/ui/heading";
 import PageContainer from '@/components/layout/page-container';
 import { NetworkSkeleton } from "@/components/skeletons/network-skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import QueryTableAction from '../../../../../components/network/query-table-action';
+import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
+import QueryListingPage from '../../../../../components/network/query-listing';
 
 export default function NetworkPage() {
+
+
+
   const { data, loading } = useNetworkData(5000); // Update every 5 seconds
 
   if (loading || !data) {
@@ -123,80 +131,112 @@ export default function NetworkPage() {
   return (
     <PageContainer scrollable={false}>
       <div className='flex flex-1 flex-col space-y-4'>
+        <div className='flex justify-between items-center'>
+          <Heading
+            title="Network Statistics"
+            description="Monitor your network traffic, queries, and client activities in real-time"
 
-        <Heading
-          title="Network Statistics"
-          description="Monitor your network traffic, queries, and client activities in real-time"
-        />
+          />
+          <div className="flex items-center space-x-3">
+            <Badge variant="outline" className="relative">
+              <div className="absolute -left-1 -top-1 h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </div>
+              <span className="font-medium ml-2">{summary.clients?.active}</span>
+              <span className="text-sm text-muted-foreground ml-2">active clients</span>
+            </Badge>
+          </div>
+        </div>
+
         <Separator className="my-4" />
 
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="queries">
+              Query logs
+            </TabsTrigger>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {cards.map((card, index) => (
-            <Card key={index} className="col-span-1">
-              <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium truncate'>{card.title}</CardTitle>
-                {card.icon}
-              </CardHeader>
-              <CardContent>
-                <div className='text-lg sm:text-2xl font-bold'>{card.value}</div>
-                <p className='text-xs text-muted-foreground line-clamp-2'>
-                  {card.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+          </TabsList>
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {cards.map((card, index) => (
+                <Card key={index} className="col-span-1">
+                  <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                    <CardTitle className='text-sm font-medium truncate'>{card.title}</CardTitle>
+                    {card.icon}
+                  </CardHeader>
+                  <CardContent>
+                    <div className='text-lg sm:text-2xl font-bold'>{card.value}</div>
+                    <p className='text-xs text-muted-foreground line-clamp-2'>
+                      {card.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-        <div className="space-y-4">
-          <NetworkGraph data={history} />
-          <ClientActivityGraph data={clientHistory} />
-        </div>
-
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <QueryTypesPie data={queryTypes} />
-          <UpstreamServersPie data={upstreamServers} />
-        </div>
+            <div className="space-y-4">
+              <NetworkGraph data={history} />
+              <ClientActivityGraph data={clientHistory} />
+            </div>
 
 
-        <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Top Permitted Domains</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DomainsTable domains={permitted.domains} totalQueries={permitted.total_queries} />
-            </CardContent>
-          </Card>
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Top Blocked Domains</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DomainsTable domains={blocked.domains} totalQueries={blocked.total_queries} />
-            </CardContent>
-          </Card>
-        </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <QueryTypesPie data={queryTypes} />
+              <UpstreamServersPie data={upstreamServers} />
+            </div>
 
-        <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Top Clients</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ClientsTable clients={topClients.clients} totalQueries={topClients.total_queries} />
-            </CardContent>
-          </Card>
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Top Blocked Clients</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ClientsTable clients={topBlockedClients.clients} totalQueries={topBlockedClients.total_queries} />
-            </CardContent>
-          </Card>
-        </div>
+
+            <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle>Top Permitted Domains</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DomainsTable domains={permitted.domains} totalQueries={permitted.total_queries} />
+                </CardContent>
+              </Card>
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle>Top Blocked Domains</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DomainsTable domains={blocked.domains} totalQueries={blocked.total_queries} />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle>Top Clients (total)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ClientsTable clients={topClients.clients} totalQueries={topClients.total_queries} isBlocked={false} />
+                </CardContent>
+              </Card>
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle>Top Clients (blocked only)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ClientsTable clients={topBlockedClients.clients} totalQueries={topBlockedClients.blocked_queries} isBlocked={true} />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="queries" className="space-y-4">
+
+            <div className='flex flex-1 flex-col space-y-4'>
+              <QueryTableAction />
+              <QueryListingPage />
+            </div>
+
+          </TabsContent>
+        </Tabs>
       </div>
     </PageContainer>
   );

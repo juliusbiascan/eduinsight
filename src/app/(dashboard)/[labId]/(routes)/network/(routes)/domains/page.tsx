@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { getAllDomains } from "@/lib/pihole";
+import { getAllDomains, getGroups, Group, updateDomain } from "@/lib/pihole";
 import { DomainEntry } from "@/lib/pihole";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,8 @@ import { Badge } from "@/components/ui/badge";
 import { FileSpreadsheet, Globe, Shield, Search } from "lucide-react";
 import PageContainer from "@/components/layout/page-container";
 import * as XLSX from 'xlsx';
+import { GroupsCell } from '@/components/cells/groups-cell';
+import { MultiSelect } from "@/components/ui/multi-select";
 
 interface FormData {
     domain: string;
@@ -51,6 +53,19 @@ const AddDomainDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         type: 'allow',
         kind: 'exact'
     });
+    const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
+
+    useEffect(() => {
+        const fetchGroups = async () => {
+            try {
+                const response = await getGroups();
+                setAvailableGroups(response.groups);
+            } catch (error) {
+                toast.error('Failed to fetch groups');
+            }
+        };
+        fetchGroups();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -140,6 +155,21 @@ const AddDomainDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                             </Select>
                         </div>
                     </div>
+                    <div className="space-y-2">
+                        <label htmlFor="groups">Groups</label>
+                        <MultiSelect
+                            options={availableGroups.map(group => ({
+                                label: group.name || `Group ${group.id}`,
+                                value: group.id.toString()
+                            }))}
+                            value={formData.groups.map(String)}
+                            onValueChange={(values) => setFormData(prev => ({
+                                ...prev,
+                                groups: values.map(Number)
+                            }))}
+                            placeholder="Select groups..."
+                        />
+                    </div>
                     <div className="flex items-center space-x-2">
                         <Checkbox
                             id="enabled"
@@ -193,7 +223,8 @@ const DomainsPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set());
-    
+    const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
+
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
             setSelectedDomains(new Set(currentDomains.map(d => `${d.domain}-${d.id}`)));
@@ -239,12 +270,36 @@ const DomainsPage = () => {
         }
     };
 
+    const handleGroupUpdate = async (domainId: number, groups: string[], domainIdentifier: string) => {
+        const domain = domains.find(d => d.id === domainId);
+        if (!domain) return;
+
+        try {
+            await updateDomain(domain.type, domain.kind, domain.domain, {
+                type: domain.type,
+                kind: domain.kind,
+                comment: domain.comment,
+                groups: groups.map(Number),
+                enabled: domain.enabled
+            });
+            
+            await fetchDomains(); // Refresh the domains list
+            toast.success('Groups updated successfully');
+        } catch (error) {
+            toast.error('Failed to update groups');
+        }
+    };
+
     const fetchDomains = async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await getAllDomains();
-            const results = response.domains.filter(domain => {
+            const [domainsResponse, groupsResponse] = await Promise.all([
+                getAllDomains(),
+                getGroups()
+            ]);
+            
+            const results = domainsResponse.domains.filter(domain => {
                 if (domain.type === 'allow' && domain.kind === 'exact' && !filters.exactAllow) return false;
                 if (domain.type === 'allow' && domain.kind === 'regex' && !filters.regexAllow) return false;
                 if (domain.type === 'deny' && domain.kind === 'exact' && !filters.exactDeny) return false;
@@ -252,8 +307,9 @@ const DomainsPage = () => {
                 return true;
             });
             setDomains(results);
+            setAvailableGroups(groupsResponse.groups);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch domains');
+            setError(err instanceof Error ? err.message : 'Failed to fetch data');
         } finally {
             setLoading(false);
         }
@@ -491,6 +547,16 @@ const DomainsPage = () => {
                                                 <div className="text-xs text-gray-500">
                                                     Modified: {new Date(domain.date_modified * 1000).toLocaleString()}
                                                 </div>
+                                            </div>
+
+                                            <div className="pt-2 mt-2 border-t">
+                                                <GroupsCell
+                                                    clientId={domain.id}
+                                                    clientIdentifier={domain.domain}
+                                                    groups={domain.groups.map(String)}
+                                                    availableGroups={availableGroups}
+                                                    onUpdate={handleGroupUpdate}
+                                                />
                                             </div>
 
                                             <div className="pt-2 mt-2 border-t">

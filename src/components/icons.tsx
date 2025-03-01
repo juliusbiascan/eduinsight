@@ -81,6 +81,7 @@ export const Icons = {
   moon: Moon,
   laptop: Laptop,
   hardDrive: HardDrive,
+  group: Users,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'

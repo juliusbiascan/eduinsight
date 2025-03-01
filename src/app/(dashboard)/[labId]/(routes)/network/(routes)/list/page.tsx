@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from "react";
-import { getLists, addList, deleteList, List, AddListRequest } from "@/lib/pihole";
+import { getLists, addList, deleteList, updateList, List, AddListRequest, getGroups, Group } from "@/lib/pihole";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
@@ -10,32 +10,37 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
+import { GroupsCell } from '@/components/cells/groups-cell';
+import { MultiSelect } from '@/components/ui/multi-select';
+import { Textarea } from "@/components/ui/textarea"; // Add this import
+import { NewListDialog } from "@/components/dialogs/new-list-dialog";
 
 const Page = () => {
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [lists, setLists] = useState<List[]>([]);
+    const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
     const [formData, setFormData] = useState<Partial<AddListRequest>>({
         address: '',
         comment: null,
@@ -44,27 +49,42 @@ const Page = () => {
         type: 'block'
     });
 
-    useEffect(() => {
-        fetchLists();
-    }, []);
+    const groupOptions = availableGroups.map(group => ({
+        label: group.name || `Group ${group.id}`,
+        value: group.id.toString(),
+    }));
 
-    const fetchLists = async () => {
-        try {
-            setLoading(true);
-            const response = await getLists();
-            setLists(response.lists);
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to fetch lists",
-                variant: "destructive"
-            });
-        } finally {
-            setLoading(false);
-        }
+    const handleGroupSelection = (selectedGroups: string[]) => {
+        setFormData(prev => ({
+            ...prev,
+            groups: selectedGroups.map(Number)
+        }));
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        const init = async () => {
+            try {
+                setLoading(true);
+                const [listsResponse, groupsResponse] = await Promise.all([
+                    getLists(),
+                    getGroups()
+                ]);
+                setLists(listsResponse.lists);
+                setAvailableGroups(groupsResponse.groups);
+            } catch (error) {
+                toast({
+                    title: "Error",
+                    description: "Failed to fetch data",
+                    variant: "destructive"
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+        init();
+    }, []);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const value = e.target.value;
         setFormData(prev => ({
             ...prev,
@@ -83,7 +103,7 @@ const Page = () => {
                 return;
             }
 
-            const addresses = typeof formData.address === 'string' 
+            const addresses = typeof formData.address === 'string'
                 ? formData.address.split(/[\s,]+/).filter(Boolean)
                 : formData.address;
 
@@ -93,18 +113,24 @@ const Page = () => {
                 address: addresses
             } as AddListRequest);
 
+            // Fetch updated lists
+            const updatedListsResponse = await getLists();
+            setLists(updatedListsResponse.lists);
+
             toast({
                 title: "Success",
                 description: "List added successfully",
             });
 
-            setFormData(prev => ({
-                ...prev,
+            // Reset form
+            setFormData({
                 address: '',
-                comment: null
-            }));
+                comment: null,
+                groups: [0],
+                enabled: true,
+                type: 'block'
+            });
 
-            await fetchLists();
         } catch (error) {
             toast({
                 title: "Error",
@@ -117,7 +143,7 @@ const Page = () => {
     const handleDeleteList = async (address: string, type: 'allow' | 'block') => {
         try {
             await deleteList(address, type);
-            await fetchLists();
+
             toast({
                 title: "Success",
                 description: "List deleted successfully",
@@ -131,6 +157,69 @@ const Page = () => {
         }
     };
 
+    const handleGroupUpdate = async (listId: number, address: string, type: 'allow' | 'block', newGroups: string[]) => {
+        try {
+            const list = lists.find(l => l.id === listId);
+            if (!list) return;
+
+            const groupIds = newGroups.map(Number);
+            const response = await updateList(address, type, {
+                comment: list.comment,
+                type: type,
+                groups: groupIds,
+                enabled: list.enabled
+            });
+
+            // Update local state with the response data
+            setLists(currentLists =>
+                currentLists.map(l => {
+                    const updatedList = response.lists.find(rl => rl.id === l.id);
+                    return updatedList || l;
+                })
+            );
+
+            toast({
+                title: "Success",
+                description: "List updated successfully",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to update list",
+                variant: "destructive"
+            });
+        }
+    };
+
+    const handleToggleEnabled = async (list: List) => {
+        try {
+            const response = await updateList(list.address, list.type, {
+                comment: list.comment,
+                type: list.type,
+                groups: list.groups,
+                enabled: !list.enabled
+            });
+
+            setLists(currentLists =>
+                currentLists.map(l => {
+                    const updatedList = response.lists.find(rl => rl.id === l.id);
+                    return updatedList || l;
+                })
+            );
+
+            toast({
+                title: "Success",
+                description: `List ${!list.enabled ? 'enabled' : 'disabled'} successfully`,
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to update list status",
+                variant: "destructive"
+            });
+        }
+    };
+
     const formatDate = (timestamp: number) => {
         return new Date(timestamp * 1000).toLocaleString();
     };
@@ -138,53 +227,27 @@ const Page = () => {
     return (
         <div className="flex-col">
             <div className="flex-1 space-y-4 p-8 pt-6">
-                <Heading 
-                    title="Subscribed Lists Management"
-                    description="Manage your subscribed block and allow lists"
-                />
+                <div className="flex items-start justify-between">
+                    <Heading
+                        title="Subscribed Lists Management"
+                        description="Manage your subscribed block and allow lists"
+                    />
+                    <NewListDialog 
+                        availableGroups={availableGroups}
+                        onListCreated={async () => {
+                            const response = await getLists();
+                            setLists(response.lists);
+                        }}
+                    />
+                </div>
                 <Separator />
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Add a new subscribed list</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input 
-                                    placeholder="URL" 
-                                    name="address"
-                                    value={formData.address as string}
-                                    onChange={handleInputChange}
-                                />
-                                <Input 
-                                    placeholder="List description (optional)" 
-                                    name="comment"
-                                    value={formData.comment || ''}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                            <div className="flex gap-4 justify-end">
-                                <Button onClick={() => handleAddList('block')}>
-                                    Add Block List
-                                </Button>
-                                <Button 
-                                    variant="outline" 
-                                    onClick={() => handleAddList('allow')}
-                                >
-                                    Add Allow List
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
 
                 <Alert>
                     <InfoIcon className="h-4 w-4" />
                     <AlertDescription>
                         Please run eduinsight -g or update your gravity list online after modifying your lists.
                         Multiple lists can be added by separating each unique URL with a space or comma.
-                        Click on the icon in the first column to get additional information about your lists. 
+                        Click on the icon in the first column to get additional information about your lists.
                         The icons correspond to the health of the list.
                     </AlertDescription>
                 </Alert>
@@ -197,7 +260,7 @@ const Page = () => {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    Show 
+                                    Show
                                     <Select defaultValue="10">
                                         <SelectTrigger className="w-[70px]">
                                             <SelectValue />
@@ -220,20 +283,19 @@ const Page = () => {
                                         <TableHead>Address</TableHead>
                                         <TableHead>Comment</TableHead>
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Invalid Domains</TableHead>
                                         <TableHead>Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {loading ? (
                                         <TableRow>
-                                            <TableCell colSpan={7} className="text-center">
+                                            <TableCell colSpan={6} className="text-center">
                                                 Loading...
                                             </TableCell>
                                         </TableRow>
                                     ) : lists.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={7} className="text-center">
+                                            <TableCell colSpan={6} className="text-center">
                                                 No lists found
                                             </TableCell>
                                         </TableRow>
@@ -243,8 +305,8 @@ const Page = () => {
                                                 <TableCell>{formatDate(list.date_updated)}</TableCell>
                                                 <TableCell>{list.type}</TableCell>
                                                 <TableCell className="max-w-[200px] truncate">
-                                                    <Link 
-                                                        href={list.address} 
+                                                    <Link
+                                                        href={list.address}
                                                         target="_blank"
                                                         className="text-blue-600 hover:text-blue-800 hover:underline"
                                                     >
@@ -253,19 +315,25 @@ const Page = () => {
                                                 </TableCell>
                                                 <TableCell>{list.comment || '-'}</TableCell>
                                                 <TableCell>
-                                                    <span className={list.enabled ? "text-green-600" : "text-red-600"}>
-                                                        {list.enabled ? 'Active' : 'Disabled'}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell>{list.invalid_domains}</TableCell>
-                                                <TableCell>
-                                                    <Button 
-                                                        variant="destructive" 
+                                                    <Button
+                                                        variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleDeleteList(list.address, list.type)}
+                                                        onClick={() => handleToggleEnabled(list)}
                                                     >
-                                                        Delete
+                                                        <span className={list.enabled ? "text-green-600" : "text-red-600"}>
+                                                            {list.enabled ? 'Active' : 'Disabled'}
+                                                        </span>
                                                     </Button>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <GroupsCell
+                                                        clientId={list.id}
+                                                        clientIdentifier={list.address}
+                                                        groups={list.groups.map(String)}
+                                                        availableGroups={availableGroups}
+                                                        onUpdate={(id, newGroups) => handleGroupUpdate(id, list.address, list.type, newGroups)}
+                                                        onDelete={() => handleDeleteList(list.address, list.type)}
+                                                    />
                                                 </TableCell>
                                             </TableRow>
                                         ))

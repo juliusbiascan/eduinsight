@@ -37,20 +37,17 @@ export default function KBar({ children }: { children: React.ReactNode }) {
       shortcut: ['d', 'u'],
       items: []
     },
+
     {
       title: 'Laboratory',
-      url: '#', // Placeholder as there is no direct link for the parent
+      url: `/${params.labId}/laboratory`, // Changed from '#' to actual link
       icon: 'laboratory',
-      isActive: true,
+      isActive: pathname === `/${params.labId}/laboratory` ||
+        pathname === `/${params.labId}/laboratory` ||
+        pathname === `/${params.labId}/devices` ||
+        pathname === `/${params.labId}/settings`,
       items: [
-        {
-          title: 'Monitoring',
-          url: `/${params.labId}/laboratory`,
-          icon: 'monitoring',
-          isActive: pathname === `/${params.labId}/laboratory`,
-          shortcut: ['m', 'n'],
-          items: []
-        },
+
         {
           title: 'Devices',
           url: `/${params.labId}/devices`,
@@ -66,11 +63,63 @@ export default function KBar({ children }: { children: React.ReactNode }) {
           isActive: pathname === `/${params.labId}/settings`,
           shortcut: ['s', 't'],
           items: []
-        }
+        },
+        {
+          title: 'Teams',
+          url: `/${params.labId}/teams`,
+          icon: 'teams',
+          isActive: pathname === `/${params.labId}/teams`,
+          shortcut: ['t', 'm'],
+          items: []
+        },
       ],
 
     },
-
+    {
+      title: 'Network',
+      url: `/${params.labId}/network`,
+      icon: 'network',
+      isActive: pathname === `/${params.labId}/network` ||
+        pathname === `/${params.labId}/network/query-log` ||
+        pathname === `/${params.labId}/network/domains` ||
+        pathname === `/${params.labId}/network/list` ||
+        pathname === `/${params.labId}/network/groups` ||
+        pathname === `/${params.labId}/network/clients`,
+      items: [
+        {
+          title: 'Groups',
+          url: `/${params.labId}/network/groups`,
+          icon: 'group',
+          isActive: pathname === `/${params.labId}/network/groups`,
+          shortcut: ['g', 'r'],
+          items: []
+        },
+        {
+          title: 'Clients',
+          url: `/${params.labId}/network/clients`,
+          icon: 'laptop',
+          isActive: pathname === `/${params.labId}/network/clients`,
+          shortcut: ['c', 'l'],
+          items: []
+        },
+        {
+          title: 'Domains',
+          url: `/${params.labId}/network/domains`,
+          icon: 'globe',
+          isActive: pathname === `/${params.labId}/network/domains`,
+          shortcut: ['d', 'm'],
+          items: []
+        },
+        {
+          title: 'List',
+          url: `/${params.labId}/network/list`,
+          icon: 'list',
+          isActive: pathname === `/${params.labId}/network/list`,
+          shortcut: ['l', 't'],
+          items: []
+        }
+      ],
+    },
     {
       title: 'Users',
       url: `/${params.labId}/users`,

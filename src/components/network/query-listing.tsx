@@ -3,7 +3,7 @@
 import { DataTable } from "@/components/ui/data-table";
 import { Query, getQueries } from "@/lib/pihole";
 import { useEffect, useState } from "react";
-import { columns } from "../columns";
+import { columns } from "./columns";
 import { QueryDetails } from "./query-details";
 
 const ITEMS_PER_PAGE = 25;

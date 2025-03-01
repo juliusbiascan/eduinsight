@@ -136,14 +136,24 @@ export default function AppSidebar() {
             isActive: pathname === `/${params.labId}/network` ||
                 pathname === `/${params.labId}/network/query-log` ||
                 pathname === `/${params.labId}/network/domains` ||
-                pathname === `/${params.labId}/network/list`,
+                pathname === `/${params.labId}/network/list` ||
+                pathname === `/${params.labId}/network/groups` ||
+                pathname === `/${params.labId}/network/clients`,
             items: [
                 {
-                    title: 'Query Log',
-                    url: `/${params.labId}/network/query-log`,
-                    icon: 'activity',
-                    isActive: pathname === `/${params.labId}/network/query-log`,
-                    shortcut: ['q', 'l'],
+                    title: 'Groups',
+                    url: `/${params.labId}/network/groups`,
+                    icon: 'group',
+                    isActive: pathname === `/${params.labId}/network/groups`,
+                    shortcut: ['g', 'r'],
+                    items: []
+                },
+                {
+                    title: 'Clients',
+                    url: `/${params.labId}/network/clients`,
+                    icon: 'laptop',
+                    isActive: pathname === `/${params.labId}/network/clients`,
+                    shortcut: ['c', 'l'],
                     items: []
                 },
                 {
@@ -161,7 +171,7 @@ export default function AppSidebar() {
                     isActive: pathname === `/${params.labId}/network/list`,
                     shortcut: ['l', 't'],
                     items: []
-                },
+                }
             ],
         },
         {
@@ -240,18 +250,22 @@ export default function AppSidebar() {
                                         </CollapsibleTrigger>
                                         <CollapsibleContent>
                                             <SidebarMenuSub>
-                                                {item.items?.map((subItem) => (
-                                                    <SidebarMenuSubItem key={subItem.title}>
-                                                        <SidebarMenuSubButton
-                                                            asChild
-                                                            isActive={pathname === subItem.url}
-                                                        >
-                                                            <Link href={subItem.url}>
-                                                                <span>{subItem.title}</span>
-                                                            </Link>
-                                                        </SidebarMenuSubButton>
-                                                    </SidebarMenuSubItem>
-                                                ))}
+                                                {item.items?.map((subItem) => {
+                                                    const SubIcon = subItem.icon ? Icons[subItem.icon] : null;
+                                                    return (
+                                                        <SidebarMenuSubItem key={subItem.title}>
+                                                            <SidebarMenuSubButton
+                                                                asChild
+                                                                isActive={pathname === subItem.url}
+                                                            >
+                                                                <Link href={subItem.url} className="flex items-center">
+                                                                    {SubIcon && <SubIcon className="mr-2 h-4 w-4" />}
+                                                                    <span>{subItem.title}</span>
+                                                                </Link>
+                                                            </SidebarMenuSubButton>
+                                                        </SidebarMenuSubItem>
+                                                    );
+                                                })}
                                             </SidebarMenuSub>
                                         </CollapsibleContent>
                                     </SidebarMenuItem>

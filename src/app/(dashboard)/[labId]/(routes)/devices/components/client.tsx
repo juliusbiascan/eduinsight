@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Device, ActiveDeviceUser, DeviceUser, ActiveUserLogs, PowerMonitoringLogs } from '@prisma/client'
+import { Device, ActiveDeviceUser, DeviceUser, ActiveUserLogs } from '@prisma/client'
 import {
   Dialog,
   DialogContent,
@@ -34,7 +34,6 @@ interface DeviceWithActiveUsers extends Device {
   activeUserLogs: (ActiveUserLogs & {
     user: DeviceUser
   })[];
-  powerMonitoringLogs: PowerMonitoringLogs[];
 }
 
 interface DeviceClientProps {
@@ -86,32 +85,6 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
 
   const getDeviceStatus = (device: DeviceWithActiveUsers) => {
     return device.activeUsers.length > 0 ? 'online' : 'offline';
-  };
-
-  const getPowerState = (pm_status: string) => {
-    switch (pm_status) {
-      case "0": return "System Sleep";
-      case "1": return "System Resuming";
-      case "2": return "AC Power (Charging)";
-      case "3": return "Battery Power";
-      case "4": return "Shutting Down";
-      case "5": return "System Locked";
-      case "6": return "System Unlocked";
-      default: return "Unknown State";
-    }
-  };
-
-  const getPowerBadgeVariant = (pm_status: string): "default" | "secondary" | "success" | null | undefined => {
-    switch (pm_status) {
-      case "0": return "secondary";  // Sleep
-      case "1": return "secondary";  // Resuming
-      case "2": return "success";    // AC Power
-      case "3": return "secondary";  // Battery
-      case "4": return "default";    // Shutting Down
-      case "5": return "secondary";  // Locked
-      case "6": return "success";    // Unlocked
-      default: return "secondary";
-    }
   };
 
   const getSortedSessionLogs = (logs: (ActiveUserLogs & { user: DeviceUser })[]) => {
@@ -209,18 +182,6 @@ export const DeviceClient: React.FC<DeviceClientProps> = ({
                 <div className="text-xs sm:text-sm space-y-1 text-muted-foreground">
                   <p>Hostname: {device.devHostname}</p>
                   <p>Status: {device.isArchived ? 'Archived' : 'Active'}</p>
-                  {device.powerMonitoringLogs?.[0] && (
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={getPowerBadgeVariant(device.powerMonitoringLogs[0].pm_status)}
-                      >
-                        {getPowerState(device.powerMonitoringLogs[0].pm_status)}
-                      </Badge>
-                      <span className="text-xs">
-                        Last updated: {new Date(device.powerMonitoringLogs[0].createdAt).toLocaleTimeString()}
-                      </span>
-                    </div>
-                  )}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mt-2">
                     <div className="flex flex-col gap-1">
                       {device.activeUsers.length > 0 ? (

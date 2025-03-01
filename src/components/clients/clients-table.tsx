@@ -12,12 +12,16 @@ import { TopClient } from "@/lib/pihole";
 interface ClientsTableProps {
     clients: TopClient[];
     totalQueries: number;
+    isBlocked?: boolean;
 }
 
 export function ClientsTable({
     clients,
     totalQueries,
+    isBlocked = false,
 }: ClientsTableProps) {
+
+
     return (
         <Table>
             <TableHeader>
@@ -28,18 +32,21 @@ export function ClientsTable({
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {clients.map((client) => (
-                    <TableRow key={client.ip}>
+                {clients.map((client) => {
+
+                    const percentage = (client.count / totalQueries) * 100;
+
+                    return (<TableRow key={client.ip}>
                         <TableCell>{client.name || client.ip}</TableCell>
                         <TableCell className="text-right">{client.count.toLocaleString()}</TableCell>
                         <TableCell>
-                            <Progress 
-                                value={(client.count / totalQueries) * 100} 
-                                className="w-[160px]" 
+                            <Progress
+                                value={percentage}
+                                className={`w-[160px] ${isBlocked ? '[&>[role=progressbar]]:bg-destructive' : '[&>[role=progressbar]]:bg-emerald-500'}`}
                             />
                         </TableCell>
-                    </TableRow>
-                ))}
+                    </TableRow>)
+                })}
             </TableBody>
         </Table>
     );
