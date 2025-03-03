@@ -16,13 +16,9 @@ import PageContainer from '@/components/layout/page-container';
 import { NetworkSkeleton } from "@/components/skeletons/network-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import QueryTableAction from '../../../../../components/network/query-table-action';
-import { DataTableSkeleton } from '@/components/ui/table/data-table-skeleton';
-import QueryListingPage from '../../../../../components/network/query-listing';
+import { QueryLogs } from "@/components/queries/query-logs";
 
 export default function NetworkPage() {
-
-
 
   const { data, loading } = useNetworkData(5000); // Update every 5 seconds
 
@@ -229,12 +225,7 @@ export default function NetworkPage() {
           </TabsContent>
 
           <TabsContent value="queries" className="space-y-4">
-
-            <div className='flex flex-1 flex-col space-y-4'>
-              <QueryTableAction />
-              <QueryListingPage />
-            </div>
-
+            <QueryLogs />
           </TabsContent>
         </Tabs>
       </div>

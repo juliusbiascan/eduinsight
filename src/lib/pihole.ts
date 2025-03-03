@@ -928,6 +928,41 @@ interface QueryParams {
     status?: string;
     reply?: string;
     dnssec?: string;
+    disk?: boolean;
+}
+
+export interface QuerySuggestions {
+    domain: string[];
+    client_ip: string[];
+    client_name: string[];
+    upstream: string[];
+    type: string[];
+    status: string[];
+    reply: string[];
+    dnssec: string[];
+}
+
+export interface QuerySuggestionsResponse {
+    suggestions: QuerySuggestions;
+    took: number;
+}
+
+export const getQuerySuggestions = async (): Promise<QuerySuggestionsResponse> => {
+    try {
+        const sessionManager = SessionManager.getInstance();
+        const session = await sessionManager.getValidSession();
+
+        if (!session.valid) {
+            throw new Error('Invalid session');
+        }
+
+        const response = await axiosInstance.get<QuerySuggestionsResponse>(
+            `${API_BASE_URL}/api/queries/suggestions?sid=${session.sid}`
+        );
+        return response.data;
+    } catch (error: any) {
+        throw new Error(`Failed to fetch query suggestions: ${error.message}`);
+    }
 }
 
 // Statistics API Functions
