@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { getLists, addList, deleteList, updateList, List, AddListRequest, getGroups, Group } from "@/lib/pihole";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
@@ -32,35 +31,16 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { GroupsCell } from '@/components/cells/groups-cell';
-import { MultiSelect } from '@/components/ui/multi-select';
-import { Textarea } from "@/components/ui/textarea"; // Add this import
 import { NewListDialog } from "@/components/dialogs/new-list-dialog";
 import { TableSkeleton } from "@/components/skeletons/table-skeleton";
+import { GravityUpdateDialog } from "@/components/dialogs/gravity-update-dialog";
 
 const Page = () => {
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
     const [lists, setLists] = useState<List[]>([]);
     const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
-    const [formData, setFormData] = useState<Partial<AddListRequest>>({
-        address: '',
-        comment: null,
-        groups: [0],
-        enabled: true,
-        type: 'block'
-    });
-
-    const groupOptions = availableGroups.map(group => ({
-        label: group.name || `Group ${group.id}`,
-        value: group.id.toString(),
-    }));
-
-    const handleGroupSelection = (selectedGroups: string[]) => {
-        setFormData(prev => ({
-            ...prev,
-            groups: selectedGroups.map(Number)
-        }));
-    };
 
     useEffect(() => {
         const init = async () => {
@@ -85,57 +65,14 @@ const Page = () => {
         init();
     }, []);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const value = e.target.value;
-        setFormData(prev => ({
-            ...prev,
-            [e.target.name]: value === '' ? null : value
-        }));
-    };
-
-    const handleAddList = async (type: 'allow' | 'block') => {
+    const refreshLists = async () => {
         try {
-            if (!formData.address) {
-                toast({
-                    title: "Error",
-                    description: "Address is required",
-                    variant: "destructive"
-                });
-                return;
-            }
-
-            const addresses = typeof formData.address === 'string'
-                ? formData.address.split(/[\s,]+/).filter(Boolean)
-                : formData.address;
-
-            await addList({
-                ...formData,
-                type,
-                address: addresses
-            } as AddListRequest);
-
-            // Fetch updated lists
-            const updatedListsResponse = await getLists();
-            setLists(updatedListsResponse.lists);
-
-            toast({
-                title: "Success",
-                description: "List added successfully",
-            });
-
-            // Reset form
-            setFormData({
-                address: '',
-                comment: null,
-                groups: [0],
-                enabled: true,
-                type: 'block'
-            });
-
+            const response = await getLists();
+            setLists(response.lists);
         } catch (error) {
             toast({
                 title: "Error",
-                description: "Failed to add list",
+                description: "Failed to refresh lists",
                 variant: "destructive"
             });
         }
@@ -143,7 +80,9 @@ const Page = () => {
 
     const handleDeleteList = async (address: string, type: 'allow' | 'block') => {
         try {
+            setActionLoading(true);
             await deleteList(address, type);
+            await refreshLists();
 
             toast({
                 title: "Success",
@@ -155,29 +94,26 @@ const Page = () => {
                 description: "Failed to delete list",
                 variant: "destructive"
             });
+        } finally {
+            setActionLoading(false);
         }
     };
 
     const handleGroupUpdate = async (listId: number, address: string, type: 'allow' | 'block', newGroups: string[]) => {
         try {
+            setActionLoading(true);
             const list = lists.find(l => l.id === listId);
             if (!list) return;
 
             const groupIds = newGroups.map(Number);
-            const response = await updateList(address, type, {
+            await updateList(address, type, {
                 comment: list.comment,
                 type: type,
                 groups: groupIds,
                 enabled: list.enabled
             });
 
-            // Update local state with the response data
-            setLists(currentLists =>
-                currentLists.map(l => {
-                    const updatedList = response.lists.find(rl => rl.id === l.id);
-                    return updatedList || l;
-                })
-            );
+            await refreshLists();
 
             toast({
                 title: "Success",
@@ -189,24 +125,22 @@ const Page = () => {
                 description: error instanceof Error ? error.message : "Failed to update list",
                 variant: "destructive"
             });
+        } finally {
+            setActionLoading(false);
         }
     };
 
     const handleToggleEnabled = async (list: List) => {
         try {
-            const response = await updateList(list.address, list.type, {
+            setActionLoading(true);
+            await updateList(list.address, list.type, {
                 comment: list.comment,
                 type: list.type,
                 groups: list.groups,
                 enabled: !list.enabled
             });
 
-            setLists(currentLists =>
-                currentLists.map(l => {
-                    const updatedList = response.lists.find(rl => rl.id === l.id);
-                    return updatedList || l;
-                })
-            );
+            await refreshLists();
 
             toast({
                 title: "Success",
@@ -218,6 +152,8 @@ const Page = () => {
                 description: error instanceof Error ? error.message : "Failed to update list status",
                 variant: "destructive"
             });
+        } finally {
+            setActionLoading(false);
         }
     };
 
@@ -233,13 +169,16 @@ const Page = () => {
                         title="Subscribed Lists Management"
                         description="Manage your subscribed block and allow lists"
                     />
-                    <NewListDialog 
-                        availableGroups={availableGroups}
-                        onListCreated={async () => {
-                            const response = await getLists();
-                            setLists(response.lists);
-                        }}
-                    />
+                    <div className="flex items-center gap-2">
+                        <GravityUpdateDialog />
+                        <NewListDialog 
+                            availableGroups={availableGroups}
+                            onListCreated={async () => {
+                                const response = await getLists();
+                                setLists(response.lists);
+                            }}
+                        />
+                    </div>
                 </div>
                 <Separator />
 
@@ -288,7 +227,7 @@ const Page = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {loading ? (
+                                    {loading || actionLoading ? (
                                         <TableSkeleton />
                                     ) : lists.length === 0 ? (
                                         <TableRow>

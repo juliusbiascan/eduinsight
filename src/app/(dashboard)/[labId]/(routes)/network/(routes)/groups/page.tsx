@@ -156,6 +156,8 @@ const Page = () => {
     };
 
     const hasNoGroups = !isLoading && groups.length === 0;
+    const onlyDefaultGroup = !isLoading && groups.length === 1 && groups[0]?.name === 'default';
+    const shouldShowActions = !hasNoGroups && !onlyDefaultGroup;
 
     return (
         <PageContainer scrollable={false}>
@@ -166,7 +168,7 @@ const Page = () => {
                         description="Create and manage groups of network devices. "
                     />
                     <div className="flex items-center gap-2">
-                        {selectedGroups.size > 0 && (
+                        {shouldShowActions && selectedGroups.size > 0 && (
                             <Button
                                 variant="destructive"
                                 size="icon"

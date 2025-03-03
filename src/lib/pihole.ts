@@ -35,7 +35,7 @@ class SessionManager {
     private static instance: SessionManager;
     private currentSession: Session | null = null;
 
-    private constructor() {}
+    private constructor() { }
 
     private async saveToDatabase(session: Session) {
         await db.piHoleSession.upsert({
@@ -1064,7 +1064,7 @@ export const getQueries = async (params: QueryParams = {}): Promise<QueriesRespo
 
         const queryParams = new URLSearchParams();
         queryParams.append('sid', session.sid!);
-        
+
         // Add all optional parameters to the query string
         Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined) {
@@ -1223,3 +1223,4 @@ export const deleteList = async (address: string, type: 'allow' | 'block'): Prom
         throw new Error(`Delete list failed: ${error.message}`);
     }
 }
+

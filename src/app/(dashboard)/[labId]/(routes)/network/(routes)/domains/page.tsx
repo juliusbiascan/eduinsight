@@ -557,6 +557,16 @@ const DomainsPage = () => {
                         
                         {loading ? (
                             <LoadingSkeleton />
+                        ) : filteredDomains.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                                <Globe className="h-12 w-12 text-muted-foreground mb-4" />
+                                <h3 className="text-lg font-medium">No domains found</h3>
+                                <p className="text-sm text-muted-foreground mt-2">
+                                    {searchQuery 
+                                        ? "No domains match your search criteria. Try adjusting your filters or search terms."
+                                        : "Get started by adding your first domain using the 'Add Domain' button above."}
+                                </p>
+                            </div>
                         ) : (
                             <>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
